@@ -2175,6 +2175,29 @@
       font-weight: 800;
     }
 
+    .default-logo-preview {
+      display: inline-flex;
+      min-width: 116px;
+      min-height: 34px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 12px;
+      border: 1px solid #f0b4b4;
+      border-radius: 8px;
+      color: #e60012;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 6px 14px rgba(230, 0, 18, 0.08);
+    }
+
+    .default-logo-preview small {
+      color: #475467;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
     /* =========================
        会话生成页
     ========================= */
@@ -5979,9 +6002,8 @@
                   </div>
                   <div class="logo-row">
                     <label class="logo-upload-box">
-                      <input type="file" hidden />
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19h14V5H5v14Zm4-4 2.2-2.6 1.8 2.1 2-2.6 3 3.1M8.5 9.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      上传 Logo
+                      <input type="file" accept="image/*" hidden />
+                      <span class="default-logo-preview">MINISO <small>名创优品</small></span>
                     </label>
                   </div>
                 </div>
@@ -6126,8 +6148,7 @@
                   <div class="logo-row">
                     <label class="logo-upload-box">
                       <input type="file" id="sessionLogoInput" accept="image/*" hidden />
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19h14V5H5v14Zm4-4 2.2-2.6 1.8 2.1 2-2.6 3 3.1M8.5 9.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      上传 Logo
+                      <span class="default-logo-preview">MINISO <small>名创优品</small></span>
                     </label>
                   </div>
                 </div>
@@ -7665,7 +7686,7 @@
       fileShell.classList.toggle("is-folder-root", isFavoriteScope && resolvedFavoriteFolderId === ROOT_FOLDER_ID);
       $("#assetNewFolderBtn").hidden = !isFavoriteScope;
       $("#assetUploadBtn").hidden = isFavoriteScope;
-      $(".asset-filter-controls").hidden = isFavoriteScope;
+      $(".asset-filter-controls").hidden = false;
       $("#assetSearchBtn").hidden = false;
       $("#assetSearch").placeholder = isFavoriteScope ? "搜索文件夹名称" : "搜索素材名称、关键词";
       $("#assetScopeSelect").value = activeAssetScope;
