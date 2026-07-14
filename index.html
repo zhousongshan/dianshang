@@ -5718,11 +5718,11 @@
           </span>
           <span>首页</span>
         </button>
-        <button class="nav-btn" data-page="workflows" title="Agent中心">
+        <button class="nav-btn" data-page="workflows" title="智能创作">
           <span class="nav-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 5V3m8 2V3M8 12h4m-4 4h8m0-7 2 2 3-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
-          <span>Agent中心</span>
+          <span>智能创作</span>
         </button>
         <button class="nav-btn" data-page="assets" title="资产库">
           <span class="nav-icon" aria-hidden="true">
@@ -5776,11 +5776,11 @@
           </div>
         </section>
 
-        <!-- Agent中心：管理可复用的生图与视频 Agent -->
+        <!-- 智能创作：管理可复用的生图与视频 Agent -->
         <section id="page-workflows" class="page">
           <div class="agent-page-header">
             <div>
-              <h1>Agent中心</h1>
+              <h1>智能创作</h1>
               <p>管理已创建的电商内容生成 Agent，快速复制与配置。</p>
             </div>
             <button class="btn btn-primary agent-create-btn" data-open-modal>
@@ -5850,7 +5850,7 @@
           </div>
         </section>
 
-        <!-- 生图 Agent 配置页：用于配置商品图、提示词、Agent 模式与图片生成设置 -->
+        <!-- 生图 Agent 配置页：用于配置商品图、提示词、智能模式与图片生成设置 -->
         <section id="page-config" class="page">
           <div class="config-layout">
             <div class="config-main">
@@ -5887,7 +5887,7 @@
                       <div class="compose-toolbar-row">
                         <div class="compose-tool-left">
                           <select class="compose-select" id="modeSelect">
-                            <option value="agent">Agent 模式</option>
+                            <option value="agent">智能模式</option>
                             <option value="normal">普通模式</option>
                           </select>
                           <select class="compose-select skill-select" id="skillSelect">
@@ -6070,7 +6070,7 @@
                   <div class="session-composer-actions">
                     <div class="session-option-selects" aria-label="本轮生成选项">
                       <select class="session-option-select" id="sessionModeSelect" aria-label="生成模式">
-                        <option value="agent">Agent 模式</option>
+                        <option value="agent">智能模式</option>
                         <option value="normal">普通模式</option>
                       </select>
                       <select class="session-option-select" id="sessionSkillSelect" aria-label="Skills 技能">
@@ -6521,7 +6521,7 @@
     let mockAgents = [
       { name: "家居推广图 Agent", type: "生图", icon: "image", desc: "为家居商品生成带生活场景的营销推广图。", mode: "普通模式", createdAt: "2026-07-13 14:30" },
       { name: "白底主图 Agent", type: "生图", icon: "image", desc: "生成适合电商平台使用的干净白底商品主图。", mode: "普通模式", createdAt: "2026-07-12 11:20" },
-      { name: "节日促销图 Agent", type: "生图", icon: "image", desc: "根据节日主题快速制作活动促销与社媒传播海报。", mode: "Agent 模式", createdAt: "2026-07-10 16:45" },
+      { name: "节日促销图 Agent", type: "生图", icon: "image", desc: "根据节日主题快速制作活动促销与社媒传播海报。", mode: "智能模式", createdAt: "2026-07-10 16:45" },
       { name: "详情长图 Agent", type: "生图", icon: "image", desc: "将商品卖点整理成适合详情页展示的系列长图。", mode: "普通模式", createdAt: "2026-07-05 10:15" },
       { name: "短视频展示 Agent", type: "视频", icon: "video", desc: "生成竖屏商品展示视频与简洁的卖点动画。", mode: "普通模式", createdAt: "2026-06-28 09:30" }
     ];
@@ -6719,7 +6719,7 @@
         type: isImage ? "生图" : "视频",
         icon: isImage ? "image" : "video",
         desc: desc || "暂未填写简介",
-        mode: "Agent 模式",
+        mode: "智能模式",
         agentSetting,
         createdAt: formatAgentDateTime()
       });
