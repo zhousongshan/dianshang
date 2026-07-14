@@ -6231,6 +6231,9 @@
                   <option value="local">本地上传</option>
                 </select>
               </label>
+              <label><span>日期</span>
+                <input class="asset-control-select" id="assetDateFilter" type="date" aria-label="按生成或上传日期筛选" />
+              </label>
             </div>
           </div>
 
@@ -6576,6 +6579,7 @@
     let activeAssetScope = "generated";
     let activeAssetType = "all";
     let activeAssetSource = "all";
+    let activeAssetDate = "";
     let currentAssetPage = 1;
     let activeFavoriteFolderId = ROOT_FOLDER_ID;
     let pendingFavorite = null;
@@ -7643,6 +7647,14 @@
       return item.source || (item.model === "本地文件" || String(item.tags).includes("本地上传") ? "local" : "ai");
     }
 
+    function getAssetRecordDate(item, index, kind) {
+      if (item.assetDate) return item.assetDate;
+      if (item.createdAt) return String(item.createdAt).slice(0, 10);
+      if (String(item.time).includes("-")) return String(item.time).slice(0, 10);
+      if (item.time === "刚刚") return formatAgentDateTime().slice(0, 10);
+      return kind === "video" ? "2026-07-08" : `2026-07-${String(Math.max(1, 10 - (index % 5))).padStart(2, "0")}`;
+    }
+
     function renderAssetPagination(totalItems, totalPages) {
       const buttons = $("#assetPageButtons");
       if (!buttons) return;
@@ -7692,29 +7704,33 @@
       $("#assetScopeSelect").value = activeAssetScope;
       $("#assetTypeSelect").value = activeAssetType;
       $("#assetSourceFilter").value = activeAssetSource;
+      $("#assetDateFilter").value = activeAssetDate;
       $$("[data-asset-scope]").forEach(button => {
         const active = button.dataset.assetScope === activeAssetScope;
         button.classList.toggle("active", active);
         button.setAttribute("aria-selected", String(active));
       });
 
-      let records = getAssetRecords().filter(({ item }) => {
+      let records = getAssetRecords().filter(({ item, index, kind }) => {
         const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
         const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
-        return source.includes(keyword) && matchesSource;
+        const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
+        return source.includes(keyword) && matchesSource && matchesDate;
       });
 
       if (isFavoriteScope) {
         const activeFolderId = resolvedFavoriteFolderId;
-        const favoriteRecords = getFavoriteRecordsByType().filter(({ item }) => {
-          return activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
+        const favoriteRecords = getFavoriteRecordsByType().filter(({ item, index, kind }) => {
+          const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
+          const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
+          return matchesSource && matchesDate;
         });
-        const folderRecords = keyword
+        const folderRecords = activeAssetDate ? [] : keyword
           ? assetFolders.filter(folder => folder.name.toLowerCase().includes(keyword))
           : getChildFolders(activeFolderId);
 
         pathbar.innerHTML = renderPathbar(activeFolderId, keyword, typeText);
-        records = keyword
+        records = keyword || activeAssetDate
           ? favoriteRecords.filter(({ item }) => {
               const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
               return source.includes(keyword);
@@ -8523,6 +8539,13 @@
 
       if (event.target === $("#assetSourceFilter")) {
         activeAssetSource = event.target.value;
+        currentAssetPage = 1;
+        renderAssets();
+        return;
+      }
+
+      if (event.target === $("#assetDateFilter")) {
+        activeAssetDate = event.target.value;
         currentAssetPage = 1;
         renderAssets();
         return;
