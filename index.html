@@ -2693,6 +2693,56 @@
       box-shadow: none;
     }
 
+    .generated-results-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .generated-results-grid.is-multi {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .generated-result-item {
+      position: relative;
+      min-width: 0;
+    }
+
+    .generated-results-grid.is-multi .campaign-poster,
+    .generated-results-grid.is-multi .campaign-result-image {
+      min-height: 0;
+    }
+
+    .generated-item-name {
+      display: block;
+      min-width: 0;
+      padding-top: 11px;
+      overflow: hidden;
+      color: #1d2939;
+      font-size: 14px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .generated-result-item.is-regenerating .campaign-poster::after {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: grid;
+      width: auto;
+      height: auto;
+      content: "正在重新生成…";
+      place-items: center;
+      border-radius: inherit;
+      color: #fff;
+      background: rgba(16, 24, 40, 0.58);
+      box-shadow: none;
+      font-size: 14px;
+      font-weight: 800;
+      opacity: 1;
+    }
+
     .campaign-poster {
       position: relative;
       aspect-ratio: 16 / 10;
@@ -2867,8 +2917,9 @@
 
     .generated-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 9px;
-      padding: 12px 0 0;
+      padding: 9px 0 0;
       border: 0;
     }
 
@@ -5148,6 +5199,15 @@
         min-height: 310px;
       }
 
+      .generated-results-grid.is-multi {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .generated-results-grid.is-multi .campaign-poster,
+      .generated-results-grid.is-multi .campaign-result-image {
+        min-height: 310px;
+      }
+
       .campaign-copy {
         left: 5%;
         font-size: 29px;
@@ -7331,28 +7391,64 @@
       showToast(`已从资产库添加 ${count} 张图片。`);
     }
 
-    function resultMarkup(round) {
-      const resultAsset = mockAssets[round.assetIndex];
+    function getGeneratedResult(roundId, resultId) {
+      const round = generationRounds.find(item => item.id === Number(roundId));
+      const result = round?.results?.find(item => item.id === String(resultId));
+      return { round, result };
+    }
+
+    function createGeneratedResult(round, index) {
+      const assetIndex = mockAssets.push({
+        name: `${currentAgentName}生成结果 ${round.id}-${index + 1}`,
+        category: "图片素材",
+        type: "product",
+        tags: `${round.settings.goal}、${round.settings.style}`,
+        model: round.settings.model,
+        size: round.settings.ratio === "1:1" ? "1024 × 1024" : round.settings.ratio,
+        time: "刚刚",
+        createdAt: formatAgentDateTime(),
+        favorite: false,
+        folderId: "",
+        previewUrl: PRODUCT_IMAGE_URL
+      }) - 1;
+      return {
+        id: `${round.id}-${index + 1}`,
+        assetIndex,
+        prompt: round.prompt,
+        images: round.images.map(image => ({ ...image })),
+        settings: { ...round.settings, count: "1" },
+        isGenerating: false
+      };
+    }
+
+    function generatedResultMarkup(round, result) {
+      const resultAsset = mockAssets[result.assetIndex];
       const isFavorite = Boolean(resultAsset?.favorite);
       const resultImage = resultAsset?.previewUrl || PRODUCT_IMAGE_URL;
+      const resultName = resultAsset?.name || `生成结果 ${result.id}`;
+      return `
+        <div class="generated-result-item ${result.isGenerating ? "is-regenerating" : ""}" id="generatedResult-${round.id}-${result.id}">
+          <div class="campaign-poster has-real-image" role="img" aria-label="${escapeHtml(resultName)}">
+            <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>
+            <img class="campaign-result-image" src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
+          </div>
+          <strong class="generated-item-name" title="${escapeHtml(resultName)}">${escapeHtml(resultName)}</strong>
+          <div class="generated-actions">
+            <button class="btn" data-rename-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重命名</button>
+            <button class="btn" data-edit-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重新编辑</button>
+            <button class="btn" data-regenerate-generated data-round-id="${round.id}" data-result-id="${result.id}" ${result.isGenerating ? "disabled" : ""}>↻ 再次生成</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function resultMarkup(round) {
+      const results = round.results || [];
       return `
         <div class="generation-result" id="generationResult-${round.id}">
           <div class="generated-card">
-            <div class="campaign-poster has-real-image" role="img" aria-label="智能手表商品图">
-              <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite="${round.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>
-              <img class="campaign-result-image" src="${escapeHtml(resultImage)}" alt="智能手表商品图" />
-              <div class="campaign-copy">邀请好友<br>共享<b>好礼</b><small>分享越多，惊喜越多！</small></div>
-              <div class="campaign-pig"></div>
-              <div class="campaign-flow">
-                <span>分享给好友</span>
-                <span>好友下单</span>
-                <span>一起分享好礼</span>
-                <div class="campaign-qr" aria-label="活动二维码">二维码</div>
-              </div>
-            </div>
-            <div class="generated-actions">
-              <button class="btn" data-edit-round="${round.id}">✎ 重新编辑</button>
-              <button class="btn" data-regenerate-round="${round.id}">↻ 再次生成</button>
+            <div class="generated-results-grid ${results.length > 1 ? "is-multi" : ""}">
+              ${results.map(result => generatedResultMarkup(round, result)).join("")}
             </div>
           </div>
         </div>
@@ -7367,20 +7463,10 @@
       $(".thinking-status", thinkingCard).textContent = "思考完成";
       $(".thinking-dots", thinkingCard)?.classList.remove("thinking-dots");
 
-      if (!Number.isInteger(round.assetIndex)) {
-        round.assetIndex = mockAssets.push({
-          name: `${currentAgentName}生成结果 ${round.id}`,
-          category: "图片素材",
-          type: "product",
-          tags: `${round.settings.goal}、${round.settings.style}`,
-          model: round.settings.model,
-          size: round.settings.ratio === "1:1" ? "1024 × 1024" : round.settings.ratio,
-          time: "刚刚",
-          createdAt: formatAgentDateTime(),
-          favorite: false,
-          folderId: "",
-          previewUrl: PRODUCT_IMAGE_URL
-        }) - 1;
+      if (!round.results?.length) {
+        const resultCount = Math.min(4, Math.max(1, Number(round.settings.count) || 1));
+        round.results = Array.from({ length: resultCount }, (_, index) => createGeneratedResult(round, index));
+        round.assetIndex = round.results[0].assetIndex;
       }
 
       const aiContent = $(".conversation-ai-content", roundElement);
@@ -7398,10 +7484,10 @@
       }, 120);
     }
 
-    function updateGeneratedFavoriteButton(round) {
-      if (!round || !Number.isInteger(round.assetIndex)) return;
-      const item = mockAssets[round.assetIndex];
-      const button = $(`[data-toggle-generated-favorite="${round.id}"]`);
+    function updateGeneratedFavoriteButton(round, result) {
+      if (!round || !result || !Number.isInteger(result.assetIndex)) return;
+      const item = mockAssets[result.assetIndex];
+      const button = $(`[data-toggle-generated-favorite][data-round-id="${round.id}"][data-result-id="${result.id}"]`);
       if (!item || !button) return;
       button.classList.toggle("active", Boolean(item.favorite));
       button.textContent = item.favorite ? "♥" : "♡";
@@ -7410,24 +7496,115 @@
       button.setAttribute("aria-pressed", String(Boolean(item.favorite)));
     }
 
-    function toggleGeneratedFavorite(roundId) {
-      const round = generationRounds.find(item => item.id === Number(roundId));
-      if (!round || !Number.isInteger(round.assetIndex)) return;
-      const asset = mockAssets[round.assetIndex];
+    function toggleGeneratedFavorite(roundId, resultId) {
+      const { round, result } = getGeneratedResult(roundId, resultId);
+      if (!round || !result || !Number.isInteger(result.assetIndex)) return;
+      const asset = mockAssets[result.assetIndex];
       if (!asset) return;
       if (!asset.favorite) {
         asset.favorite = true;
         asset.folderId = DEFAULT_FOLDER_ID;
-        updateGeneratedFavoriteButton(round);
+        updateGeneratedFavoriteButton(round, result);
         renderAssets();
         showToast("已加入默认收藏。");
         return;
       }
       asset.favorite = false;
       asset.folderId = "";
-      updateGeneratedFavoriteButton(round);
+      updateGeneratedFavoriteButton(round, result);
       renderAssets();
       showToast("已取消收藏。");
+    }
+
+    function updateGeneratedResultCard(round, result) {
+      const card = $(`#generatedResult-${round.id}-${result.id}`);
+      if (card) card.outerHTML = generatedResultMarkup(round, result);
+    }
+
+    function forEachGeneratedResultByAssetIndex(assetIndex, callback) {
+      generationRounds.forEach(round => {
+        (round.results || []).forEach(result => {
+          if (result.assetIndex === assetIndex) callback(round, result);
+        });
+      });
+    }
+
+    function renameGeneratedResult(roundId, resultId) {
+      const { round, result } = getGeneratedResult(roundId, resultId);
+      const asset = result ? mockAssets[result.assetIndex] : null;
+      if (!round || !result || !asset) return;
+      openInputModal({
+        title: "重命名图片",
+        desc: "修改当前图片的名称，其他生成图片不会变化。",
+        label: "图片名称",
+        value: asset.name,
+        onSubmit: trimmedName => {
+          if (trimmedName === asset.name) return;
+          asset.name = trimmedName;
+          updateGeneratedResultCard(round, result);
+          renderAssets();
+          showToast(`已重命名为「${trimmedName}」。`);
+        }
+      });
+    }
+
+    function applyGeneratedResultSettings(settings) {
+      const selectValues = [
+        ["#imageGoalSelect", "#sessionImageGoalSelect", settings.goal],
+        ["#imageStyleSelect", "#sessionImageStyleSelect", settings.style],
+        ["#watermarkPositionSelect", "#sessionWatermarkPositionSelect", settings.watermarkPosition],
+        ["#outputFormatSelect", "#sessionOutputFormatSelect", settings.format]
+      ];
+      selectValues.forEach(([configSelector, sessionSelector, value]) => {
+        if ($(configSelector)) $(configSelector).value = value;
+        if ($(sessionSelector)) $(sessionSelector).value = value;
+      });
+      if (settings.model) {
+        $("#configModel").value = settings.model;
+        $("#sessionModelSelect").value = settings.model;
+        if ($("#modelLabel")) $("#modelLabel").textContent = settings.model;
+      }
+      setChoiceGroupValue("#generationCountGroup", "1");
+      setChoiceGroupValue("#sessionGenerationCountGroup", "1");
+      setChoiceGroupValue("#imageRatioGroup", settings.ratio);
+      setChoiceGroupValue("#sessionImageRatioGroup", settings.ratio);
+      const agentSetting = settings.agentSetting || "";
+      $("#agentSettingTextarea").value = agentSetting;
+      $("#sessionAgentSettingTextarea").value = agentSetting;
+      $("#agentSettingCount").textContent = agentSetting.length;
+      $("#sessionAgentSettingCount").textContent = agentSetting.length;
+      setWatermarkState(Boolean(settings.watermark));
+    }
+
+    function editGeneratedResult(roundId, resultId) {
+      const { result } = getGeneratedResult(roundId, resultId);
+      if (!result) return;
+      $("#sessionPrompt").value = result.prompt;
+      $("#sessionPromptCount").textContent = result.prompt.length;
+      setTargetImages("session", result.images);
+      applyGeneratedResultSettings(result.settings);
+      $("#sessionComposerWrap").scrollIntoView({ behavior: "smooth", block: "end" });
+      setTimeout(() => $("#sessionPrompt").focus(), 320);
+      showToast("当前图片的提示词和参数已带回，可修改后生成。");
+    }
+
+    function regenerateGeneratedResult(roundId, resultId) {
+      const { round, result } = getGeneratedResult(roundId, resultId);
+      if (!round || !result || result.isGenerating) return;
+      result.isGenerating = true;
+      updateGeneratedResultCard(round, result);
+      setTimeout(() => {
+        const asset = mockAssets[result.assetIndex];
+        if (asset) {
+          asset.time = "刚刚";
+          asset.createdAt = formatAgentDateTime();
+          asset.tags = `${result.settings.goal}、${result.settings.style}`;
+        }
+        result.isGenerating = false;
+        updateGeneratedResultCard(round, result);
+        renderAssets();
+        showToast("当前图片已重新生成，其他图片保持不变。");
+      }, 1200);
     }
 
     function streamThinking(round) {
@@ -7504,17 +7681,6 @@
       $(`[data-conversation-round="${round.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       streamThinking(round);
       return true;
-    }
-
-    function editGenerationRound(roundId) {
-      const round = generationRounds.find(item => item.id === Number(roundId));
-      if (!round) return;
-      $("#sessionPrompt").value = round.prompt;
-      $("#sessionPromptCount").textContent = round.prompt.length;
-      setTargetImages("session", round.images);
-      $("#sessionComposerWrap").scrollIntoView({ behavior: "smooth", block: "end" });
-      setTimeout(() => $("#sessionPrompt").focus(), 320);
-      showToast("上一轮需求已带回输入框，可以修改后再次生成。");
     }
 
     function getAssetRecords() {
@@ -7831,9 +7997,7 @@
       item.favorite = true;
       item.folderId = folderId;
       if (pendingFavorite.kind === "image") {
-        generationRounds
-          .filter(round => round.assetIndex === pendingFavorite.index)
-          .forEach(updateGeneratedFavoriteButton);
+        forEachGeneratedResultByAssetIndex(pendingFavorite.index, updateGeneratedFavoriteButton);
       }
       closeFavoriteModal();
       renderAssets();
@@ -7848,9 +8012,7 @@
         item.favorite = true;
         item.folderId = DEFAULT_FOLDER_ID;
         if (kind === "image") {
-          generationRounds
-            .filter(round => round.assetIndex === index)
-            .forEach(updateGeneratedFavoriteButton);
+          forEachGeneratedResultByAssetIndex(index, updateGeneratedFavoriteButton);
         }
         renderAssets();
         showToast("已加入默认收藏。");
@@ -7859,6 +8021,9 @@
 
       item.favorite = false;
       item.folderId = "";
+      if (kind === "image") {
+        forEachGeneratedResultByAssetIndex(index, updateGeneratedFavoriteButton);
+      }
       renderAssets();
       showToast("已取消收藏。");
     }
@@ -7875,6 +8040,9 @@
         onSubmit: trimmedName => {
           if (trimmedName === item.name) return;
           item.name = trimmedName;
+          if (kind === "image") {
+            forEachGeneratedResultByAssetIndex(index, updateGeneratedResultCard);
+          }
           renderAssets();
           showToast(`已重命名为「${trimmedName}」。`);
         }
@@ -8277,7 +8445,25 @@
 
       const generatedFavoriteBtn = event.target.closest("[data-toggle-generated-favorite]");
       if (generatedFavoriteBtn) {
-        toggleGeneratedFavorite(generatedFavoriteBtn.dataset.toggleGeneratedFavorite);
+        toggleGeneratedFavorite(generatedFavoriteBtn.dataset.roundId, generatedFavoriteBtn.dataset.resultId);
+        return;
+      }
+
+      const renameGeneratedBtn = event.target.closest("[data-rename-generated]");
+      if (renameGeneratedBtn) {
+        renameGeneratedResult(renameGeneratedBtn.dataset.roundId, renameGeneratedBtn.dataset.resultId);
+        return;
+      }
+
+      const editGeneratedBtn = event.target.closest("[data-edit-generated]");
+      if (editGeneratedBtn) {
+        editGeneratedResult(editGeneratedBtn.dataset.roundId, editGeneratedBtn.dataset.resultId);
+        return;
+      }
+
+      const regenerateGeneratedBtn = event.target.closest("[data-regenerate-generated]");
+      if (regenerateGeneratedBtn) {
+        regenerateGeneratedResult(regenerateGeneratedBtn.dataset.roundId, regenerateGeneratedBtn.dataset.resultId);
         return;
       }
 
@@ -8464,19 +8650,6 @@
         const prompt = $("#mainPrompt");
         prompt.value = promptChip.dataset.fillPrompt;
         $("#promptCount").textContent = prompt.value.length;
-      }
-
-      const editRoundButton = event.target.closest("[data-edit-round]");
-      if (editRoundButton) {
-        editGenerationRound(editRoundButton.dataset.editRound);
-        return;
-      }
-
-      const regenerateRoundButton = event.target.closest("[data-regenerate-round]");
-      if (regenerateRoundButton) {
-        const round = generationRounds.find(item => item.id === Number(regenerateRoundButton.dataset.regenerateRound));
-        if (round) startGeneration(round.prompt, round.images);
-        return;
       }
 
       const assetCard = event.target.closest(".asset-card");
