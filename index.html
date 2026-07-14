@@ -1301,6 +1301,52 @@
       display: grid;
     }
 
+    .image-preview-mask {
+      z-index: 100;
+      padding: 28px;
+      background: rgba(8, 15, 28, 0.88);
+      backdrop-filter: blur(8px);
+    }
+
+    .image-preview-dialog {
+      position: relative;
+      display: grid;
+      width: min(1200px, 94vw);
+      height: min(860px, 90vh);
+      place-items: center;
+      animation: popIn 0.2s ease;
+    }
+
+    .image-preview-dialog img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .image-preview-close {
+      position: fixed;
+      top: 22px;
+      right: 24px;
+      z-index: 2;
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(17, 24, 39, 0.72);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    [data-image-preview] {
+      cursor: zoom-in;
+    }
+
     .modal {
       width: min(560px, 100%);
       border-radius: var(--radius-lg);
@@ -6485,6 +6531,13 @@
     </aside>
   </div>
 
+  <div class="modal-mask image-preview-mask" id="imagePreviewModal" role="dialog" aria-modal="true" aria-label="图片预览">
+    <div class="image-preview-dialog">
+      <button class="image-preview-close" type="button" data-close-image-preview aria-label="关闭图片预览">×</button>
+      <img id="imagePreviewContent" src="" alt="图片预览" />
+    </div>
+  </div>
+
   <div class="modal-mask" id="favoriteModal" role="dialog" aria-modal="true" aria-labelledby="favoriteTitle">
     <div class="modal favorite-dialog">
       <div class="modal-head">
@@ -7430,7 +7483,7 @@
         <div class="generated-result-item ${result.isGenerating ? "is-regenerating" : ""}" id="generatedResult-${round.id}-${result.id}">
           <div class="campaign-poster has-real-image" role="img" aria-label="${escapeHtml(resultName)}">
             <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>
-            <img class="campaign-result-image" src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
+            <img class="campaign-result-image" data-image-preview src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
           </div>
           <strong class="generated-item-name" title="${escapeHtml(resultName)}">${escapeHtml(resultName)}</strong>
           <div class="generated-actions">
@@ -7703,6 +7756,23 @@
       ];
     }
 
+    function openImagePreview(src, alt = "图片预览") {
+      if (!src) return;
+      const previewImage = $("#imagePreviewContent");
+      previewImage.src = src;
+      previewImage.alt = alt;
+      $("#imagePreviewModal").classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeImagePreview() {
+      const modal = $("#imagePreviewModal");
+      if (!modal.classList.contains("show")) return;
+      modal.classList.remove("show");
+      $("#imagePreviewContent").src = "";
+      document.body.style.overflow = "";
+    }
+
     function renderAssetPreview(kind, item, index, favoriteClass = "") {
       const previewClass = kind === "video" ? "video-preview" : "simple-poster-preview";
       if (item.previewUrl) {
@@ -7710,7 +7780,7 @@
           <div class="${previewClass}">
             <span class="asset-kind-badge">${kind === "video" ? "视频" : "图片"}</span>
             <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" title="${item.favorite ? "取消收藏" : "收藏"}">${item.favorite ? "♥" : "♡"}</button>
-            ${kind === "video" ? `<video class="asset-real-preview" src="${item.previewUrl}" muted playsinline></video>` : `<img class="asset-real-preview" src="${item.previewUrl}" alt="${item.name}" />`}
+            ${kind === "video" ? `<video class="asset-real-preview" src="${item.previewUrl}" muted playsinline></video>` : `<img class="asset-real-preview" data-image-preview src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" />`}
           </div>
         `;
       }
@@ -8449,6 +8519,17 @@
         return;
       }
 
+      const previewImage = event.target.closest("[data-image-preview]");
+      if (previewImage) {
+        openImagePreview(previewImage.currentSrc || previewImage.src, previewImage.alt);
+        return;
+      }
+
+      if (event.target.closest("[data-close-image-preview]") || event.target === $("#imagePreviewModal")) {
+        closeImagePreview();
+        return;
+      }
+
       const renameGeneratedBtn = event.target.closest("[data-rename-generated]");
       if (renameGeneratedBtn) {
         renameGeneratedResult(renameGeneratedBtn.dataset.roundId, renameGeneratedBtn.dataset.resultId);
@@ -8954,6 +9035,7 @@
       }
       if (event.key !== "Escape") return;
       closeImageSourceMenu();
+      closeImagePreview();
       if ($("#assetSelectorModal").classList.contains("show")) closeAssetSelector();
     });
     $("#moveFolderSearch").addEventListener("input", renderMoveFolderOptions);
