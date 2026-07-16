@@ -361,11 +361,181 @@
       background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
     }
 
+    .avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+
     .user {
       display: flex;
       align-items: center;
       gap: 10px;
       font-weight: 700;
+    }
+
+    .user-menu-wrap { position: relative; }
+
+    .user-trigger {
+      padding: 4px 8px 4px 4px;
+      border: 0;
+      border-radius: 12px;
+      color: #344054;
+      background: transparent;
+    }
+
+    .user-trigger:hover,
+    .user-trigger[aria-expanded="true"] { background: #f2f4f8; }
+
+    .user-trigger .avatar { font-size: 14px; }
+
+    .user-caret { transition: transform .18s ease; }
+    .user-trigger[aria-expanded="true"] .user-caret { transform: rotate(180deg); }
+
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      display: none;
+      width: 168px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 18px 46px rgba(16, 24, 40, .16);
+      z-index: 40;
+    }
+
+    .user-dropdown.show { display: grid; }
+
+    .user-menu-item {
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 8px;
+      color: #344054;
+      background: transparent;
+      text-align: left;
+    }
+
+    .user-menu-item:hover { background: #f5f7fb; }
+    .user-menu-item.danger { color: #dc2626; }
+    .user-menu-divider { height: 1px; margin: 5px 4px; background: var(--line); }
+
+    .profile-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 22px 0 28px;
+      padding: 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #eef2ff, #f8f5ff);
+    }
+
+    .profile-avatar {
+      position: relative;
+      display: grid;
+      width: 68px;
+      height: 68px;
+      flex: 0 0 auto;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 50%;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-head strong { display: block; margin-bottom: 6px; font-size: 18px; }
+    .profile-head span { color: var(--muted); font-size: 13px; }
+
+    .profile-section { margin-top: 28px; }
+    .profile-section-title { margin: 0 0 14px; font-size: 15px; }
+    .profile-form { display: grid; gap: 18px; }
+    .profile-field { display: grid; gap: 8px; }
+    .profile-field span { color: #344054; font-size: 13px; font-weight: 750; }
+    .profile-field input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 9px; outline: 0; }
+    .profile-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, .1); }
+    .profile-field input[readonly] { color: #667085; background: #f6f7f9; cursor: default; }
+    .profile-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .profile-actions .btn { flex: 1; }
+
+    .security-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .security-row strong { display: block; margin-bottom: 4px; font-size: 14px; }
+    .security-row span { color: var(--muted); font-size: 12px; }
+
+    .password-form { display: grid; gap: 16px; }
+    .password-error { min-height: 18px; margin: 0; color: #dc2626; font-size: 13px; }
+
+    .confirm-copy { margin: 4px 0 0; color: #475467; line-height: 1.7; }
+
+    .account-settings-modal {
+      display: grid;
+      width: min(760px, 100%);
+      min-height: 500px;
+      grid-template-columns: 190px minmax(0, 1fr);
+      overflow: hidden;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: var(--shadow-lg);
+      animation: popIn .2s ease;
+    }
+
+    .account-settings-side {
+      padding: 26px 16px;
+      border-right: 1px solid var(--line);
+      background: #f8f9fc;
+    }
+
+    .account-settings-side h2 { margin: 0 10px 24px; font-size: 20px; }
+
+    .account-tab {
+      display: flex;
+      width: 100%;
+      min-height: 44px;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 9px;
+      color: #475467;
+      background: transparent;
+      font-weight: 750;
+      text-align: left;
+    }
+
+    .account-tab + .account-tab { margin-top: 6px; }
+    .account-tab:hover { background: #eef1f7; }
+    .account-tab.active { color: var(--primary); background: var(--primary-soft); }
+
+    .account-settings-main { min-width: 0; padding: 28px 32px 30px; }
+    .account-settings-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+    .account-settings-head h3 { margin: 0; font-size: 20px; }
+    .account-panel { display: none; }
+    .account-panel.active { display: block; }
+    .account-form { display: grid; max-width: 430px; gap: 20px; }
+    .account-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+    .password-success { display: grid; min-height: 280px; place-items: center; text-align: center; }
+    .password-success-icon { display: grid; width: 58px; height: 58px; margin: 0 auto 18px; place-items: center; border-radius: 50%; color: #fff; background: #16a34a; font-size: 26px; }
+    .password-success h4 { margin: 0 0 10px; font-size: 20px; }
+    .password-success p { margin: 0 0 22px; color: var(--muted); }
+
+    @media (max-width: 680px) {
+      .account-settings-modal { min-height: 0; grid-template-columns: 1fr; }
+      .account-settings-side { display: flex; gap: 8px; padding: 18px 20px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .account-settings-side h2 { display: none; }
+      .account-tab { justify-content: center; }
+      .account-tab + .account-tab { margin-top: 0; }
+      .account-settings-main { padding: 24px 20px; }
     }
 
     .content {
@@ -1953,6 +2123,45 @@
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
     }
 
+    .prompt-optimize-btn {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 15px;
+      border: 1px solid #d8dcff;
+      border-radius: 12px;
+      color: var(--primary);
+      background: #f7f7ff;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: .18s ease;
+    }
+
+    .prompt-optimize-btn:hover:not(:disabled) { border-color: #aaa5ff; background: #f0efff; }
+    .prompt-optimize-btn:disabled { cursor: wait; opacity: .65; }
+
+    .prompt-optimization-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border: 1px solid #dedcff;
+      border-radius: 10px;
+      color: #4f46e5;
+      background: #f8f7ff;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .prompt-optimization-bar.show { display: flex; }
+    .prompt-optimization-actions { display: flex; align-items: center; gap: 8px; }
+    .prompt-optimization-actions button { padding: 4px 8px; border: 0; border-radius: 6px; color: #4f46e5; background: transparent; font-size: 12px; font-weight: 800; }
+    .prompt-optimization-actions button:hover { background: #ebe9ff; }
+
     .skill-select {
       width: 138px;
     }
@@ -2483,7 +2692,7 @@
       width: min(820px, 100%);
       min-height: 560px;
       margin: 0 auto;
-      padding: 76px 0 170px;
+      padding: 76px 0 300px;
       gap: 52px;
       align-content: end;
       background: transparent;
@@ -3248,11 +3457,16 @@
       border-top: 1px solid #eef1f6;
     }
 
+    .session-reference-card { margin: 14px 0 0; }
+    .session-reference-pick { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; cursor: pointer; }
+
     .session-option-selects {
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
     }
+
+    .session-option-selects .prompt-optimize-btn { min-height: 36px; border-radius: 10px; font-size: 12px; }
 
     .session-option-select {
       min-height: 36px;
@@ -5861,13 +6075,22 @@
       <header class="topbar">
         <div aria-hidden="true"></div>
         <div class="top-actions">
-          <button class="icon-btn" title="通知">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" stroke="currentColor" stroke-width="2"/><path d="M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
-          <div class="user">
-            <div class="avatar">M</div>
-            <span>MINISO</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <div class="user-menu-wrap">
+            <button class="user user-trigger" id="userMenuTrigger" type="button" aria-haspopup="menu" aria-expanded="false">
+              <div class="avatar" id="topUserAvatar">M</div>
+              <span id="topUserName">MINISO</span>
+              <svg class="user-caret" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="user-dropdown" id="userDropdown" role="menu">
+              <div style="padding: 8px 12px 10px">
+                <strong id="dropdownUserName" style="display:block;font-size:14px">MINISO</strong>
+                <span style="display:block;margin-top:4px;color:#98a2b3;font-size:12px">138****5678</span>
+              </div>
+              <div class="user-menu-divider"></div>
+              <button class="user-menu-item" id="openAccountSettings" type="button" role="menuitem">账号设置</button>
+              <div class="user-menu-divider"></div>
+              <button class="user-menu-item danger" id="openLogout" type="button" role="menuitem">退出登录</button>
+            </div>
           </div>
         </div>
       </header>
@@ -5989,6 +6212,13 @@
                           <span class="count-mark"><span id="promptCount">0</span>/1000</span>
                         </div>
                       </div>
+                      <div class="prompt-optimization-bar" id="mainOptimizationBar">
+                        <span>✨ 已生成优化版本</span>
+                        <div class="prompt-optimization-actions">
+                          <button type="button" data-keep-optimized="main">保留结果</button>
+                          <button type="button" data-restore-prompt="main">恢复原文</button>
+                        </div>
+                      </div>
 
                       <div class="compose-toolbar-row">
                         <div class="compose-tool-left">
@@ -6008,6 +6238,7 @@
                             <option>SD 3.0</option>
                             <option>Midjourney</option>
                           </select>
+                          <button class="prompt-optimize-btn" id="mainOptimizePrompt" type="button">✨ 提示词优化</button>
                         </div>
                         <button class="btn btn-primary generate-strong" id="generateBtn">立即生成</button>
                       </div>
@@ -6173,6 +6404,13 @@
                       <span><span id="sessionPromptCount">0</span>/1000</span>
                     </div>
                   </div>
+                  <div class="prompt-optimization-bar" id="sessionOptimizationBar">
+                    <span>✨ 已生成优化版本</span>
+                    <div class="prompt-optimization-actions">
+                      <button type="button" data-keep-optimized="session">保留结果</button>
+                      <button type="button" data-restore-prompt="session">恢复原文</button>
+                    </div>
+                  </div>
                   <div class="session-composer-actions">
                     <div class="session-option-selects" aria-label="本轮生成选项">
                       <select class="session-option-select" id="sessionModeSelect" aria-label="生成模式">
@@ -6191,8 +6429,32 @@
                         <option>SD 3.0</option>
                         <option>Midjourney</option>
                       </select>
+                      <button class="prompt-optimize-btn" id="sessionOptimizePrompt" type="button">✨ 提示词优化</button>
                     </div>
                     <button class="btn btn-primary generate-strong" id="sessionGenerate">再次生成</button>
+                  </div>
+                </div>
+
+                <div class="reference-card session-reference-card">
+                  <div class="reference-head">
+                    <span class="reference-title">参考图（选填）</span>
+                    <span class="hint">上传参考图并输入对应的修图提示词，可提升生成效果</span>
+                  </div>
+                  <div class="reference-body">
+                    <div class="compact-upload" id="sessionReferenceUpload" style="min-height: 48px">
+                      <label class="session-reference-pick">
+                        <input id="sessionReferenceInput" type="file" accept="image/*" hidden />
+                        <span id="sessionReferencePlaceholder"><span class="upload-plus">+</span></span>
+                      </label>
+                      <img class="upload-preview" id="sessionReferencePreview" alt="参考图预览" hidden />
+                    </div>
+                    <div class="reference-input-wrap">
+                      <input class="field" id="sessionReferencePrompt" type="text" maxlength="1000" placeholder="输入对应的提示词 / Few-shot 提示..." />
+                      <span class="count-mark"><span id="sessionReferencePromptCount">0</span>/1000</span>
+                    </div>
+                    <button class="delete-ref-btn" id="sessionReferenceRemove" type="button" title="删除参考图" aria-label="删除参考图">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M9 7l1-3h4l1 3m-8 0 1 14h8l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -6505,6 +6767,76 @@
     </div>
   </div>
 
+  <!-- 账号设置 -->
+  <div class="modal-mask" id="accountSettingsModal" role="dialog" aria-modal="true" aria-labelledby="accountSettingsTitle">
+    <div class="account-settings-modal">
+      <aside class="account-settings-side">
+        <h2 id="accountSettingsTitle">账号设置</h2>
+        <button class="account-tab active" type="button" data-account-tab="profile">基本信息</button>
+        <button class="account-tab" type="button" data-account-tab="security">账号安全</button>
+      </aside>
+
+      <div class="account-settings-main">
+        <section class="account-panel active" data-account-panel="profile">
+          <div class="account-settings-head">
+            <div><h3>基本信息</h3></div>
+            <button class="close-btn" type="button" data-close-account-settings aria-label="关闭">×</button>
+          </div>
+          <div class="account-form">
+            <label class="profile-field"><span>用户名</span><input id="profileNameInput" type="text" maxlength="24" value="MINISO" /></label>
+            <label class="profile-field"><span>手机号</span><input type="text" value="138****5678" readonly /></label>
+          </div>
+          <div class="account-form-actions">
+            <button class="btn" type="button" data-close-account-settings>取消</button>
+            <button class="btn btn-primary" id="saveProfile" type="button">保存修改</button>
+          </div>
+        </section>
+
+        <section class="account-panel" data-account-panel="security">
+          <div class="account-settings-head">
+            <div><h3>账号安全</h3></div>
+            <button class="close-btn" type="button" data-close-account-settings aria-label="关闭">×</button>
+          </div>
+          <div class="account-form" id="securityForm">
+            <label class="profile-field"><span>当前密码</span><input id="currentPassword" type="password" autocomplete="current-password" placeholder="请输入当前密码" /></label>
+            <label class="profile-field"><span>新密码</span><input id="newPassword" type="password" autocomplete="new-password" placeholder="请输入新密码" /></label>
+            <label class="profile-field"><span>确认新密码</span><input id="confirmPassword" type="password" autocomplete="new-password" placeholder="请再次输入新密码" /></label>
+            <p class="password-error" id="passwordError" role="alert"></p>
+          </div>
+          <div class="account-form-actions" id="securityActions">
+            <button class="btn" type="button" data-close-account-settings>取消</button>
+            <button class="btn btn-primary" id="savePassword" type="button">修改密码</button>
+          </div>
+          <div class="password-success" id="passwordSuccess" hidden>
+            <div>
+              <div class="password-success-icon">✓</div>
+              <h4>密码修改成功</h4>
+              <p><span id="reloginCountdown">3</span> 秒后返回登录页</p>
+              <button class="btn btn-primary" id="reloginNow" type="button">立即重新登录</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 退出登录确认框 -->
+  <div class="modal-mask" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <div class="modal favorite-dialog">
+      <div class="modal-head">
+        <div>
+          <h2 class="modal-title" id="logoutTitle">退出登录</h2>
+          <p class="confirm-copy">确定要退出当前账号吗？</p>
+        </div>
+        <button class="close-btn" id="closeLogout" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelLogout" type="button">取消</button>
+        <button class="btn btn-danger" id="confirmLogout" type="button">退出登录</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 资产详情抽屉 -->
   <div class="drawer-mask" id="assetDrawer">
     <aside class="drawer">
@@ -6721,6 +7053,7 @@
     let generationBusy = false;
     let roundSequence = 0;
     const generationRounds = [];
+    const promptOptimizationState = { main: "", session: "" };
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -6761,6 +7094,164 @@
         toast.classList.remove("show");
         pendingToastAction = null;
       }, actionLabel ? 5000 : 1800);
+    }
+
+    function getPromptOptimizationElements(target) {
+      const isSession = target === "session";
+      return {
+        input: $(isSession ? "#sessionPrompt" : "#mainPrompt"),
+        count: $(isSession ? "#sessionPromptCount" : "#promptCount"),
+        button: $(isSession ? "#sessionOptimizePrompt" : "#mainOptimizePrompt"),
+        bar: $(isSession ? "#sessionOptimizationBar" : "#mainOptimizationBar")
+      };
+    }
+
+    function buildOptimizedPrompt(source) {
+      const cleanSource = source.trim().replace(/[，。；、\s]+$/u, "");
+      const detail = "主体突出，画面层次清晰，电商视觉构图，真实自然光影，材质细节丰富，色彩协调，高清质感，避免多余文字、畸变和杂乱背景";
+      return `${cleanSource}。${detail}。`.slice(0, 1000);
+    }
+
+    function optimizePrompt(target) {
+      const elements = getPromptOptimizationElements(target);
+      const source = elements.input.value.trim();
+      if (!source) {
+        showToast("请先输入需要优化的提示词");
+        elements.input.focus();
+        return;
+      }
+
+      promptOptimizationState[target] = source;
+      elements.button.disabled = true;
+      elements.button.textContent = "优化中…";
+      setTimeout(() => {
+        elements.input.value = buildOptimizedPrompt(source);
+        elements.count.textContent = elements.input.value.length;
+        elements.bar.classList.add("show");
+        elements.button.disabled = false;
+        elements.button.textContent = "✨ 提示词优化";
+        elements.input.focus();
+      }, 650);
+    }
+
+    function keepOptimizedPrompt(target) {
+      getPromptOptimizationElements(target).bar.classList.remove("show");
+      promptOptimizationState[target] = "";
+      showToast("已保留优化结果");
+    }
+
+    function restorePrompt(target) {
+      const elements = getPromptOptimizationElements(target);
+      if (promptOptimizationState[target]) {
+        elements.input.value = promptOptimizationState[target];
+        elements.count.textContent = elements.input.value.length;
+      }
+      elements.bar.classList.remove("show");
+      promptOptimizationState[target] = "";
+      elements.input.focus();
+    }
+
+    function closeUserDropdown() {
+      $("#userDropdown").classList.remove("show");
+      $("#userMenuTrigger").setAttribute("aria-expanded", "false");
+    }
+
+    function toggleUserDropdown() {
+      const willOpen = !$("#userDropdown").classList.contains("show");
+      $("#userDropdown").classList.toggle("show", willOpen);
+      $("#userMenuTrigger").setAttribute("aria-expanded", String(willOpen));
+    }
+
+    function switchAccountPanel(panelName) {
+      $$("[data-account-tab]").forEach(button => {
+        button.classList.toggle("active", button.dataset.accountTab === panelName);
+      });
+      $$("[data-account-panel]").forEach(panel => {
+        panel.classList.toggle("active", panel.dataset.accountPanel === panelName);
+      });
+    }
+
+    function openAccountSettings(panelName = "profile") {
+      closeUserDropdown();
+      switchAccountPanel(panelName);
+      $("#accountSettingsModal").classList.add("show");
+      if (panelName === "security") {
+        clearInterval(savePassword.countdownTimer);
+        $("#currentPassword").value = "";
+        $("#newPassword").value = "";
+        $("#confirmPassword").value = "";
+        $("#passwordError").textContent = "";
+        $("#securityForm").hidden = false;
+        $("#securityActions").hidden = false;
+        $("#passwordSuccess").hidden = true;
+      }
+    }
+
+    function closeAccountSettings() {
+      $("#accountSettingsModal").classList.remove("show");
+    }
+
+    function openLogoutModal() {
+      closeUserDropdown();
+      $("#logoutModal").classList.add("show");
+    }
+
+    function closeLogoutModal() {
+      $("#logoutModal").classList.remove("show");
+    }
+
+    function saveProfile() {
+      const name = $("#profileNameInput").value.trim();
+      if (!name) {
+        showToast("用户名不能为空");
+        $("#profileNameInput").focus();
+        return;
+      }
+      $("#topUserName").textContent = name;
+      $("#dropdownUserName").textContent = name;
+      const initial = name.slice(0, 1).toUpperCase();
+      $("#topUserAvatar").textContent = initial;
+      closeAccountSettings();
+      showToast("个人资料已保存");
+    }
+
+    function savePassword() {
+      const currentPassword = $("#currentPassword").value;
+      const newPassword = $("#newPassword").value;
+      const confirmPassword = $("#confirmPassword").value;
+      const error = $("#passwordError");
+      error.textContent = "";
+
+      if (!currentPassword) {
+        error.textContent = "请输入当前密码";
+        $("#currentPassword").focus();
+        return;
+      }
+      if (newPassword.length < 8 || newPassword.length > 20 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+        error.textContent = "新密码需为 8–20 位，并同时包含字母和数字";
+        $("#newPassword").focus();
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        error.textContent = "两次输入的新密码不一致";
+        $("#confirmPassword").focus();
+        return;
+      }
+
+      $("#securityForm").hidden = true;
+      $("#securityActions").hidden = true;
+      $("#passwordSuccess").hidden = false;
+      let seconds = 3;
+      $("#reloginCountdown").textContent = String(seconds);
+      clearInterval(savePassword.countdownTimer);
+      savePassword.countdownTimer = setInterval(() => {
+        seconds -= 1;
+        $("#reloginCountdown").textContent = String(Math.max(seconds, 0));
+        if (seconds <= 0) {
+          clearInterval(savePassword.countdownTimer);
+          window.location.href = "./login.html";
+        }
+      }, 1000);
     }
 
     function openInputModal({ title, desc, label = "名称", value = "", onSubmit }) {
@@ -8925,6 +9416,42 @@
       $("#sessionPromptCount").textContent = event.target.value.length;
     });
 
+    $("#mainOptimizePrompt").addEventListener("click", () => optimizePrompt("main"));
+    $("#sessionOptimizePrompt").addEventListener("click", () => optimizePrompt("session"));
+    $$('[data-keep-optimized]').forEach(button => {
+      button.addEventListener("click", () => keepOptimizedPrompt(button.dataset.keepOptimized));
+    });
+    $$('[data-restore-prompt]').forEach(button => {
+      button.addEventListener("click", () => restorePrompt(button.dataset.restorePrompt));
+    });
+
+    $("#sessionReferencePrompt").addEventListener("input", event => {
+      $("#sessionReferencePromptCount").textContent = event.target.value.length;
+    });
+
+    $("#sessionReferenceInput").addEventListener("change", event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        $("#sessionReferencePreview").src = String(reader.result);
+        $("#sessionReferencePreview").hidden = false;
+        $("#sessionReferencePlaceholder").hidden = true;
+        $("#sessionReferenceUpload").classList.add("has-image");
+      });
+      reader.readAsDataURL(file);
+    });
+
+    $("#sessionReferenceRemove").addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      $("#sessionReferenceInput").value = "";
+      $("#sessionReferencePreview").removeAttribute("src");
+      $("#sessionReferencePreview").hidden = true;
+      $("#sessionReferencePlaceholder").hidden = false;
+      $("#sessionReferenceUpload").classList.remove("has-image");
+    });
+
     $("#modeSelect").addEventListener("change", event => {
       setMode(event.target.value);
     });
@@ -9034,6 +9561,9 @@
         return;
       }
       if (event.key !== "Escape") return;
+      closeUserDropdown();
+      closeAccountSettings();
+      closeLogoutModal();
       closeImageSourceMenu();
       closeImagePreview();
       if ($("#assetSelectorModal").classList.contains("show")) closeAssetSelector();
@@ -9047,6 +9577,31 @@
     $("#confirmModalConfirm").addEventListener("click", submitConfirmModal);
     $("#inputModalField").addEventListener("keydown", event => {
       if (event.key === "Enter") submitInputModal();
+    });
+
+    $("#userMenuTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      toggleUserDropdown();
+    });
+    $("#userDropdown").addEventListener("click", event => event.stopPropagation());
+    document.addEventListener("click", closeUserDropdown);
+    $("#openAccountSettings").addEventListener("click", () => openAccountSettings("profile"));
+    $("#openLogout").addEventListener("click", openLogoutModal);
+    $("#saveProfile").addEventListener("click", saveProfile);
+    $("#savePassword").addEventListener("click", savePassword);
+    $("#reloginNow").addEventListener("click", () => { window.location.href = "./login.html"; });
+    $$("[data-account-tab]").forEach(button => {
+      button.addEventListener("click", () => switchAccountPanel(button.dataset.accountTab));
+    });
+    $$("[data-close-account-settings]").forEach(button => button.addEventListener("click", closeAccountSettings));
+    $("#closeLogout").addEventListener("click", closeLogoutModal);
+    $("#cancelLogout").addEventListener("click", closeLogoutModal);
+    $("#confirmLogout").addEventListener("click", () => { window.location.href = "./login.html"; });
+    $("#accountSettingsModal").addEventListener("click", event => {
+      if (event.target === $("#accountSettingsModal")) closeAccountSettings();
+    });
+    $("#logoutModal").addEventListener("click", event => {
+      if (event.target === $("#logoutModal")) closeLogoutModal();
     });
 
     // 页面初始化
