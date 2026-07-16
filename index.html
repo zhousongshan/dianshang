@@ -935,7 +935,7 @@
       content: "AI";
       border-radius: 14px;
       color: #fff;
-      font-size: 34px;
+      font-size: 26px;
       font-weight: 900;
       background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
       box-shadow: 0 18px 30px rgba(37, 99, 235, 0.22);
@@ -2346,6 +2346,8 @@
       gap: 8px;
     }
 
+    .choice-grid.quality-grid { grid-template-columns: repeat(3, 1fr); }
+
     .choice {
       min-height: 42px;
       border: 1px solid var(--line-strong);
@@ -2620,6 +2622,7 @@
 
     /* 会话式生图：用户需求 → 流式思考 → 结果 → 继续修改 */
     #page-session {
+      position: relative;
       min-height: calc(100vh - var(--topbar));
       margin: -24px -28px -32px;
       padding: 24px 28px 32px;
@@ -2639,6 +2642,30 @@
       background: transparent;
       box-shadow: none;
     }
+
+    .session-backbar {
+      position: absolute;
+      top: 20px;
+      left: 22px;
+      z-index: 8;
+    }
+
+    .session-back-btn {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      color: #344054;
+      background: transparent;
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .session-back-btn:hover { color: var(--primary); background: rgba(255, 255, 255, .84); }
 
     .session-settings-panel {
       position: sticky;
@@ -6333,6 +6360,17 @@
                 </div>
 
                 <div class="setting-block">
+                  <div class="setting-label-row">
+                    <label class="label">图片清晰度</label>
+                  </div>
+                  <div class="choice-grid quality-grid" id="imageQualityGroup" data-choice-group>
+                    <button class="choice active" type="button">高清</button>
+                    <button class="choice" type="button">超清</button>
+                    <button class="choice" type="button">4K</button>
+                  </div>
+                </div>
+
+                <div class="setting-block">
                   <div class="setting-switch-row">
                     <label class="label">水印 Logo</label>
                     <button class="toggle-switch" id="configWatermarkToggle" aria-label="水印 Logo 开关" aria-pressed="false"></button>
@@ -6387,6 +6425,9 @@
         <section id="page-session" class="page">
           <div class="session-layout">
             <div class="session-shell">
+              <div class="session-backbar">
+                <button class="session-back-btn" id="sessionBackButton" type="button" aria-label="返回智能创作" title="返回智能创作">←</button>
+              </div>
               <div class="session-thread" id="sessionThread" aria-live="polite"></div>
 
               <div class="session-composer-wrap" id="sessionComposerWrap">
@@ -6506,6 +6547,15 @@
                     <option>节日促销</option>
                     <option>柔和家居</option>
                   </select>
+                </div>
+
+                <div class="setting-block">
+                  <div class="setting-label-row"><label class="label">图片清晰度</label></div>
+                  <div class="choice-grid quality-grid" id="sessionImageQualityGroup" data-choice-group>
+                    <button class="choice active" type="button">高清</button>
+                    <button class="choice" type="button">超清</button>
+                    <button class="choice" type="button">4K</button>
+                  </div>
                 </div>
 
                 <div class="setting-block">
@@ -7575,6 +7625,7 @@
     function getGenerationSettings() {
       const ratio = $("#imageRatioGroup .choice.active")?.textContent.trim() || "1:1";
       const count = $("#generationCountGroup .choice.active")?.textContent.trim() || "1";
+      const quality = $("#imageQualityGroup .choice.active")?.textContent.trim() || "高清";
       return {
         model: $("#configModel")?.value || "GPT 2.0",
         goal: $("#imageGoalSelect")?.value || "营销海报/活动宣传",
@@ -7584,7 +7635,8 @@
         watermarkPosition: $("#watermarkPositionSelect")?.value || "右下角",
         agentSetting: $("#agentSettingTextarea")?.value.trim() || "",
         ratio,
-        count
+        count,
+        quality
       };
     }
 
@@ -7621,6 +7673,7 @@
       });
       setChoiceGroupValue("#sessionGenerationCountGroup", getChoiceGroupValue("#generationCountGroup"));
       setChoiceGroupValue("#sessionImageRatioGroup", getChoiceGroupValue("#imageRatioGroup"));
+      setChoiceGroupValue("#sessionImageQualityGroup", getChoiceGroupValue("#imageQualityGroup") || "高清");
       const agentSetting = $("#agentSettingTextarea")?.value || "";
       if ($("#sessionAgentSettingTextarea")) $("#sessionAgentSettingTextarea").value = agentSetting;
       if ($("#sessionAgentSettingCount")) $("#sessionAgentSettingCount").textContent = agentSetting.length;
@@ -8112,6 +8165,8 @@
       setChoiceGroupValue("#sessionGenerationCountGroup", "1");
       setChoiceGroupValue("#imageRatioGroup", settings.ratio);
       setChoiceGroupValue("#sessionImageRatioGroup", settings.ratio);
+      setChoiceGroupValue("#imageQualityGroup", settings.quality || "高清");
+      setChoiceGroupValue("#sessionImageQualityGroup", settings.quality || "高清");
       const agentSetting = settings.agentSetting || "";
       $("#agentSettingTextarea").value = agentSetting;
       $("#sessionAgentSettingTextarea").value = agentSetting;
@@ -8993,7 +9048,9 @@
           generationCountGroup: "#sessionGenerationCountGroup",
           sessionGenerationCountGroup: "#generationCountGroup",
           imageRatioGroup: "#sessionImageRatioGroup",
-          sessionImageRatioGroup: "#imageRatioGroup"
+          sessionImageRatioGroup: "#imageRatioGroup",
+          imageQualityGroup: "#sessionImageQualityGroup",
+          sessionImageQualityGroup: "#imageQualityGroup"
         };
         const counterpartSelector = counterpartGroups[choice.parentElement.id];
         if (counterpartSelector) setChoiceGroupValue(counterpartSelector, choice.textContent.trim());
@@ -9406,6 +9463,10 @@
       if (!startGeneration(prompt, sessionImages)) return;
       $("#sessionPrompt").value = "";
       $("#sessionPromptCount").textContent = "0";
+    });
+
+    $("#sessionBackButton").addEventListener("click", () => {
+      showPage("workflows");
     });
 
     $("#mainPrompt").addEventListener("input", event => {
