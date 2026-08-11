@@ -5711,14 +5711,19 @@
     }
 
     .user-identity {
-      display: flex;
+      display: grid;
+      width: 160px;
       min-width: 0;
+      grid-template-columns: 36px minmax(0, 1fr);
       align-items: center;
-      justify-content: center;
       gap: 12px;
+      margin: 0 auto;
       color: #1d2939;
+      text-align: left;
       font-weight: 780;
     }
+
+    .user-identity > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .user-avatar {
       display: grid;
@@ -8826,7 +8831,7 @@
                 <div class="quota-ranking" id="quotaRanking"></div>
               </section>
               <section class="quota-panel">
-                <div class="quota-panel-heading"><h2 id="quotaTrendTitle">额度使用趋势（08-04 至 08-10）</h2></div>
+                <div class="quota-panel-heading"><h2 id="quotaTrendTitle">额度使用趋势（近 7 天）</h2></div>
                 <svg class="quota-chart" viewBox="0 0 620 220" role="img" aria-label="近七日额度消耗趋势">
                   <defs><linearGradient id="quotaAreaFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7168ee" stop-opacity=".22"/><stop offset="1" stop-color="#7168ee" stop-opacity="0"/></linearGradient></defs>
                   <line class="quota-chart-grid" x1="48" y1="28" x2="594" y2="28"/><line class="quota-chart-grid" x1="48" y1="82" x2="594" y2="82"/><line class="quota-chart-grid" x1="48" y1="136" x2="594" y2="136"/><line class="quota-chart-grid" x1="48" y1="190" x2="594" y2="190"/>
@@ -14084,7 +14089,6 @@
         return;
       }
       $("#quotaDateRangeLabel").textContent = `${startDate} ~ ${endDate}`;
-      $("#quotaTrendTitle").textContent = `额度使用趋势（${startDate.slice(5)} 至 ${endDate.slice(5)}）`;
       setQuotaDatePickerOpen(false);
       showToast("统计日期已更新。");
     });
