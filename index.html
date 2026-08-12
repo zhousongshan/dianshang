@@ -6287,17 +6287,21 @@
     .operation-detail-record-scroll { overflow-x: auto; }
     .operation-detail-record-content { min-width: 840px; }
     .operation-detail-record-head,
-    .operation-detail-record-row { display: grid; grid-template-columns: 10% 20% 42% 14% 14%; align-items: center; column-gap: 0; padding: 0 18px; }
+    .operation-detail-record-row { display: grid; grid-template-columns: 11% 20% 13% 32% 12% 12%; align-items: center; column-gap: 0; padding: 0 18px; }
     .operation-detail-record-head { min-height: 52px; color: #667085; background: #f7f8fc; font-size: 13px; font-weight: 780; }
     .operation-detail-record-head span { text-align: center; }
     .operation-detail-date-heading { min-height: 42px; padding: 14px 20px 8px; color: #1d2939; font-size: 13px; font-weight: 850; }
     .operation-detail-record-row { min-height: 68px; border-top: 1px solid #edf0f5; color: #475467; font-size: 13px; }
     .operation-detail-time { color: #667085; text-align: center; font-variant-numeric: tabular-nums; }
     .operation-detail-type { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 10px; color: #344054; font-weight: 760; }
+    .operation-detail-type.agent { color: #5146d8; }
+    .operation-detail-running-count { display: inline-flex; min-width: 42px; min-height: 26px; justify-self: center; align-items: center; justify-content: center; padding: 0 9px; border-radius: 6px; color: #d97706; background: #fff7e6; font-size: 12px; font-weight: 800; }
     .operation-detail-content { display: grid; min-width: 0; gap: 4px; text-align: center; }
     .operation-detail-content strong { overflow: hidden; color: #344054; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
     .operation-detail-result { display: inline-flex; justify-self: center; align-items: center; gap: 6px; color: #269b4b; font-size: 12px; }
     .operation-detail-result::before { width: 7px; height: 7px; content: ""; border-radius: 50%; background: #20bf55; }
+    .operation-detail-result.running { color: #d97706; }
+    .operation-detail-result.running::before { background: #f5a623; }
     .operation-detail-action { justify-self: center; padding: 7px 6px; border: 0; color: #5b50e6; background: transparent; font-size: 12px; font-weight: 760; }
     .operation-detail-action:hover { border-radius: 6px; background: #f3f1ff; }
     .operation-detail-no-action { justify-self: center; color: #a4acb9; font-size: 13px; }
@@ -6364,13 +6368,23 @@
     .quota-date-error:empty { visibility: hidden; }
     .quota-date-actions { display: flex; justify-content: flex-end; gap: 9px; padding-top: 5px; }
     .quota-date-actions .btn { min-width: 72px; height: 36px; justify-content: center; }
-    .quota-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .quota-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(280px, 1.45fr); gap: 14px; margin-bottom: 16px; }
     .quota-kpi-card { display: grid; min-width: 0; min-height: 112px; align-content: center; gap: 14px; padding: 19px 20px; border: 1px solid #e3e7f0; border-radius: 11px; background: #fff; box-shadow: 0 8px 22px rgba(16, 24, 40, .035); }
     .quota-kpi-label { display: flex; align-items: center; gap: 6px; color: #667085; font-size: 13px; font-weight: 760; }
     .quota-kpi-label svg { color: #98a2b3; }
     .quota-kpi-value { color: #101828; font-size: 26px; line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums; }
     .quota-kpi-value.primary { color: #5b50e6; }
     .quota-kpi-value.warning { color: #e88419; }
+    .quota-generation-card { display: grid; min-width: 0; min-height: 112px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; overflow: hidden; border: 1px solid #e3e7f0; border-radius: 11px; background: #fff; box-shadow: 0 8px 22px rgba(16, 24, 40, .035); }
+    .quota-generation-stat { display: grid; min-width: 0; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; padding: 18px 16px; }
+    .quota-generation-stat + .quota-generation-stat { border-left: 1px solid #edf0f5; }
+    .quota-generation-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 7px; color: #5b50e6; background: #efedff; }
+    .quota-generation-icon.video { color: #147aa8; background: #e9f7fc; }
+    .quota-generation-icon svg { width: 17px; height: 17px; }
+    .quota-generation-copy { display: grid; min-width: 0; gap: 8px; }
+    .quota-generation-copy span { overflow: hidden; color: #667085; font-size: 12px; font-weight: 720; text-overflow: ellipsis; white-space: nowrap; }
+    .quota-generation-copy strong { color: #1d2939; font-size: 23px; line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .quota-generation-copy small { color: #667085; font-size: 12px; font-weight: 720; }
     .quota-dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
     .quota-panel { display: flex; min-width: 0; height: 310px; flex-direction: column; padding: 20px; border: 1px solid #e3e7f0; border-radius: 11px; background: #fff; box-shadow: 0 8px 22px rgba(16, 24, 40, .035); }
     .quota-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -6674,6 +6688,11 @@
       justify-content: center;
     }
 
+    @media (max-width: 1480px) {
+      .quota-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .quota-generation-card { grid-column: span 2; }
+    }
+
     @media (max-width: 1180px) {
       .user-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .user-filter-actions { grid-column: 1 / -1; justify-content: flex-end; }
@@ -6764,6 +6783,7 @@
       .quota-page-actions > .btn { width: 100%; }
       .quota-date-popover { right: auto; left: 0; width: min(356px, calc(100vw - 32px)); }
       .quota-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quota-generation-card { grid-column: 1 / -1; }
       .quota-dashboard-grid { grid-template-columns: 1fr; }
       .quota-table-heading { align-items: stretch; flex-direction: column; }
       .quota-table-tools { align-items: stretch; flex-direction: column; }
@@ -6791,6 +6811,8 @@
 
     @media (max-width: 420px) {
       .quota-kpi-grid { grid-template-columns: 1fr; }
+      .quota-generation-card { grid-column: auto; }
+      .quota-generation-stat { padding: 16px 12px; }
       .quota-ranking-row { grid-template-columns: 26px minmax(72px, .85fr) minmax(90px, 1.2fr) 74px; gap: 7px; }
       .quota-detail-profile { grid-template-columns: 1fr; padding: 18px 16px; }
       .quota-detail-person { grid-column: auto; }
@@ -8824,6 +8846,10 @@
               <article class="quota-kpi-card"><div class="quota-kpi-label">已消耗额度 <span aria-hidden="true">ⓘ</span></div><div class="quota-kpi-value" id="quotaUsedValue">¥0.00</div></article>
               <article class="quota-kpi-card"><div class="quota-kpi-label">剩余额度</div><div class="quota-kpi-value primary" id="quotaRemainingValue">¥0.00</div></article>
               <article class="quota-kpi-card"><div class="quota-kpi-label">今日消耗额度 <span aria-hidden="true">ⓘ</span></div><div class="quota-kpi-value warning">¥120.50</div></article>
+              <section class="quota-generation-card" aria-label="累计生成量">
+                <div class="quota-generation-stat"><span class="quota-generation-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="10" r="2" stroke="currentColor" stroke-width="1.8"/><path d="m5.5 18 4.5-4 3 2.5 2.5-2 3 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="quota-generation-copy"><span>图片生成总数</span><strong>12,680 <small>张</small></strong></div></div>
+                <div class="quota-generation-stat"><span class="quota-generation-icon video" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="13" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="m16 10 5-3v10l-5-3" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><div class="quota-generation-copy"><span>视频生成总数</span><strong>1,286 <small>个</small></strong></div></div>
+              </section>
             </div>
 
             <div class="quota-dashboard-grid">
@@ -8921,7 +8947,7 @@
             <section class="operation-detail-record-shell">
               <div class="operation-detail-record-scroll">
                 <div class="operation-detail-record-content">
-                  <div class="operation-detail-record-head"><span>时间</span><span>操作类型</span><span>操作内容</span><span>结果</span><span>操作</span></div>
+                  <div class="operation-detail-record-head"><span>时间</span><span>Agent 名称 / 操作类型</span><span>进行中任务</span><span>操作内容</span><span>结果</span><span>操作</span></div>
                   <div id="operationLogDetailBody"></div>
                 </div>
               </div>
@@ -10178,15 +10204,54 @@
       ].sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
     }
 
+    function getAgentMeta(record) {
+      if (record.type === "video") return { key: "product-video", name: "商品短视频 Agent", running: 1, output: "生成商品展示视频，共 3 个" };
+      return { key: "product-scene", name: "商品场景图 Agent", running: 2, output: "生成商品场景图，共 12 张" };
+    }
+
+    function aggregateOperationDetailRecords(records) {
+      const agentRows = new Map();
+      const result = [];
+      records.forEach(record => {
+        if (record.type !== "image" && record.type !== "video") {
+          result.push({ ...record, isAgent: false, running: null, resultLabel: "成功" });
+          return;
+        }
+        const agent = getAgentMeta(record);
+        const key = `${record.date}:${agent.key}`;
+        const existing = agentRows.get(key);
+        if (existing) {
+          existing.sourceIds.push(record.id);
+          if (record.time > existing.time) existing.time = record.time;
+          return;
+        }
+        const aggregated = {
+          ...record,
+          id: `agent:${key}`,
+          agentKey: agent.key,
+          typeLabel: agent.name,
+          content: agent.output,
+          running: agent.running,
+          resultLabel: agent.running ? "进行中" : "已完成",
+          isAgent: true,
+          sourceIds: [record.id],
+          conversationRecordId: record.id
+        };
+        agentRows.set(key, aggregated);
+        result.push(aggregated);
+      });
+      return result.sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+    }
+
     function getFilteredOperationDetailRecords(user) {
       const keyword = operationLogDetailFilters.keyword.toLowerCase();
-      return getOperationDetailRecords(user).filter(record => {
+      const filtered = getOperationDetailRecords(user).filter(record => {
         const matchesDate = (!operationLogDetailFilters.startDate || record.date >= operationLogDetailFilters.startDate)
           && (!operationLogDetailFilters.endDate || record.date <= operationLogDetailFilters.endDate);
         const matchesType = operationLogDetailFilters.type === "all" || record.type === operationLogDetailFilters.type;
-        const matchesKeyword = !keyword || `${record.typeLabel} ${record.content} ${record.meta}`.toLowerCase().includes(keyword);
-        return matchesDate && matchesType && matchesKeyword;
+        return matchesDate && matchesType;
       });
+      return aggregateOperationDetailRecords(filtered).filter(record => !keyword || `${record.typeLabel} ${record.content} ${record.meta}`.toLowerCase().includes(keyword));
     }
 
     function renderOperationLogDetail() {
@@ -10213,10 +10278,11 @@
       $("#operationLogDetailBody").innerHTML = pageRecords.length ? pageRecords.map(record => {
         const dateHeading = record.date === lastDate ? "" : `<div class="operation-detail-date-heading">${record.date}${record.date === "2026-08-10" ? "（今天）" : ""}</div>`;
         lastDate = record.date;
-        const action = record.type === "image" || record.type === "video"
-          ? `<button class="operation-detail-action" type="button" data-operation-record-id="${escapeHtml(record.id)}">查看详情 ›</button>`
+        const action = record.isAgent
+          ? `<button class="operation-detail-action" type="button" data-operation-record-id="${escapeHtml(record.conversationRecordId)}">查看详情 ›</button>`
           : `<span class="operation-detail-no-action">—</span>`;
-        return `${dateHeading}<div class="operation-detail-record-row"><span class="operation-detail-time">${escapeHtml(record.time)}</span><span class="operation-detail-type">${escapeHtml(record.typeLabel)}</span><span class="operation-detail-content"><strong>${escapeHtml(record.content)}</strong></span><span class="operation-detail-result">成功</span>${action}</div>`;
+        const running = record.isAgent ? `<span class="operation-detail-running-count">${record.running} 个</span>` : `<span class="operation-detail-no-action">—</span>`;
+        return `${dateHeading}<div class="operation-detail-record-row"><span class="operation-detail-time">${escapeHtml(record.time)}</span><span class="operation-detail-type ${record.isAgent ? "agent" : ""}">${escapeHtml(record.typeLabel)}</span>${running}<span class="operation-detail-content"><strong>${escapeHtml(record.content)}</strong></span><span class="operation-detail-result ${record.isAgent && record.running ? "running" : ""}">${escapeHtml(record.resultLabel)}</span>${action}</div>`;
       }).join("") : `<div class="operation-detail-empty">没有符合条件的操作记录</div>`;
 
       const buttons = [`<button class="asset-page-btn" type="button" data-operation-detail-page="${currentOperationLogDetailPage - 1}" aria-label="上一页" ${currentOperationLogDetailPage === 1 ? "disabled" : ""}>‹</button>`];
