@@ -6166,6 +6166,9 @@
     .model-empty { color: #98a2b3; }
     .model-edit-btn { min-height: 34px; padding: 0 10px; border: 0; color: #5b50e6; background: transparent; font-size: 13px; font-weight: 760; }
     .model-edit-btn:hover { border-radius: 6px; background: #f2f0ff; }
+    .model-delete-btn { min-height: 34px; padding: 0 10px; border: 0; color: #d94841; background: transparent; font-size: 13px; font-weight: 760; }
+    .model-delete-btn:hover { border-radius: 6px; background: #fff1f0; }
+    .model-row-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
     .model-pagination { min-height: 68px; margin-top: 0; padding: 14px 22px; border-top: 1px solid #e8ebf1; background: #fafbfc; font-size: 14px; }
     .model-pagination .asset-page-btn { width: 36px; height: 36px; font-size: 13px; }
     .model-pagination .asset-page-size { height: 38px; font-size: 13px; }
@@ -6273,7 +6276,7 @@
     .operation-detail-status::before { width: 7px; height: 7px; content: ""; border-radius: 50%; background: #20bf55; }
     .operation-detail-status.disabled { color: #98a2b3 !important; }
     .operation-detail-status.disabled::before { background: #b3bac5; }
-    .operation-detail-filter { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(190px, .65fr) minmax(280px, 1fr); gap: 14px; margin-bottom: 16px; }
+    .operation-detail-filter { display: grid; grid-template-columns: minmax(300px, 1.15fr) minmax(190px, .65fr) minmax(240px, 1fr) auto; gap: 14px; margin-bottom: 16px; }
     .operation-detail-date-range { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
     .operation-detail-filter input,
     .operation-detail-filter select { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #dbe2ee; border-radius: 8px; outline: 0; color: #344054; background: #fff; font-size: 13px; }
@@ -6283,6 +6286,7 @@
     .operation-detail-search { position: relative; }
     .operation-detail-search svg { position: absolute; top: 50%; right: 12px; color: #98a2b3; transform: translateY(-50%); pointer-events: none; }
     .operation-detail-search input { padding-right: 40px; }
+    .operation-detail-filter-submit { min-width: 72px; justify-content: center; }
     .operation-detail-record-shell { overflow: hidden; border: 1px solid #e3e7f0; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgba(16, 24, 40, .035); }
     .operation-detail-record-scroll { overflow-x: auto; }
     .operation-detail-record-content { min-width: 840px; }
@@ -6500,6 +6504,39 @@
     .quota-detail-record-panel .quota-detail-table th:nth-child(4) { width: 22%; }
     .quota-detail-record-panel .quota-detail-table th,
     .quota-detail-record-panel .quota-detail-table td { height: 48px; padding: 0 18px; }
+    .quota-usage-record-view[hidden] { display: none; }
+    .quota-usage-record-view { margin-top: -6px; }
+    .quota-usage-record-header { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+    .quota-usage-record-header h1 { margin: 0; color: #101828; font-size: 28px; line-height: 1.2; font-weight: 900; }
+    .quota-usage-record-back { display: inline-flex; min-height: 40px; align-items: center; gap: 7px; padding: 0 14px; border: 1px solid #dbe2ee; border-radius: 8px; color: #344054; background: #fff; font-weight: 760; }
+    .quota-usage-record-back:hover { border-color: #8d83f7; color: #5b50e6; background: #f8f7ff; }
+    .quota-usage-record-profile { display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; padding: 16px 22px; border: 1px solid #e3e7f0; border-radius: 10px; background: #fff; }
+    .quota-usage-record-user { display: flex; align-items: center; gap: 12px; }
+    .quota-usage-record-user strong { color: #101828; font-size: 17px; }
+    .quota-usage-record-user small { display: block; margin-top: 4px; color: #7b8699; font-size: 12px; }
+    .quota-usage-record-filter { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; padding: 16px 20px; border: 1px solid #e3e7f0; border-radius: 10px; background: #fff; }
+    .quota-usage-record-date-range { display: grid; min-width: 330px; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+    .quota-usage-record-date-range input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #dbe2ee; border-radius: 8px; outline: 0; color: #344054; background: #fff; font-size: 13px; }
+    .quota-usage-record-date-range input:focus { border-color: #8d83f7; box-shadow: 0 0 0 3px rgba(91, 80, 230, .08); }
+    .quota-usage-record-date-range i { color: #98a2b3; font-style: normal; }
+    .quota-usage-record-filter > select,
+    .quota-usage-record-search { width: 190px; height: 42px; border: 1px solid #dbe2ee; border-radius: 8px; color: #344054; background: #fff; font-size: 13px; }
+    .quota-usage-record-filter > select { padding: 0 11px; }
+    .quota-usage-record-search { position: relative; display: block; width: min(280px, 100%); }
+    .quota-usage-record-search input { width: 100%; height: 100%; padding: 0 38px 0 12px; border: 0; outline: 0; color: #344054; background: transparent; font: inherit; }
+    .quota-usage-record-search svg { position: absolute; top: 50%; right: 11px; color: #98a2b3; transform: translateY(-50%); pointer-events: none; }
+    .quota-usage-record-filter > select:focus, .quota-usage-record-search:focus-within { border-color: #8d83f7; box-shadow: 0 0 0 3px rgba(91, 80, 230, .08); }
+    .quota-usage-record-filter .btn { min-width: 72px; justify-content: center; }
+    .quota-usage-record-table-panel { overflow: hidden; margin-bottom: 16px; padding: 0; border: 1px solid #e3e7f0; border-radius: 10px; background: #fff; }
+    .quota-usage-record-table-panel .quota-detail-table-wrap { border: 0; border-radius: 0; }
+    .quota-usage-record-table-panel .asset-pagination { border-top: 1px solid #e8ebf1; background: #fafbfc; }
+    @media (max-width: 700px) {
+      .quota-usage-record-header { align-items: flex-start; flex-direction: column; }
+      .quota-usage-record-profile, .quota-usage-record-filter { align-items: stretch; flex-direction: column; }
+      .quota-usage-record-date-range { min-width: 0; }
+      .quota-usage-record-filter .btn { width: 100%; }
+      .quota-usage-record-filter > select, .quota-usage-record-search { width: 100%; }
+    }
 
     .quota-adjust-modal { width: min(520px, 100%); overflow: hidden; border-radius: 12px; }
     .quota-adjust-modal .modal-head { align-items: flex-start; padding: 24px 26px 18px; border-bottom: 1px solid #edf0f5; }
@@ -6706,6 +6743,7 @@
       .operation-detail-stat { padding: 0 14px; }
       .operation-detail-filter { grid-template-columns: 1fr 1fr; }
       .operation-detail-search { grid-column: 1 / -1; }
+      .operation-detail-filter-submit { grid-column: 1 / -1; justify-self: end; }
       .quota-dashboard-grid { grid-template-columns: 1fr; }
       .quota-detail-profile { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .quota-detail-person { grid-column: 1 / -1; }
@@ -6760,6 +6798,7 @@
       .operation-detail-person { min-height: 78px; padding: 0; }
       .operation-detail-stat { min-height: 62px; padding: 0; border-top: 1px solid #edf0f5; border-left: 0; }
       .operation-detail-filter { grid-template-columns: 1fr; }
+      .operation-detail-filter-submit { width: 100%; grid-column: auto; }
       .operation-detail-search { grid-column: auto; }
       .operation-detail-date-range { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
       .operation-detail-pagination { align-items: flex-end; flex-direction: column; gap: 12px; }
@@ -8942,6 +8981,7 @@
               </div>
               <select id="operationLogDetailType" aria-label="操作类型"><option value="all">全部类型</option><option value="image">生图</option><option value="video">生视频</option><option value="asset">素材管理</option><option value="agent">Agent 管理</option><option value="user">用户与权限</option><option value="quota">额度管理</option><option value="model">模型配置</option><option value="other">其他</option></select>
               <label class="operation-detail-search"><input id="operationLogDetailKeyword" type="search" placeholder="搜索操作内容" autocomplete="off" /><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></label>
+              <button class="btn btn-primary operation-detail-filter-submit" type="submit">搜索</button>
             </form>
 
             <section class="operation-detail-record-shell">
@@ -9029,8 +9069,37 @@
             </div>
 
             <section class="quota-detail-panel quota-detail-record-panel">
-              <div class="quota-detail-panel-heading"><h2>最近使用记录</h2><button type="button" data-toast="更多使用记录将在后续页面中完善。">查看全部 ›</button></div>
+              <div class="quota-detail-panel-heading"><h2>最近使用记录</h2><button type="button" id="quotaDetailViewAllRecords" data-quota-usage-records>查看全部 ›</button></div>
               <div class="quota-detail-table-wrap"><table class="quota-detail-table"><thead><tr><th>时间</th><th>功能</th><th>模型</th><th>消耗额度（¥）</th></tr></thead><tbody id="quotaDetailRecordBody"></tbody></table></div>
+            </section>
+          </div>
+
+          <div class="quota-usage-record-view" id="quotaUsageRecordView" hidden>
+            <div class="quota-usage-record-header">
+              <button class="quota-usage-record-back" id="quotaUsageRecordBack" type="button"><span aria-hidden="true">←</span>返回</button>
+              <h1>使用记录</h1>
+            </div>
+            <section class="quota-usage-record-profile">
+              <div class="quota-usage-record-user">
+                <span class="quota-detail-avatar" id="quotaUsageRecordAvatar"></span>
+                <div><strong id="quotaUsageRecordName"></strong><small id="quotaUsageRecordMeta"></small></div>
+              </div>
+              <span class="user-role-badge" id="quotaUsageRecordRole"></span>
+            </section>
+            <form class="quota-usage-record-filter" id="quotaUsageRecordFilterForm">
+              <div class="quota-usage-record-date-range">
+                <input id="quotaUsageRecordStartDate" type="date" aria-label="开始日期" />
+                <i>~</i>
+                <input id="quotaUsageRecordEndDate" type="date" aria-label="结束日期" />
+              </div>
+              <select id="quotaUsageRecordType" aria-label="使用功能筛选"><option value="all">全部类型</option><option value="image">生图与图片编辑</option><option value="video">生视频</option><option value="agent">Agent 任务</option></select>
+              <label class="quota-usage-record-search"><input id="quotaUsageRecordKeyword" type="search" placeholder="搜索使用内容或模型" autocomplete="off" /><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></label>
+              <button class="btn btn-primary" type="submit">搜索</button>
+              <button class="btn" id="quotaUsageRecordReset" type="button">重置</button>
+            </form>
+            <section class="quota-usage-record-table-panel">
+              <div class="quota-detail-table-wrap"><table class="quota-detail-table"><thead><tr><th>时间</th><th>功能</th><th>模型</th><th>消耗额度（¥）</th></tr></thead><tbody id="quotaUsageRecordBody"></tbody></table></div>
+              <div class="asset-pagination quota-usage-record-pagination"><div class="asset-page-buttons" id="quotaUsageRecordPageButtons" aria-label="使用记录分页"></div><label class="asset-selector-page-size-wrap"><span>每页显示</span><select class="asset-page-size" id="quotaUsageRecordPageSize" aria-label="每页显示使用记录数量"><option value="10">10 条/页</option><option value="20">20 条/页</option><option value="50">50 条/页</option></select></label></div>
             </section>
           </div>
 
@@ -9750,6 +9819,8 @@
     let currentModelPage = 1;
     let activeModelTab = "all";
     const modelFilters = { keyword: "", type: "all", status: "all" };
+    let currentQuotaUsageRecordPage = 1;
+    const quotaUsageRecordFilters = { startDate: "", endDate: "", type: "all", keyword: "" };
     let currentOperationLogPage = 1;
     let currentOperationLogDetailPage = 1;
     let activeOperationLogUserId = null;
@@ -9760,6 +9831,7 @@
     let activeRoleMenuId = null;
     let activeUserDetailId = null;
     let activeQuotaUserDetailId = null;
+    let activeQuotaUsageRecordsUserId = null;
     let activeQuotaAdjustmentUserId = null;
     let quotaAdjustmentMode = "increase";
     let activeSettingsView = "users";
@@ -10027,7 +10099,7 @@
         <td><span class="model-id">${escapeHtml(model.modelId)}</span></td>
         <td>${model.isDefault ? '<span class="model-default-badge">默认</span>' : '<span class="model-empty">--</span>'}</td>
         <td><span class="model-status-badge ${model.status === "disabled" ? "disabled" : ""}">${model.status === "disabled" ? "禁用" : "启用"}</span></td>
-        <td><button class="model-edit-btn" type="button" data-model-action="edit" data-model-id="${escapeHtml(model.id)}">编辑</button></td>
+        <td><div class="model-row-actions"><button class="model-edit-btn" type="button" data-model-action="edit" data-model-id="${escapeHtml(model.id)}">编辑</button><button class="model-delete-btn" type="button" data-model-action="delete" data-model-id="${escapeHtml(model.id)}">删除</button></div></td>
       </tr>`).join("") : `<tr><td class="user-empty-row" colspan="7">没有符合条件的模型</td></tr>`;
       const pageButtons = [`<button class="asset-page-btn" type="button" data-model-page="${currentModelPage - 1}" aria-label="上一页" ${currentModelPage === 1 ? "disabled" : ""}>‹</button>`];
       for (let page = 1; page <= totalPages; page += 1) pageButtons.push(`<button class="asset-page-btn ${page === currentModelPage ? "active" : ""}" type="button" data-model-page="${page}" ${page === currentModelPage ? 'aria-current="page"' : ""}>${page}</button>`);
@@ -10050,6 +10122,22 @@
       activeModelTab = "all";
       currentModelPage = 1;
       renderModels();
+    }
+
+    function deleteModel(modelId) {
+      const model = mockModels.find(item => item.id === modelId);
+      if (!model) return;
+      openConfirmModal({
+        title: "删除模型",
+        desc: `确定删除「${model.name}」吗？删除后无法恢复。`,
+        confirmText: "确认删除",
+        onConfirm: () => {
+          mockModels = mockModels.filter(item => item.id !== modelId);
+          currentModelPage = 1;
+          renderModels();
+          showToast(`已删除「${model.name}」。`);
+        }
+      });
     }
 
     function openModelEditor(modelId = "") {
@@ -10637,13 +10725,7 @@
       if (!user) return closeQuotaUserDetail();
       const role = userRoleMeta[user.role] || { label: "普通用户", className: "viewer" };
       const metrics = getQuotaMetrics(user);
-      const recentRecords = [
-        ["2026-08-10 15:20:30", "商品主图生成", "GPT Image", 0.2],
-        ["2026-08-10 14:30:15", "详情图生成", "GPT Image", 0.3],
-        ["2026-08-09 18:20:50", "Agent 任务", "GPT-4o", 1.5],
-        ["2026-08-09 10:10:05", "商品场景图生成", "GPT Image", 0.25],
-        ["2026-08-08 16:40:22", "视频生成", "Seedance 1.0", 2.5]
-      ];
+      const recentRecords = getQuotaUsageRecords(user).slice(0, 5);
 
       $("#quotaDetailAvatar").textContent = user.avatar || user.name.slice(0, 1);
       $("#quotaDetailName").textContent = user.name;
@@ -10659,9 +10741,92 @@
       $("#quotaDetailRecordBody").innerHTML = recentRecords.map(record => `<tr><td>${record[0]}</td><td>${record[1]}</td><td>${record[2]}</td><td>${formatQuotaMoney(record[3])}</td></tr>`).join("");
     }
 
+    function getQuotaUsageRecords(user) {
+      const base = [
+        ["2026-08-10 15:20:30", "商品主图生成", "GPT Image", 0.2],
+        ["2026-08-10 14:30:15", "详情图生成", "GPT Image", 0.3],
+        ["2026-08-09 18:20:50", "Agent 任务", "GPT-4o", 1.5],
+        ["2026-08-09 10:10:05", "商品场景图生成", "GPT Image", 0.25],
+        ["2026-08-08 16:40:22", "视频生成", "Seedance 1.0", 2.5],
+        ["2026-08-08 11:25:48", "图片编辑", "GPT Image", 0.35],
+        ["2026-08-07 17:05:12", "Agent 任务", "GPT-4o", 1.2],
+        ["2026-08-07 09:42:07", "商品白底图生成", "GPT Image", 0.2],
+        ["2026-08-06 15:18:36", "视频生成", "Seedance 1.0", 2.5],
+        ["2026-08-05 13:02:19", "详情图生成", "GPT Image", 0.3],
+        ["2026-08-04 10:36:41", "商品主图生成", "GPT Image", 0.2],
+        ["2026-08-03 16:12:28", "图片编辑", "GPT Image", 0.35],
+        ["2026-08-02 14:50:09", "视频生成", "Seedance 1.0", 2.5],
+        ["2026-08-01 11:24:33", "Agent 任务", "GPT-4o", 1.35],
+        ["2026-07-31 09:18:55", "商品场景图生成", "GPT Image", 0.25]
+      ];
+      return base.map(record => [record[0], record[1], record[2], record[3]]);
+    }
+
+    function renderQuotaUsageRecords() {
+      const user = mockUsers.find(item => item.id === activeQuotaUsageRecordsUserId);
+      if (!user) return closeQuotaUsageRecords();
+      const { startDate, endDate, type, keyword } = quotaUsageRecordFilters;
+      const records = getQuotaUsageRecords(user).filter(record => {
+        const day = record[0].slice(0, 10);
+        const content = `${record[1]} ${record[2]}`.toLowerCase();
+        const matchesType = type === "all"
+          || (type === "image" && (record[1].includes("图") || record[1].includes("图片")))
+          || (type === "video" && record[1].includes("视频"))
+          || (type === "agent" && record[1].includes("Agent"));
+        const matchesKeyword = !keyword || content.includes(keyword.toLowerCase());
+        return (!startDate || day >= startDate) && (!endDate || day <= endDate) && matchesType && matchesKeyword;
+      });
+      const pageSize = Number($("#quotaUsageRecordPageSize").value) || 10;
+      const totalPages = Math.max(1, Math.ceil(records.length / pageSize));
+      currentQuotaUsageRecordPage = Math.min(Math.max(1, currentQuotaUsageRecordPage), totalPages);
+      const pageRecords = records.slice((currentQuotaUsageRecordPage - 1) * pageSize, currentQuotaUsageRecordPage * pageSize);
+      $("#quotaUsageRecordBody").innerHTML = pageRecords.length
+        ? pageRecords.map(record => `<tr><td>${escapeHtml(record[0])}</td><td>${escapeHtml(record[1])}</td><td>${escapeHtml(record[2])}</td><td>${formatQuotaMoney(record[3])}</td></tr>`).join("")
+        : `<tr><td class="user-empty-row" colspan="4">暂无使用记录</td></tr>`;
+      const buttons = [`<button class="asset-page-btn" type="button" data-quota-usage-page="${currentQuotaUsageRecordPage - 1}" aria-label="上一页" ${currentQuotaUsageRecordPage === 1 ? "disabled" : ""}>‹</button>`];
+      for (let page = 1; page <= totalPages; page += 1) buttons.push(`<button class="asset-page-btn ${page === currentQuotaUsageRecordPage ? "active" : ""}" type="button" data-quota-usage-page="${page}" ${page === currentQuotaUsageRecordPage ? 'aria-current="page"' : ""}>${page}</button>`);
+      buttons.push(`<button class="asset-page-btn" type="button" data-quota-usage-page="${currentQuotaUsageRecordPage + 1}" aria-label="下一页" ${currentQuotaUsageRecordPage === totalPages ? "disabled" : ""}>›</button>`);
+      $("#quotaUsageRecordPageButtons").innerHTML = buttons.join("");
+    }
+
+    function openQuotaUsageRecords() {
+      const user = mockUsers.find(item => item.id === activeQuotaUserDetailId);
+      if (!user) return;
+      activeQuotaUsageRecordsUserId = user.id;
+      const role = userRoleMeta[user.role] || userRoleMeta.viewer;
+      Object.assign(quotaUsageRecordFilters, { startDate: "", endDate: "", type: "all", keyword: "" });
+      $("#quotaUsageRecordStartDate").value = "";
+      $("#quotaUsageRecordEndDate").value = "";
+      $("#quotaUsageRecordType").value = "all";
+      $("#quotaUsageRecordKeyword").value = "";
+      $("#quotaUsageRecordAvatar").textContent = user.avatar || user.name.slice(0, 1);
+      $("#quotaUsageRecordName").textContent = user.name;
+      $("#quotaUsageRecordMeta").textContent = `手机号：${maskUserMobile(user.mobile)}`;
+      $("#quotaUsageRecordRole").className = `user-role-badge ${role.className}`;
+      $("#quotaUsageRecordRole").textContent = role.label;
+      currentQuotaUsageRecordPage = 1;
+      $("#quotaUserDetailView").hidden = true;
+      $("#quotaUsageRecordView").hidden = false;
+      renderQuotaUsageRecords();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeQuotaUsageRecords() {
+      activeQuotaUsageRecordsUserId = null;
+      $("#quotaUsageRecordView").hidden = true;
+      if (activeQuotaUserDetailId) {
+        $("#quotaUserDetailView").hidden = false;
+        renderQuotaUserDetail();
+      } else {
+        $("#quotaManagementView").hidden = false;
+        renderQuotaManagement();
+      }
+    }
+
     function openQuotaUserDetail(userId) {
       if (!mockUsers.some(item => item.id === userId)) return;
       activeQuotaUserDetailId = userId;
+      activeQuotaUsageRecordsUserId = null;
       activeSettingsView = "quota";
       renderQuotaUserDetail();
       $("#quotaManagementView").hidden = true;
@@ -10670,12 +10835,15 @@
       $("#userDetailView").hidden = true;
       $("#roleDetailView").hidden = true;
       $("#quotaUserDetailView").hidden = false;
+      $("#quotaUsageRecordView").hidden = true;
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function closeQuotaUserDetail() {
       activeQuotaUserDetailId = null;
+      activeQuotaUsageRecordsUserId = null;
       $("#quotaUserDetailView").hidden = true;
+      $("#quotaUsageRecordView").hidden = true;
       $("#quotaManagementView").hidden = false;
       renderQuotaManagement();
     }
@@ -10881,6 +11049,7 @@
       saveNavigationState({ settingsView: view });
       activeUserDetailId = null;
       activeQuotaUserDetailId = null;
+      activeQuotaUsageRecordsUserId = null;
       activeOperationLogUserId = null;
       activeOperationRecordId = null;
       const draft = mockRoles.find(item => item.id === activeRoleDetailId && item.name === "");
@@ -10897,6 +11066,7 @@
       $("#operationLogDetailView").hidden = true;
       $("#operationConversationView").hidden = true;
       $("#quotaManagementView").hidden = view !== "quota";
+      $("#quotaUsageRecordView").hidden = true;
       $("#modelListView").hidden = view !== "models";
       $("#operationLogView").hidden = view !== "logs";
       $("#userListView").hidden = view !== "users";
@@ -13196,6 +13366,12 @@
       const modelActionButton = event.target.closest("[data-model-action]");
       if (modelActionButton) {
         if (modelActionButton.dataset.modelAction === "edit") openModelEditor(modelActionButton.dataset.modelId);
+        if (modelActionButton.dataset.modelAction === "delete") deleteModel(modelActionButton.dataset.modelId);
+        return;
+      }
+      const quotaUsageRecordsButton = event.target.closest("[data-quota-usage-records]");
+      if (quotaUsageRecordsButton) {
+        openQuotaUsageRecords();
         return;
       }
       const modelTabButton = event.target.closest("[data-model-tab]");
@@ -13229,6 +13405,12 @@
       if (quotaPageButton && !quotaPageButton.disabled) {
         currentQuotaPage = Number(quotaPageButton.dataset.quotaPage) || 1;
         renderQuotaManagement();
+        return;
+      }
+      const quotaUsageRecordPageButton = event.target.closest("[data-quota-usage-page]");
+      if (quotaUsageRecordPageButton && !quotaUsageRecordPageButton.disabled) {
+        currentQuotaUsageRecordPage = Number(quotaUsageRecordPageButton.dataset.quotaUsagePage) || 1;
+        renderQuotaUsageRecords();
         return;
       }
       const roleActionButton = event.target.closest("[data-role-action]");
@@ -14079,8 +14261,14 @@
     $("#operationLogDetailBack").addEventListener("click", closeOperationLogDetail);
     $("#operationConversationBack").addEventListener("click", closeOperationConversation);
     function applyOperationLogDetailFilters() {
-      operationLogDetailFilters.startDate = $("#operationLogDetailStartDate").value;
-      operationLogDetailFilters.endDate = $("#operationLogDetailEndDate").value;
+      const startDate = $("#operationLogDetailStartDate").value;
+      const endDate = $("#operationLogDetailEndDate").value;
+      if (startDate && endDate && startDate > endDate) {
+        showToast("开始日期不能晚于结束日期。");
+        return;
+      }
+      operationLogDetailFilters.startDate = startDate;
+      operationLogDetailFilters.endDate = endDate;
       operationLogDetailFilters.type = $("#operationLogDetailType").value;
       operationLogDetailFilters.keyword = $("#operationLogDetailKeyword").value.trim();
       currentOperationLogDetailPage = 1;
@@ -14090,13 +14278,22 @@
       event.preventDefault();
       applyOperationLogDetailFilters();
     });
-    ["#operationLogDetailStartDate", "#operationLogDetailEndDate", "#operationLogDetailType"].forEach(selector => {
-      $(selector).addEventListener("change", applyOperationLogDetailFilters);
-    });
-    $("#operationLogDetailKeyword").addEventListener("input", applyOperationLogDetailFilters);
     $("#operationLogDetailPageSize").addEventListener("change", () => {
       currentOperationLogDetailPage = 1;
       renderOperationLogDetail();
+    });
+    const operationDetailDateLatest = new Date().toISOString().slice(0, 10);
+    $("#operationLogDetailStartDate").max = operationDetailDateLatest;
+    $("#operationLogDetailEndDate").max = operationDetailDateLatest;
+    ["#operationLogDetailStartDate", "#operationLogDetailEndDate"].forEach(selector => {
+      const input = $(selector);
+      input.addEventListener("click", () => {
+        if (typeof input.showPicker === "function") input.showPicker();
+      });
+      input.addEventListener("change", () => {
+        $("#operationLogDetailStartDate").max = $("#operationLogDetailEndDate").value || operationDetailDateLatest;
+        $("#operationLogDetailEndDate").min = $("#operationLogDetailStartDate").value;
+      });
     });
     function applyQuotaFilters() {
       quotaSearchKeyword = $("#quotaUserSearch").value.trim();
@@ -14106,6 +14303,45 @@
     }
     $("#quotaSearchBtn").addEventListener("click", applyQuotaFilters);
     $("#quotaDetailBack").addEventListener("click", closeQuotaUserDetail);
+    $("#quotaUsageRecordBack").addEventListener("click", closeQuotaUsageRecords);
+    $("#quotaUsageRecordFilterForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const startDate = $("#quotaUsageRecordStartDate").value;
+      const endDate = $("#quotaUsageRecordEndDate").value;
+      if (startDate && endDate && startDate > endDate) {
+        showToast("开始日期不能晚于结束日期。");
+        return;
+      }
+      quotaUsageRecordFilters.startDate = startDate;
+      quotaUsageRecordFilters.endDate = endDate;
+      quotaUsageRecordFilters.type = $("#quotaUsageRecordType").value;
+      quotaUsageRecordFilters.keyword = $("#quotaUsageRecordKeyword").value.trim();
+      currentQuotaUsageRecordPage = 1;
+      renderQuotaUsageRecords();
+    });
+    $("#quotaUsageRecordReset").addEventListener("click", () => {
+      $("#quotaUsageRecordFilterForm").reset();
+      Object.assign(quotaUsageRecordFilters, { startDate: "", endDate: "", type: "all", keyword: "" });
+      currentQuotaUsageRecordPage = 1;
+      renderQuotaUsageRecords();
+    });
+    $("#quotaUsageRecordPageSize").addEventListener("change", () => {
+      currentQuotaUsageRecordPage = 1;
+      renderQuotaUsageRecords();
+    });
+    const quotaUsageRecordDateLatest = new Date().toISOString().slice(0, 10);
+    $("#quotaUsageRecordStartDate").max = quotaUsageRecordDateLatest;
+    $("#quotaUsageRecordEndDate").max = quotaUsageRecordDateLatest;
+    ["#quotaUsageRecordStartDate", "#quotaUsageRecordEndDate"].forEach(selector => {
+      const input = $(selector);
+      input.addEventListener("click", () => {
+        if (typeof input.showPicker === "function") input.showPicker();
+      });
+      input.addEventListener("change", () => {
+        $("#quotaUsageRecordStartDate").max = $("#quotaUsageRecordEndDate").value || quotaUsageRecordDateLatest;
+        $("#quotaUsageRecordEndDate").min = $("#quotaUsageRecordStartDate").value;
+      });
+    });
     $("#quotaDetailAdjust").addEventListener("click", () => {
       if (activeQuotaUserDetailId) adjustUserQuota(activeQuotaUserDetailId);
     });
