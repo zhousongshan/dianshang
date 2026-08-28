@@ -827,52 +827,88 @@
     }
 
     /* =========================
-       首页
+       灵感
     ========================= */
     #page-home {
       min-height: calc(100vh - var(--topbar) - 56px);
+      margin-left: -4px;
     }
 
-    .home-placeholder {
-      display: grid;
-      min-height: calc(100vh - var(--topbar) - 70px);
-      place-items: center;
-      border: 1px dashed #d8deeb;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.72);
+    .inspiration-page { max-width: none; margin: 0; }
+    .inspiration-toolbar { position: relative; display: flex; align-items: center; gap: 8px; min-height: 54px; margin: -8px 0 0; padding: 7px 0; background: transparent; z-index: 8; }
+    .inspiration-filter-tab { display: inline-flex; height: 40px; align-items: center; padding: 0 14px; border: 0; border-radius: 8px; color: #667085; background: transparent; outline: 0; font-size: 14px; font-weight: 650; white-space: nowrap; }
+    .inspiration-filter-tab:hover,
+    .inspiration-filter-tab.active,
+    .inspiration-category-trigger[aria-expanded="true"] { color: #182230; background: #e9eaec; }
+    .inspiration-filter-tab:focus-visible { box-shadow: 0 0 0 2px rgba(102, 112, 133, .18); }
+    .inspiration-dropdown-trigger { gap: 8px; }
+    .inspiration-dropdown-trigger::after { width: 7px; height: 7px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; content: ""; transform: rotate(45deg); transition: transform .16s ease; }
+    .inspiration-dropdown-trigger[aria-expanded="true"]::after { margin-top: 4px; transform: rotate(225deg); }
+    .inspiration-media-switch { position: relative; display: grid; grid-template-columns: repeat(2, 58px); height: 38px; padding: 3px; border: 1px solid #e0e4ea; border-radius: 9px; background: #f0f2f5; }
+    .inspiration-media-switch::before { position: absolute; top: 3px; left: 3px; width: 58px; height: 30px; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(16, 24, 40, .12); content: ""; transition: transform .2s ease; }
+    .inspiration-media-switch[data-kind="video"]::before { transform: translateX(58px); }
+    .inspiration-media-option { position: relative; z-index: 1; display: grid; min-width: 58px; place-items: center; padding: 0 12px; border: 0; border-radius: 6px; color: #7b8493; background: transparent; font-size: 13px; font-weight: 650; cursor: pointer; transition: color .16s ease; }
+    .inspiration-media-option:hover { color: #344054; }
+    .inspiration-media-option.active { color: #182230; }
+    .inspiration-media-option:focus-visible { outline: 2px solid rgba(102, 112, 133, .3); outline-offset: -2px; }
+    .inspiration-search { position: relative; width: min(312px, 32vw); margin-left: 14px; }
+    .inspiration-search::before { position: absolute; top: 12px; left: 13px; width: 10px; height: 10px; border: 1.5px solid #8b95a7; border-radius: 50%; content: ""; pointer-events: none; }
+    .inspiration-search::after { position: absolute; top: 22px; left: 23px; width: 6px; height: 1.5px; background: #8b95a7; content: ""; pointer-events: none; transform: rotate(45deg); transform-origin: left center; }
+    .inspiration-search input { width: 100%; height: 38px; padding: 0 38px; border: 1px solid #dfe4eb; border-radius: 7px; color: #344054; background: #fff; outline: 0; font-size: 13px; }
+    .inspiration-search input:focus { border-color: #a8b0bd; box-shadow: 0 0 0 3px rgba(52, 64, 84, .07); }
+    .inspiration-search-clear { position: absolute; top: 7px; right: 7px; display: none; width: 24px; height: 24px; place-items: center; border: 0; border-radius: 5px; color: #7a8495; background: #f1f3f6; font-size: 16px; line-height: 1; }
+    .inspiration-search.has-value .inspiration-search-clear { display: grid; }
+
+    .inspiration-category-panel { display: none; margin: 0 0 14px; padding: 12px 0 14px; border-bottom: 1px solid #e5e8ee; }
+    .inspiration-category-panel.open { display: block; animation: inspiration-panel-in .18s ease; }
+    @keyframes inspiration-panel-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .inspiration-category-list { display: flex; flex-wrap: wrap; gap: 10px; }
+    .inspiration-category-item { display: grid; width: 92px; min-height: 88px; place-items: center; align-content: center; gap: 7px; padding: 8px 5px; border: 1px solid transparent; border-radius: 7px; color: #667085; background: transparent; font-size: 12px; }
+    .inspiration-category-item:hover { color: #344054; background: #f0f2f5; }
+    .inspiration-category-item.active { color: #182230; border-color: #d9dee7; background: #fff; box-shadow: 0 5px 15px rgba(16, 24, 40, .06); font-weight: 760; }
+    .inspiration-category-logo { display: block; width: 46px; height: 46px; overflow: hidden; border: 1px solid rgba(16, 24, 40, .08); border-radius: 50%; background: #eef1f4; object-fit: cover; }
+    .inspiration-category-logo.all { position: relative; display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; padding: 8px; background: #fff; }
+    .inspiration-category-logo.all i { display: block; border-radius: 3px; }
+    .inspiration-category-logo.all i:nth-child(1) { background: #8ddcc5; }
+    .inspiration-category-logo.all i:nth-child(2) { background: #ffca6d; }
+    .inspiration-category-logo.all i:nth-child(3) { background: #8fb7f4; }
+    .inspiration-category-logo.all i:nth-child(4) { background: #ef9baa; }
+
+    .inspiration-waterfall { columns: 5 220px; column-gap: 12px; }
+    .inspiration-card { position: relative; break-inside: avoid; overflow: hidden; margin: 0 0 12px; border-radius: 7px; background: #e9edf2; }
+    .inspiration-card img { display: block; width: 100%; aspect-ratio: var(--inspiration-ratio, 4 / 5); object-fit: cover; transition: transform .24s ease; }
+    .inspiration-card:hover img { transform: scale(1.018); }
+    .inspiration-card-overlay { position: absolute; inset: auto 0 0; display: flex; min-height: 84px; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 28px 11px 10px; color: #fff; background: linear-gradient(180deg, transparent, rgba(10, 15, 25, .76)); opacity: 0; transition: opacity .18s ease; pointer-events: none; }
+    .inspiration-card:hover .inspiration-card-overlay,
+    .inspiration-card:focus-within .inspiration-card-overlay { opacity: 1; }
+    .inspiration-card-copy { min-width: 0; }
+    .inspiration-card-copy strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .inspiration-card-copy span { display: block; overflow: hidden; margin-top: 3px; color: rgba(255, 255, 255, .76); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .inspiration-card-tools { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .inspiration-card-tool { position: absolute; right: 9px; display: grid; width: 36px; height: 36px; place-items: center; padding: 0; border: 0; border-radius: 0; color: #fff; background: transparent; box-shadow: none; font-weight: 700; line-height: 1; text-shadow: 0 1px 5px rgba(16, 24, 40, .78); pointer-events: auto; transition: color .16s ease, transform .16s ease; }
+    .inspiration-card-tool:hover { color: #fff; background: transparent; transform: scale(1.06); }
+    .inspiration-card-download { bottom: 9px; font-size: 17px; }
+    .inspiration-card-favorite { top: 9px; display: inline-flex; width: auto; min-width: 56px; gap: 4px; padding: 0 7px; font-size: 26px; }
+    .inspiration-card-favorite-count { color: #fff; font-size: 9px; font-weight: 800; line-height: 1; text-shadow: 0 1px 3px rgba(16, 24, 40, .72); }
+    .inspiration-card-favorite i { font-style: normal; font-weight: 400; }
+    .inspiration-card-favorite:hover { color: #fff; background: transparent; }
+    .inspiration-card-favorite.active { color: #ff7188; background: transparent; }
+    .inspiration-empty { display: grid; min-height: 320px; place-items: center; color: #98a2b3; font-size: 13px; text-align: center; }
+
+    @media (max-width: 940px) {
+      #page-home { margin-left: 0; }
+      .inspiration-waterfall { columns: 3 190px; }
     }
 
-    .home-placeholder-inner {
-      max-width: 420px;
-      padding: 36px;
-      color: #98a2b3;
-      text-align: center;
-    }
-
-    .home-placeholder-icon {
-      display: grid;
-      width: 68px;
-      height: 68px;
-      margin: 0 auto 18px;
-      place-items: center;
-      border: 1px solid #e3dfff;
-      border-radius: 20px;
-      color: #6255e7;
-      background: linear-gradient(145deg, #f2efff, #fff);
-      font-size: 30px;
-      box-shadow: 0 12px 28px rgba(79, 70, 229, 0.08);
-    }
-
-    .home-placeholder h1 {
-      margin: 0;
-      color: #253044;
-      font-size: 22px;
-    }
-
-    .home-placeholder p {
-      margin: 10px 0 0;
-      color: #7f8a9d;
-      font-size: 14px;
+    @media (max-width: 640px) {
+      #page-home { margin-left: 0; }
+      .inspiration-toolbar { top: 0; flex-wrap: wrap; }
+      .inspiration-search { width: 100%; margin-left: 0; order: 3; }
+      .inspiration-category-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .inspiration-category-item { width: 100%; }
+      .inspiration-waterfall { columns: 2 140px; column-gap: 8px; }
+      .inspiration-card { margin-bottom: 8px; }
+      .inspiration-card-overlay { opacity: 1; }
     }
 
     .hero {
@@ -1490,16 +1526,60 @@
       width: min(1200px, 94vw);
       height: min(860px, 90vh);
       place-items: center;
+      overflow: hidden;
+      border-radius: 10px;
       animation: popIn 0.2s ease;
     }
 
-    .image-preview-dialog img {
+    .image-preview-stage {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      place-items: center;
+    }
+
+    .image-preview-stage img {
       display: block;
       width: 100%;
       height: 100%;
       border-radius: 8px;
       object-fit: contain;
     }
+
+    .image-preview-mask.inspiration-mode {
+      background: #f4f5f7;
+      backdrop-filter: none;
+    }
+
+    .image-preview-dialog.has-details {
+      width: min(1500px, 96vw);
+      height: min(900px, 92vh);
+      grid-template-columns: minmax(0, 1fr) 380px;
+      place-items: stretch;
+      overflow: visible;
+      border: 1px solid #e1e5eb;
+      background: #eef1f4;
+      box-shadow: 0 24px 70px rgba(16, 24, 40, .14);
+    }
+
+    .image-preview-dialog.has-details .image-preview-stage { overflow: hidden; padding: 22px; border-radius: 10px 0 0 10px; }
+    .image-preview-dialog.has-details .image-preview-stage img { border-radius: 7px; }
+    .image-preview-details { min-width: 0; padding: 24px 25px 30px; overflow-y: auto; border-left: 1px solid #e2e6ec; border-radius: 0 10px 10px 0; background: #fff; }
+    .image-preview-profile { display: flex; align-items: center; gap: 10px; }
+    .image-preview-avatar { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #344054; background: #edf0f4; font-size: 13px; font-weight: 800; }
+    .image-preview-profile-copy { display: grid; min-width: 0; gap: 2px; }
+    .image-preview-profile-copy strong { overflow: hidden; color: #182230; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .image-preview-profile-copy span { color: #98a2b3; font-size: 11px; }
+    .image-preview-favorite { display: inline-flex; height: 36px; align-items: center; gap: 6px; margin-left: auto; padding: 0 10px; border: 0; border-radius: 7px; color: #667085; background: #f4f5f7; font-size: 12px; font-weight: 750; }
+    .image-preview-favorite span:first-child { display: inline-block; font-size: 22px; line-height: 1; }
+    .image-preview-favorite.active { color: #e54862; }
+    .image-preview-details h2 { margin: 22px 0 6px; color: #182230; font-size: 18px; line-height: 1.45; letter-spacing: 0; }
+    .image-preview-meta { display: flex; flex-wrap: wrap; gap: 7px; color: #98a2b3; font-size: 11px; }
+    .image-preview-divider { height: 1px; margin: 20px 0; background: #eceff3; }
+    .image-preview-prompt-label { display: block; margin-bottom: 10px; color: #98a2b3; font-size: 12px; font-weight: 700; }
+    .image-preview-prompt { margin: 0; color: #344054; font-size: 13px; line-height: 1.85; white-space: pre-wrap; }
 
     .image-preview-close {
       position: fixed;
@@ -1517,6 +1597,16 @@
       font-size: 28px;
       line-height: 1;
       cursor: pointer;
+    }
+
+    .image-preview-mask.inspiration-mode .image-preview-close { position: absolute; top: -42px; right: -42px; width: 34px; height: 34px; color: #475467; background: rgba(255, 255, 255, .92); box-shadow: 0 3px 12px rgba(16, 24, 40, .1); font-size: 22px; }
+
+    @media (max-width: 760px) {
+      .image-preview-mask { padding: 12px; }
+      .image-preview-dialog.has-details { height: 94vh; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(220px, 38vh); }
+      .image-preview-dialog.has-details .image-preview-stage { padding: 12px; }
+      .image-preview-details { padding: 18px; border-top: 1px solid #e2e6ec; border-left: 0; }
+      .image-preview-mask.inspiration-mode .image-preview-close { top: 8px; right: 8px; }
     }
 
     [data-image-preview] {
@@ -8410,11 +8500,11 @@
       </div>
 
       <nav class="nav" aria-label="主导航">
-        <button class="nav-btn active" data-page="home" title="首页">
+        <button class="nav-btn active" data-page="home" title="灵感">
           <span class="nav-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 10.8 12 3l9 7.8v8.4a1.8 1.8 0 0 1-1.8 1.8H4.8A1.8 1.8 0 0 1 3 19.2v-8.4Z" stroke="currentColor" stroke-width="2"/><path d="M9 21v-7h6v7" stroke="currentColor" stroke-width="2"/></svg>
           </span>
-          <span>首页</span>
+          <span>灵感</span>
         </button>
         <button class="nav-btn" data-page="workflows" title="智能创作">
           <span class="nav-icon" aria-hidden="true">
@@ -8476,12 +8566,48 @@
       </header>
 
       <div class="content">
-        <!-- 首页：当前阶段仅保留产品占位 -->
+        <!-- 灵感：按品类浏览用户生成作品 -->
         <section id="page-home" class="page active">
-          <div class="home-placeholder">
-            <div class="home-placeholder-inner">
-              <h1>需求待完善</h1>
+          <div class="inspiration-page">
+            <div class="inspiration-toolbar">
+              <button class="inspiration-filter-tab inspiration-dropdown-trigger inspiration-category-trigger" id="inspirationCategoryTrigger" type="button" aria-expanded="false" aria-controls="inspirationCategoryPanel"><span id="inspirationCategoryLabel">全部</span></button>
+              <div class="inspiration-media-switch" id="inspirationMediaSwitch" data-kind="image" role="tablist" aria-label="筛选媒体类型">
+                <button class="inspiration-media-option active" type="button" data-inspiration-media="image" role="tab" aria-selected="true">图片</button>
+                <button class="inspiration-media-option" type="button" data-inspiration-media="video" role="tab" aria-selected="false">视频</button>
+              </div>
+              <label class="inspiration-search" id="inspirationSearchWrap">
+                <input id="inspirationSearch" type="search" placeholder="搜索作品或品类" autocomplete="off" aria-label="搜索灵感作品" />
+                <button class="inspiration-search-clear" id="inspirationSearchClear" type="button" aria-label="清空搜索">×</button>
+              </label>
             </div>
+
+            <div class="inspiration-category-panel" id="inspirationCategoryPanel">
+              <div class="inspiration-category-list" role="listbox" aria-label="选择商品品类">
+                <button class="inspiration-category-item active" type="button" data-inspiration-category="全部" role="option" aria-selected="true">
+                  <span class="inspiration-category-logo all" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>全部</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="盲盒" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./login-assets-v4/carousel-fairy-tale.png" alt="" /><span>盲盒</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="ckw毛绒" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./login-assets-v2/teddy-after-photo.png" alt="" /><span>ckw毛绒</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="其他毛绒" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./watch-product.png" alt="" /><span>其他毛绒</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="数码香薰" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./login-assets-v4/carousel-diffuser.png" alt="" /><span>数码香薰</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="生活百货" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./login-assets-v2/home.png" alt="" /><span>生活百货</span>
+                </button>
+                <button class="inspiration-category-item" type="button" data-inspiration-category="TME" role="option" aria-selected="false">
+                  <img class="inspiration-category-logo" src="./login-assets-v2/poster.png" alt="" /><span>TME</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="inspiration-waterfall" id="inspirationWaterfall"></div>
           </div>
         </section>
 
@@ -10125,9 +10251,21 @@
   </div>
 
   <div class="modal-mask image-preview-mask" id="imagePreviewModal" role="dialog" aria-modal="true" aria-label="图片预览">
-    <div class="image-preview-dialog">
+    <div class="image-preview-dialog" id="imagePreviewDialog">
       <button class="image-preview-close" type="button" data-close-image-preview aria-label="关闭图片预览">×</button>
-      <img id="imagePreviewContent" src="" alt="图片预览" />
+      <div class="image-preview-stage"><img id="imagePreviewContent" src="" alt="图片预览" /></div>
+      <aside class="image-preview-details" id="imagePreviewDetails" hidden>
+        <div class="image-preview-profile">
+          <span class="image-preview-avatar" id="imagePreviewAvatar"></span>
+          <span class="image-preview-profile-copy"><strong id="imagePreviewCreator"></strong><span>AI 生成作品</span></span>
+          <button class="image-preview-favorite" id="imagePreviewFavorite" type="button" aria-label="收藏当前作品"></button>
+        </div>
+        <h2 id="imagePreviewTitle"></h2>
+        <div class="image-preview-meta" id="imagePreviewMeta"></div>
+        <div class="image-preview-divider"></div>
+        <span class="image-preview-prompt-label">图片提示词</span>
+        <p class="image-preview-prompt" id="imagePreviewPrompt"></p>
+      </aside>
     </div>
   </div>
 
@@ -10393,6 +10531,25 @@
       { title: "分享有礼海报 D", tone: "purple", meta: "1:1 · 紫色礼品感 · PNG" }
     ];
 
+    const inspirationWorks = [
+      { id: "inspiration-1", title: "奇境盲盒系列视觉", category: "盲盒", image: "./login-assets-v4/carousel-fairy-tale.png", ratio: "3 / 2", model: "智能生图", prompt: "梦幻童话森林中的盲盒系列产品，主体完整居中，周围点缀发光植物、细小星光与柔和薄雾，蓝绿色与暖金色形成层次，精致商业插画质感，画面干净，保留商品包装和角色细节。" },
+      { id: "inspiration-2", title: "夏日兔子主题场景", category: "盲盒", image: "./login-assets-v4/rabbit-hero.png", ratio: "16 / 9", model: "智能生图", prompt: "可爱兔子角色置于清爽夏日花园，明亮自然光，浅蓝天空与鲜绿色草地，角色保持原始造型和比例，镜头略微低角度，活泼轻盈的广告画面，细节清晰。" },
+      { id: "inspiration-3", title: "毛绒玩具卧室场景", category: "ckw毛绒", image: "./login-assets-v2/teddy-after-photo.png", ratio: "4 / 3", model: "场景生成", prompt: "毛绒玩具坐在温暖卧室的床边，奶油色床品和柔和木质家具，清晨侧光，绒毛纹理清晰自然，主体外观与参考商品一致，治愈、安静、真实摄影质感。" },
+      { id: "inspiration-4", title: "毛绒主体精修图", category: "ckw毛绒", image: "./login-assets-v2/teddy-after.png", ratio: "1 / 1", model: "商品精修", prompt: "保留毛绒玩具的真实外形、颜色和五官比例，清理杂乱背景与边缘，增强绒毛细节和柔和体积光，主体居中，干净高级的电商精修效果，不改变商品结构。" },
+      { id: "inspiration-5", title: "毛绒主体原始构图", category: "ckw毛绒", image: "./login-assets-v2/teddy-before-photo.png", ratio: "4 / 3", model: "主体识别", prompt: "识别并完整保留画面中的毛绒玩具主体，校正透视与构图，保持真实颜色、五官、配件和绒毛纹理，为后续场景生成提供清晰稳定的商品参考。" },
+      { id: "inspiration-6", title: "毛绒商品展示图", category: "其他毛绒", image: "./watch-product.png", ratio: "1 / 1", model: "商品场景", prompt: "毛绒商品置于简洁的生活方式场景，柔和漫射光，浅灰与白色背景，主体完整清晰，突出材质触感和可爱轮廓，商业产品摄影，高级但自然。" },
+      { id: "inspiration-7", title: "毛绒玩具白底主图", category: "其他毛绒", image: "./login-assets-v2/teddy-before.png", ratio: "1 / 1", model: "白底主图", prompt: "毛绒玩具电商白底主图，纯白背景，主体正面居中且完整，轮廓边缘干净，柔和自然投影，颜色准确，绒毛细节清楚，不添加额外道具。" },
+      { id: "inspiration-8", title: "智能香薰氛围场景", category: "数码香薰", image: "./login-assets-v4/carousel-diffuser.png", ratio: "3 / 2", model: "氛围生图", prompt: "智能香薰设备放置在现代极简客厅边几上，暖色暮光与轻柔水雾，材质反射克制，背景有绿植和浅色织物，突出安静舒缓的使用氛围，真实商业摄影。" },
+      { id: "inspiration-9", title: "数码产品质感海报", category: "数码香薰", image: "./login-assets-v2/digital.png", ratio: "3 / 4", model: "商品海报", prompt: "数码产品竖版质感海报，产品悬浮于深浅对比的简洁空间，边缘轮廓光与细腻金属反射，构图利落，留出标题区域，科技感但不过度炫光。" },
+      { id: "inspiration-10", title: "家居生活场景图", category: "生活百货", image: "./login-assets-v2/home.png", ratio: "3 / 4", model: "场景生成", prompt: "生活百货商品置于明亮整洁的现代家居空间，自然窗光，浅色木材与白色织物，画面松弛真实，产品清晰可辨，适合社交媒体种草内容。" },
+      { id: "inspiration-11", title: "食品饮料推广图", category: "生活百货", image: "./login-assets-v2/food.png", ratio: "3 / 4", model: "营销主图", prompt: "食品饮料竖版推广图，产品包装正面清晰，周围搭配新鲜原料与轻盈水珠，明快自然光，颜色饱满但真实，构图具有食欲感和电商传播力。" },
+      { id: "inspiration-12", title: "日用商品细节展示", category: "生活百货", image: "./login-assets-v2/detail.png", ratio: "3 / 4", model: "细节增强", prompt: "日用商品局部细节特写，微距镜头突出材质、纹理与工艺边缘，柔和侧光形成层次，背景简洁虚化，真实清晰的高端产品摄影。" },
+      { id: "inspiration-13", title: "音乐主题活动海报", category: "TME", image: "./login-assets-v2/poster.png", ratio: "3 / 4", model: "海报生成", prompt: "音乐主题竖版活动海报，鲜明舞台灯光、节奏感图形与清晰视觉中心，现代潮流排版，预留活动标题和日期信息区域，高对比但保持内容可读。" },
+      { id: "inspiration-14", title: "艺人潮流视觉", category: "TME", image: "./login-assets-v2/fashion.png", ratio: "3 / 4", model: "风格创作", prompt: "艺人潮流杂志视觉，人物主体清晰，现代时装造型，硬朗侧光与克制高对比配色，背景使用简洁几何结构，时尚编辑摄影质感，竖版构图。" }
+    ];
+    const inspirationVideoWorkIds = new Set(["inspiration-2", "inspiration-3", "inspiration-8", "inspiration-13"]);
+    const inspirationDiscoverProfiles = ["运营账号01", "视觉设计师", "商品编辑", "内容编辑", "品牌运营", "活动策划"];
+
     let currentMode = "agent";
     let selectedWorkflowType = "image";
     let currentAgentName = "电商内容创作 Agent";
@@ -10493,6 +10650,13 @@
     let videoPrimaryFlow = null;
     let videoCreativeChoiceState = null;
     let videoRoundSequence = 0;
+    const INSPIRATION_FAVORITES_KEY = "superai-inspiration-favorites";
+    const inspirationFavoriteIds = new Set();
+    let activeInspirationPreviewId = "";
+    let activeInspirationKind = "image";
+    let inspirationCategoryPinned = false;
+    let inspirationCategoryCloseTimer = null;
+    let activeInspirationCategory = "全部";
     const VIDEO_SUBJECT_VIEW_OPTIONS = [
       { value: "front", label: "正面", className: "view-front" },
       { value: "left45", label: "左45°", className: "view-left45" },
@@ -12489,6 +12653,119 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function setInspirationCategoryPanel(open) {
+      const trigger = $("#inspirationCategoryTrigger");
+      const panel = $("#inspirationCategoryPanel");
+      if (!trigger || !panel) return;
+      trigger.setAttribute("aria-expanded", String(open));
+      panel.classList.toggle("open", open);
+    }
+
+    function loadInspirationFavorites() {
+      for (const storage of getNavigationStorages()) {
+        try {
+          const saved = JSON.parse(storage.getItem(INSPIRATION_FAVORITES_KEY) || "[]");
+          if (!Array.isArray(saved)) continue;
+          saved.forEach(id => inspirationFavoriteIds.add(String(id)));
+          break;
+        } catch {
+          // 收藏状态不可用时保持默认状态。
+        }
+      }
+    }
+
+    function persistInspirationFavorites() {
+      const value = JSON.stringify([...inspirationFavoriteIds]);
+      getNavigationStorages().forEach(storage => {
+        try {
+          storage.setItem(INSPIRATION_FAVORITES_KEY, value);
+        } catch {
+          // file:// 环境可能不允许写入存储。
+        }
+      });
+    }
+
+    function toggleInspirationFavorite(workId) {
+      const work = inspirationWorks.find(item => item.id === workId);
+      if (!work) return;
+      const wasFavorite = inspirationFavoriteIds.has(workId);
+      if (wasFavorite) inspirationFavoriteIds.delete(workId);
+      else inspirationFavoriteIds.add(workId);
+      persistInspirationFavorites();
+      renderInspirationWorks();
+      if (activeInspirationPreviewId === workId) renderInspirationPreviewDetails(work);
+      showToast(wasFavorite ? "已取消收藏。" : `已收藏「${work.title}」。`);
+    }
+
+    function renderInspirationWorks() {
+      const host = $("#inspirationWaterfall");
+      const search = $("#inspirationSearch");
+      if (!host || !search) return;
+      const keyword = search.value.trim().toLowerCase();
+      const works = inspirationWorks.filter(work => {
+        const kind = inspirationVideoWorkIds.has(work.id) ? "video" : "image";
+        const matchesKind = kind === activeInspirationKind;
+        const matchesCategory = activeInspirationCategory === "全部" || work.category === activeInspirationCategory;
+        const matchesKeyword = !keyword || `${work.title} ${work.category} ${work.model}`.toLowerCase().includes(keyword);
+        return matchesKind && matchesCategory && matchesKeyword;
+      });
+
+      $("#inspirationSearchWrap").classList.toggle("has-value", Boolean(search.value));
+      host.innerHTML = works.length ? works.map(work => {
+        const kind = inspirationVideoWorkIds.has(work.id) ? "video" : "image";
+        const isFavorite = inspirationFavoriteIds.has(work.id);
+        const workNumber = Number(work.id.split("-").pop()) || 1;
+        const creator = inspirationDiscoverProfiles[(workNumber - 1) % inspirationDiscoverProfiles.length];
+        const favoriteCount = 38 + workNumber * 13 + (isFavorite ? 1 : 0);
+        return `<article class="inspiration-card" style="--inspiration-ratio:${escapeHtml(work.ratio)}">
+          <img data-image-preview data-inspiration-preview="${escapeHtml(work.id)}" src="${escapeHtml(work.image)}" alt="${escapeHtml(work.title)}" loading="lazy" />
+          <div class="inspiration-card-tools">
+            <button class="inspiration-card-tool inspiration-card-favorite ${isFavorite ? "active" : ""}" type="button" data-inspiration-favorite="${escapeHtml(work.id)}" title="${isFavorite ? "取消收藏" : "收藏"}" aria-label="${isFavorite ? "取消收藏" : "收藏"}${escapeHtml(work.title)}" aria-pressed="${isFavorite}"><i>${isFavorite ? "♥" : "♡"}</i><span class="inspiration-card-favorite-count">${favoriteCount}</span></button>
+            ${kind === "image" ? `<button class="inspiration-card-tool inspiration-card-download" type="button" data-inspiration-download="${escapeHtml(work.id)}" title="下载图片" aria-label="下载${escapeHtml(work.title)}">⇩</button>` : ""}
+          </div>
+          <div class="inspiration-card-overlay">
+            <div class="inspiration-card-copy"><strong>${escapeHtml(work.title)}</strong><span>${escapeHtml(creator)} · ${favoriteCount} 人收藏</span></div>
+          </div>
+        </article>`;
+      }).join("") : `<div class="inspiration-empty">没有找到匹配的收藏内容</div>`;
+    }
+
+    function selectInspirationKind(kind) {
+      activeInspirationKind = ["image", "video"].includes(kind) ? kind : "image";
+      $("#inspirationMediaSwitch").dataset.kind = activeInspirationKind;
+      $$("[data-inspiration-media]").forEach(button => {
+        const active = button.dataset.inspirationMedia === activeInspirationKind;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      renderInspirationWorks();
+    }
+
+    function clearInspirationCategoryCloseTimer() {
+      if (!inspirationCategoryCloseTimer) return;
+      clearTimeout(inspirationCategoryCloseTimer);
+      inspirationCategoryCloseTimer = null;
+    }
+
+    function scheduleInspirationCategoryClose() {
+      clearInspirationCategoryCloseTimer();
+      if (inspirationCategoryPinned) return;
+      inspirationCategoryCloseTimer = setTimeout(() => setInspirationCategoryPanel(false), 140);
+    }
+
+    function selectInspirationCategory(category) {
+      activeInspirationCategory = category || "全部";
+      $("#inspirationCategoryLabel").textContent = activeInspirationCategory;
+      $$("[data-inspiration-category]").forEach(button => {
+        const active = button.dataset.inspirationCategory === activeInspirationCategory;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      inspirationCategoryPinned = false;
+      setInspirationCategoryPanel(false);
+      renderInspirationWorks();
     }
 
     function getGenerationSettings() {
@@ -15025,14 +15302,49 @@
       ];
     }
 
-   function openImagePreview(src, alt = "图片预览") {
-     if (!src) return;
-     const previewImage = $("#imagePreviewContent");
-     previewImage.src = src;
-     previewImage.alt = alt;
-     $("#imagePreviewModal").classList.add("show");
-     document.body.style.overflow = "hidden";
-   }
+    function getInspirationWorkPresentation(work) {
+      const workNumber = Number(work.id.split("-").pop()) || 1;
+      const isFavorite = inspirationFavoriteIds.has(work.id);
+      return {
+        creator: inspirationDiscoverProfiles[(workNumber - 1) % inspirationDiscoverProfiles.length],
+        favoriteCount: 38 + workNumber * 13 + (isFavorite ? 1 : 0),
+        isFavorite
+      };
+    }
+
+    function renderInspirationPreviewDetails(work) {
+      const presentation = getInspirationWorkPresentation(work);
+      const favoriteButton = $("#imagePreviewFavorite");
+      $("#imagePreviewAvatar").textContent = presentation.creator.slice(0, 1);
+      $("#imagePreviewCreator").textContent = presentation.creator;
+      $("#imagePreviewTitle").textContent = work.title;
+      const displayRatio = work.ratio.replace(/\s*\/\s*/g, ":");
+      $("#imagePreviewMeta").innerHTML = `<span>${escapeHtml(work.category)}</span><span>·</span><span>${escapeHtml(work.model)}</span><span>·</span><span>${escapeHtml(displayRatio)}</span>`;
+      $("#imagePreviewPrompt").textContent = work.prompt || "暂无提示词";
+      favoriteButton.dataset.inspirationFavorite = work.id;
+      favoriteButton.classList.toggle("active", presentation.isFavorite);
+      favoriteButton.setAttribute("aria-pressed", String(presentation.isFavorite));
+      favoriteButton.setAttribute("aria-label", `${presentation.isFavorite ? "取消收藏" : "收藏"}${work.title}`);
+      favoriteButton.innerHTML = `<span aria-hidden="true">${presentation.isFavorite ? "♥" : "♡"}</span><span>${presentation.favoriteCount}</span>`;
+    }
+
+    function openImagePreview(src, alt = "图片预览", inspirationWork = null) {
+      if (!src) return;
+      const modal = $("#imagePreviewModal");
+      const dialog = $("#imagePreviewDialog");
+      const details = $("#imagePreviewDetails");
+      const previewImage = $("#imagePreviewContent");
+      previewImage.src = src;
+      previewImage.alt = alt;
+      activeInspirationPreviewId = inspirationWork?.id || "";
+      const hasDetails = Boolean(inspirationWork);
+      modal.classList.toggle("inspiration-mode", hasDetails);
+      dialog.classList.toggle("has-details", hasDetails);
+      details.hidden = !hasDetails;
+      if (inspirationWork) renderInspirationPreviewDetails(inspirationWork);
+      modal.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
 
     function downloadResource(url, filename = "下载素材") {
       if (!url) {
@@ -15053,7 +15365,11 @@
       const modal = $("#imagePreviewModal");
       if (!modal.classList.contains("show")) return;
       modal.classList.remove("show");
+      modal.classList.remove("inspiration-mode");
+      $("#imagePreviewDialog").classList.remove("has-details");
+      $("#imagePreviewDetails").hidden = true;
       $("#imagePreviewContent").src = "";
+      activeInspirationPreviewId = "";
       document.body.style.overflow = "";
     }
 
@@ -15635,6 +15951,55 @@
 
     // 全局事件委托：处理导航、按钮、弹窗、抽屉与筛选
     document.addEventListener("click", event => {
+      const inspirationCategoryTrigger = event.target.closest("#inspirationCategoryTrigger");
+      if (inspirationCategoryTrigger) {
+        inspirationCategoryPinned = !inspirationCategoryPinned;
+        setInspirationCategoryPanel(inspirationCategoryPinned);
+        return;
+      }
+
+      const inspirationMedia = event.target.closest("[data-inspiration-media]");
+      if (inspirationMedia) {
+        inspirationCategoryPinned = false;
+        setInspirationCategoryPanel(false);
+        selectInspirationKind(inspirationMedia.dataset.inspirationMedia);
+        return;
+      }
+
+      const inspirationCategory = event.target.closest("[data-inspiration-category]");
+      if (inspirationCategory) {
+        selectInspirationCategory(inspirationCategory.dataset.inspirationCategory);
+        return;
+      }
+
+      if (event.target.closest("#inspirationSearchClear")) {
+        $("#inspirationSearch").value = "";
+        renderInspirationWorks();
+        $("#inspirationSearch").focus();
+        return;
+      }
+
+      const inspirationFavorite = event.target.closest("[data-inspiration-favorite]");
+      if (inspirationFavorite) {
+        toggleInspirationFavorite(inspirationFavorite.dataset.inspirationFavorite);
+        return;
+      }
+
+      const inspirationDownload = event.target.closest("[data-inspiration-download]");
+      if (inspirationDownload) {
+        const work = inspirationWorks.find(item => item.id === inspirationDownload.dataset.inspirationDownload);
+        if (work) downloadResource(work.image, `${work.title}.png`);
+        return;
+      }
+
+      const inspirationRemix = event.target.closest("[data-inspiration-remix]");
+      if (inspirationRemix) {
+        const work = inspirationWorks.find(item => item.id === inspirationRemix.dataset.inspirationRemix);
+        showPage("workflows");
+        showToast(work ? `已选择「${work.title}」，请选择 Agent 继续创作。` : "请选择 Agent 继续创作。");
+        return;
+      }
+
       const videoGenerateButton = event.target.closest("#videoGenerateBtn");
      if (videoGenerateButton) {
        if (!videoGenerateButton.disabled) startVideoGeneration();
@@ -16329,7 +16694,10 @@
 
       const previewImage = event.target.closest("[data-image-preview]");
       if (previewImage) {
-        openImagePreview(previewImage.currentSrc || previewImage.src, previewImage.alt);
+        const inspirationWork = previewImage.dataset.inspirationPreview
+          ? inspirationWorks.find(work => work.id === previewImage.dataset.inspirationPreview)
+          : null;
+        openImagePreview(previewImage.currentSrc || previewImage.src, previewImage.alt, inspirationWork);
         return;
       }
 
@@ -16721,6 +17089,12 @@
       renderAssets();
     });
 
+    document.addEventListener("click", event => {
+      if (event.target.closest("#inspirationCategoryTrigger, #inspirationCategoryPanel")) return;
+      inspirationCategoryPinned = false;
+      setInspirationCategoryPanel(false);
+    });
+
     document.addEventListener("dragstart", event => {
       const card = event.target.closest("[data-drag-asset-kind]");
       if (!card) return;
@@ -16760,6 +17134,15 @@
       event.target.closest(".asset-card-lite")?.classList.remove("is-dragging");
       $$(".asset-folder-card.drag-over").forEach(folder => folder.classList.remove("drag-over"));
       draggingAsset = null;
+    });
+
+    $("#inspirationSearch").addEventListener("input", renderInspirationWorks);
+    [$("#inspirationCategoryTrigger"), $("#inspirationCategoryPanel")].forEach(element => {
+      element.addEventListener("mouseenter", () => {
+        clearInspirationCategoryCloseTimer();
+        setInspirationCategoryPanel(true);
+      });
+      element.addEventListener("mouseleave", scheduleInspirationCategoryClose);
     });
 
     $("#modalNext").addEventListener("click", () => {
@@ -17300,6 +17683,8 @@
     syncSessionGenerationSettings();
     renderImagePicker("main");
     renderImagePicker("session");
+    loadInspirationFavorites();
+    renderInspirationWorks();
     syncVideoCreationModeFromModel();
     renderVideoStartFrame();
     resetVideoArtifacts();
