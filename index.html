@@ -461,8 +461,10 @@
     .profile-form { display: grid; gap: 18px; }
     .profile-field { display: grid; gap: 8px; }
     .profile-field span { color: #344054; font-size: 13px; font-weight: 750; }
-    .profile-field input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 9px; outline: 0; }
-    .profile-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, .1); }
+    .profile-field input,
+    .profile-field select { width: 100%; height: 42px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 9px; outline: 0; background: #fff; color: var(--text); font: inherit; }
+    .profile-field input:focus,
+    .profile-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, .1); }
     .profile-field input[readonly] { color: #667085; background: #f6f7f9; cursor: default; }
     .profile-actions { display: flex; gap: 10px; margin-top: 22px; }
     .profile-actions .btn { flex: 1; }
@@ -1532,6 +1534,7 @@
     }
 
     .image-preview-stage {
+      position: relative;
       display: grid;
       width: 100%;
       height: 100%;
@@ -1566,6 +1569,11 @@
 
     .image-preview-dialog.has-details .image-preview-stage { overflow: hidden; padding: 22px; border-radius: 10px 0 0 10px; }
     .image-preview-dialog.has-details .image-preview-stage img { border-radius: 7px; }
+    .image-preview-nav { position: absolute; z-index: 3; top: 50%; display: grid; width: 54px; height: 54px; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #fff; background: #5d52e8; box-shadow: 0 10px 24px rgba(64,55,183,.34); font-size: 38px; font-weight: 500; line-height: .8; cursor: pointer; transform: translateY(-50%); }
+    .image-preview-nav:hover { background: #493ed0; box-shadow: 0 12px 28px rgba(64,55,183,.44); }
+    .image-preview-nav:focus-visible { outline: 4px solid rgba(93,82,232,.22); outline-offset: 4px; }
+    .image-preview-nav.previous { left: 26px; }
+    .image-preview-nav.next { right: 26px; }
     .image-preview-details { min-width: 0; padding: 24px 25px 30px; overflow-y: auto; border-left: 1px solid #e2e6ec; border-radius: 0 10px 10px 0; background: #fff; }
     .image-preview-profile { display: flex; align-items: center; gap: 10px; }
     .image-preview-avatar { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #344054; background: #edf0f4; font-size: 13px; font-weight: 800; }
@@ -1580,6 +1588,18 @@
     .image-preview-divider { height: 1px; margin: 20px 0; background: #eceff3; }
     .image-preview-prompt-label { display: block; margin-bottom: 10px; color: #98a2b3; font-size: 12px; font-weight: 700; }
     .image-preview-prompt { margin: 0; color: #344054; font-size: 13px; line-height: 1.85; white-space: pre-wrap; }
+    .image-preview-review-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid #eceff3; }
+    .image-preview-review-summary { display: none; gap: 8px; color: #475467; font-size: 14px; line-height: 1.8; }
+    .image-preview-review-summary span { display: block; }
+    .image-preview-mask.review-mode .image-preview-details { display: flex; flex-direction: column; }
+    .image-preview-mask.review-mode .image-preview-profile,
+    .image-preview-mask.review-mode .image-preview-details h2,
+    .image-preview-mask.review-mode .image-preview-meta,
+    .image-preview-mask.review-mode .image-preview-divider,
+    .image-preview-mask.review-mode .image-preview-prompt-label,
+    .image-preview-mask.review-mode .image-preview-prompt { display: none; }
+    .image-preview-mask.review-mode .image-preview-review-summary { display: grid; }
+    .image-preview-mask.review-mode .image-preview-review-actions { justify-content: center; margin-top: auto; padding-top: 20px; }
 
     .image-preview-close {
       position: fixed;
@@ -1606,6 +1626,9 @@
       .image-preview-dialog.has-details { height: 94vh; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(220px, 38vh); }
       .image-preview-dialog.has-details .image-preview-stage { padding: 12px; }
       .image-preview-details { padding: 18px; border-top: 1px solid #e2e6ec; border-left: 0; }
+      .image-preview-nav { width: 46px; height: 46px; font-size: 32px; }
+      .image-preview-nav.previous { left: 18px; }
+      .image-preview-nav.next { right: 18px; }
       .image-preview-mask.inspiration-mode .image-preview-close { top: 8px; right: 8px; }
     }
 
@@ -4918,6 +4941,9 @@
       font-size: 14px;
     }
 
+    .asset-type-filter { display: flex; align-items: center; gap: 10px; }
+    .asset-select-all-btn { min-height: 32px; padding: 0 12px; border-color: #d8d3ff; color: #554dcc; background: #faf9ff; font-size: 12px; }
+
     .asset-simple-grid,
     .asset-file-shell.is-favorite .asset-simple-grid {
       grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -4927,6 +4953,7 @@
     .simple-asset-card,
     .asset-card-lite,
     .asset-file-shell.is-favorite .asset-card-lite {
+      position: relative;
       grid-column: auto;
       width: 100%;
       max-width: none;
@@ -4954,6 +4981,16 @@
       font-weight: 800;
       backdrop-filter: blur(6px);
     }
+    .asset-review-badge {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      min-height: 0;
+      place-items: center;
+      padding: 0;
+      cursor: pointer;
+    }
+    .asset-review-badge input { width: 17px; height: 17px; margin: 0; accent-color: #6259dc; cursor: pointer; }
 
     .favorite-btn {
       right: 10px;
@@ -5245,6 +5282,8 @@
       .asset-search-pill { width: 100%; }
 
       .asset-filter-controls { justify-content: space-between; }
+
+      .asset-type-filter { width: auto; }
 
       .asset-simple-grid,
       .asset-file-shell.is-favorite .asset-simple-grid {
@@ -8489,6 +8528,274 @@
       .asset-selector-footer { gap: 12px; align-items: stretch; flex-direction: column; }
       .asset-selector-actions { justify-content: flex-end; }
     }
+    /* 人工审核 Demo */
+    .nav-btn .nav-count {
+      display: none;
+      min-width: 20px;
+      height: 20px;
+      margin-left: auto;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      border-radius: 999px;
+      color: #fff;
+      background: #635bdf;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .nav-btn .nav-count.show { display: inline-flex; }
+    #page-review { padding: 24px 28px 40px; }
+    .review-page-shell { width: 100%; margin: 0; }
+    .review-page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+    .review-page-heading h1 { margin: 0; color: #172033; font-size: 28px; line-height: 1.25; }
+    .review-page-heading p { margin: 7px 0 0; color: #7b8496; font-size: 14px; }
+    .review-workspace { overflow: hidden; border: 1px solid #e4e8f0; border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(28,39,65,.05); }
+    .employee-review-tabs { display: none; gap: 28px; padding: 0 22px; border-bottom: 1px solid #edf0f5; }
+    .employee-review-tab { position: relative; min-height: 54px; padding: 0 2px; border: 0; color: #7e8798; background: transparent; font: inherit; font-size: 14px; font-weight: 750; cursor: pointer; }
+    .employee-review-tab.active { color: #4f46c8; }
+    .employee-review-tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 3px; content: ""; border-radius: 3px 3px 0 0; background: #645be4; }
+    .review-toolbar { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #edf0f5; background: #fbfcfe; }
+    .review-search { position: relative; flex: 1; max-width: 340px; }
+    .review-search input,
+    .review-toolbar select { width: 100%; min-height: 38px; border: 1px solid #dfe4ed; border-radius: 9px; color: #344054; background: #fff; font: inherit; font-size: 13px; outline: none; }
+    .review-search input { padding: 0 13px; }
+    .review-toolbar select { width: 132px; padding: 0 10px; }
+    .review-search input:focus,
+    .review-toolbar select:focus { border-color: #8a82ee; box-shadow: 0 0 0 3px rgba(99,91,223,.1); }
+    .review-batch-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .review-batch-count { color: #5d6577; font-size: 13px; font-weight: 700; }
+    .review-list { min-height: 360px; }
+    .review-list-head,
+    .review-row { display: grid; grid-template-columns: 46px 132px minmax(180px, .8fr) minmax(190px, .9fr) 112px; align-items: center; gap: 20px; }
+    .review-list-head { min-height: 44px; padding: 0 20px; border-bottom: 1px solid #edf0f5; color: #8a93a3; font-size: 12px; font-weight: 700; }
+    .review-row { min-height: 140px; padding: 14px 24px; border-bottom: 1px solid #f0f2f6; transition: background .16s ease; }
+    .review-row:last-child { border-bottom: 0; }
+    .review-row:hover { background: #fafbff; }
+    .review-check { display: grid; place-items: center; }
+    .review-check input { width: 17px; height: 17px; accent-color: #6259dc; }
+    .review-item-main { min-width: 0; }
+    .review-thumb { width: 124px; height: 112px; overflow: hidden; border: 1px solid #e5e8ef; border-radius: 10px; background: #f5f6f8; cursor: zoom-in; }
+    .review-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .review-cell { min-width: 0; color: #596275; font-size: 13px; }
+    .review-cell strong { display: block; overflow: hidden; color: #3b4354; text-overflow: ellipsis; white-space: nowrap; }
+    .review-cell small { display: block; margin-top: 5px; color: #99a1af; font-size: 12px; }
+    .review-status { display: inline-flex; min-height: 27px; align-items: center; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .review-status.draft { color: #667085; background: #f1f3f6; }
+    .review-status.pending { color: #a35d00; background: #fff4d8; }
+    .review-status.approved { color: #16834a; background: #e9f8ef; }
+    .review-status.rejected { color: #c83c3c; background: #fff0ef; }
+    .review-mini-btn { min-height: 32px; padding: 0 10px; border: 1px solid #dfe4ed; border-radius: 8px; color: #4e576a; background: #fff; font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
+    .review-mini-btn:hover { border-color: #9a94ea; color: #554dcc; }
+    .review-mini-btn.approve { border-color: #cbead7; color: #16834a; background: #f2fbf5; }
+    .review-mini-btn.reject { border-color: #f1d0cd; color: #be3838; background: #fff7f6; }
+    .review-empty { display: grid; min-height: 360px; place-items: center; padding: 40px; text-align: center; }
+    .review-empty strong { color: #3a4354; font-size: 16px; }
+    .review-empty p { max-width: 420px; margin: 8px auto 0; color: #929baa; font-size: 13px; }
+    .review-page.employee-view .review-page-heading p,
+    .review-page.employee-view .review-list-head { display: none; }
+    .review-page.employee-view .employee-review-tabs { display: flex; }
+    .review-page.employee-view .review-workspace { box-shadow: 0 6px 20px rgba(28,39,65,.04); }
+    .review-page.employee-view .review-toolbar { display: none; }
+    .review-filter-control { display: inline-flex; align-items: center; gap: 9px; color: #5f6879; font-size: 13px; font-weight: 700; }
+    .review-page.employee-view .review-toolbar select { width: 148px; }
+    .review-page.employee-view .review-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 320px)); justify-content: start; gap: 20px; min-height: 0; padding: 22px; background: #fcfcfe; }
+    .employee-review-card { min-width: 0; }
+    .employee-review-image { position: relative; display: block; width: 100%; overflow: hidden; padding: 0; border: 1px solid #e6e9f0; border-radius: 11px; background: #f2f4f8; cursor: zoom-in; }
+    .employee-review-image img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform .2s ease; }
+    .employee-review-image:hover img { transform: scale(1.025); }
+    .employee-review-image:focus-visible { outline: 3px solid rgba(99,91,223,.28); outline-offset: 3px; }
+    .employee-review-time { display: block; margin-top: 9px; color: #7b8496; font-size: 12px; line-height: 1.45; }
+    .review-page.employee-view .review-empty { grid-column: 1 / -1; }
+    .review-page.manager-view .review-list-head { display: none; }
+    .review-page.manager-view .review-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 560px)); justify-content: start; gap: 16px; min-height: 0; padding: 20px; background: #fcfcfe; }
+    .review-page.manager-view .review-row { grid-template-columns: 30px 150px minmax(0, 1fr); gap: 16px; min-height: 150px; padding: 14px; border: 1px solid #e6e9f0; border-radius: 12px; background: #fff; }
+    .review-page.manager-view .review-row:last-child { border-bottom: 1px solid #e6e9f0; }
+    .review-page.manager-view .review-thumb { width: 150px; height: 120px; }
+    .review-card-info { display: grid; align-content: center; gap: 9px; min-width: 0; }
+    .review-card-info strong { overflow: hidden; color: #30394a; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+    .review-card-info small { color: #858e9e; font-size: 13px; }
+    .review-card-info .review-status { justify-self: start; }
+    .demo-identity-switch { padding: 9px 12px 11px; }
+    .demo-identity-switch > span { display: block; margin-bottom: 7px; color: #98a2b3; font-size: 11px; }
+    .demo-identity-options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .demo-identity-option { min-height: 32px; border: 1px solid #e3e7ee; border-radius: 7px; color: #667085; background: #fff; font: inherit; font-size: 12px; cursor: pointer; }
+    .demo-identity-option.active { border-color: #8d85ed; color: #554dcc; background: #f2f0ff; font-weight: 750; }
+    .generated-result-item { position: relative; }
+    .generated-review-select { position: absolute; z-index: 4; top: 10px; left: 10px; display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid rgba(255,255,255,.8); border-radius: 7px; background: rgba(255,255,255,.94); box-shadow: 0 2px 8px rgba(24,31,48,.15); }
+    .generated-review-select input { width: 16px; height: 16px; accent-color: #6259dc; }
+    .generated-review-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 3px; }
+    .generated-review-status small { overflow: hidden; color: #8a93a3; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .generated-actions .review-submit-btn { border-color: #8d86e8; color: #554dcc; background: #f5f4ff; }
+    .session-review-selection { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; padding: 12px 14px; border: 1px solid #dcd8ff; border-radius: 12px; background: #f7f6ff; box-shadow: 0 8px 22px rgba(61,53,148,.1); }
+    .session-review-selection[hidden] { display: none; }
+    .session-review-selection-copy { display: grid; gap: 3px; color: #4c456f; font-size: 12px; }
+    .session-review-selection-copy strong { color: #312b68; font-size: 14px; }
+    .session-review-selection-actions { display: flex; align-items: center; gap: 8px; }
+    .session-review-reviewer { display: flex; align-items: center; gap: 7px; color: #5d568f; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .session-review-reviewer select { min-width: 126px; height: 36px; padding: 0 30px 0 10px; border: 1px solid #d7d3f4; border-radius: 8px; color: #3f3973; background: #fff; font: inherit; outline: none; }
+    .session-review-reviewer select:focus { border-color: #8279e8; box-shadow: 0 0 0 3px rgba(99,91,223,.1); }
+    .session-review-selection .btn { min-height: 36px; }
+    .session-review-selection .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .review-modal { width: min(660px, 100%); }
+    .review-form-field { display: grid; gap: 8px; margin-top: 16px; color: #495164; font-size: 13px; font-weight: 750; }
+    .review-form-field select,
+    .review-form-field textarea { width: 100%; border: 1px solid #dfe4ed; border-radius: 9px; color: #344054; background: #fff; font: inherit; font-size: 14px; outline: none; }
+    .review-form-field select { min-height: 42px; padding: 0 12px; }
+    .review-form-field textarea { min-height: 110px; padding: 11px 12px; resize: vertical; }
+    .review-form-field select:focus,
+    .review-form-field textarea:focus { border-color: #8a82ee; box-shadow: 0 0 0 3px rgba(99,91,223,.1); }
+    .review-detail-dialog { position: relative; width: min(920px, calc(100vw - 40px)); max-height: 90vh; overflow: auto; padding: 22px; }
+    .review-preview-close { position: absolute; z-index: 2; top: 14px; right: 14px; }
+    .review-preview-stage { display: grid; grid-template-columns: 46px minmax(0, 1fr) 46px; align-items: center; gap: 14px; min-height: min(64vh, 620px); }
+    .review-preview-art { display: grid; max-height: min(64vh, 620px); place-items: center; overflow: hidden; border-radius: 12px; background: #111827; }
+    .review-preview-art img { display: block; max-width: 100%; max-height: min(64vh, 620px); object-fit: contain; }
+    .review-preview-switch { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #dfe4ed; border-radius: 50%; color: #4d5668; background: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+    .review-preview-switch:hover:not(:disabled) { border-color: #9690e9; color: #554dcc; }
+    .review-preview-switch:disabled { visibility: hidden; }
+    .review-preview-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 16px 0 2px; color: #5f6879; font-size: 14px; }
+    .review-preview-meta strong { color: #283244; }
+    .review-detail-dialog .modal-actions { min-height: 0; margin-top: 14px; padding: 0; border-top: 0; }
+    @media (max-width: 980px) {
+      #page-review { padding: 16px; }
+      .review-list-head { display: none; }
+      .review-row { grid-template-columns: 34px 108px minmax(0, 1fr); gap: 14px; }
+      .review-row > .review-cell { display: none; }
+      .review-list-head span:nth-child(n + 4) { display: none; }
+      .review-thumb { width: 104px; height: 96px; }
+    }
+    @media (max-width: 640px) {
+      .review-page-header { align-items: flex-start; flex-direction: column; }
+      .review-toolbar { align-items: stretch; flex-direction: column; }
+      .review-search { max-width: none; }
+      .review-toolbar select { width: 100%; }
+      .review-batch-actions { margin-left: 0; flex-wrap: wrap; }
+      .review-page.employee-view .review-toolbar { align-items: flex-end; }
+      .review-page.employee-view .review-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 14px; }
+      .employee-review-tabs { gap: 18px; padding: 0 16px; overflow-x: auto; }
+      .employee-review-tab { flex: 0 0 auto; }
+      .review-preview-stage { grid-template-columns: 34px minmax(0, 1fr) 34px; gap: 8px; min-height: auto; }
+      .review-preview-switch { width: 32px; height: 32px; font-size: 21px; }
+      .review-page.manager-view .review-list { grid-template-columns: 1fr; padding: 14px; }
+      .review-page.manager-view .review-row { grid-template-columns: 28px 104px minmax(0, 1fr); min-height: 122px; padding: 10px; }
+      .review-page.manager-view .review-thumb { width: 104px; height: 100px; }
+      .session-review-selection { align-items: stretch; flex-direction: column; }
+      .session-review-selection-actions { flex-wrap: wrap; }
+    }
+
+    /* 审核中心沿用资产库的页面节奏与素材墙样式 */
+    #page-review {
+      min-height: calc(100vh - var(--topbar));
+      padding: 28px 34px;
+    }
+    .review-page-header { margin-bottom: 18px; }
+    .review-page-heading h1 { color: #101828; font-size: 28px; font-weight: 900; }
+    .review-page-heading p { margin-top: 9px; color: #667085; font-size: 15px; }
+    .review-workspace { overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .employee-review-tabs {
+      gap: 28px;
+      min-height: 48px;
+      margin-bottom: 20px;
+      padding: 0;
+      border-bottom-color: #e4e7ee;
+    }
+    .employee-review-tab { padding: 0 18px; color: #475467; font-size: 15px; }
+    .review-toolbar { min-height: 44px; align-items: flex-start; padding: 0; border: 0; background: transparent; }
+    .review-search { flex: 0 1 360px; max-width: 360px; }
+    .review-search-stack { display: grid; flex: 0 1 360px; gap: 8px; }
+    .review-search-stack .review-search { display: block; width: 100%; max-width: none; }
+    .review-select-all-btn { min-height: 34px; justify-self: start; padding: 0 12px; border: 1px solid #cbc5ff; border-radius: 8px; color: #5147cf; background: #f5f3ff; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+    .review-select-all-btn:hover { border-color: #958bea; color: #4036ba; background: #eeebff; }
+    .review-select-all-btn:focus-visible { outline: 3px solid rgba(99, 91, 223, .24); outline-offset: 3px; border-radius: 3px; }
+    .review-search input,
+    .review-toolbar select {
+      min-height: 44px;
+      border-color: #dfe3ec;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(16, 24, 40, .04);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .review-search input { padding: 0 14px; }
+    .review-toolbar select { width: 180px; }
+    .review-filter-control { gap: 10px; color: #344054; font-weight: 800; }
+    .review-mini-btn { min-height: 44px; border-radius: 10px; font-size: 13px; }
+    .review-batch-actions { gap: 10px; }
+    .review-batch-actions .review-mini-btn { min-width: 96px; }
+    .review-list { margin-top: 20px; }
+    .review-page.employee-view .review-list {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+      padding: 0;
+      background: transparent;
+    }
+    .employee-review-card {
+      overflow: hidden;
+      border: 1px solid #e4e7ee;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(16, 24, 40, .06);
+    }
+    .employee-review-image { border: 0; border-radius: 0; }
+    .employee-review-image img { aspect-ratio: 1.4 / 1; }
+    .employee-review-time { margin: 0; padding: 11px 12px 13px; color: #667085; font-size: 12px; }
+    .review-page.manager-view .review-list {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+      padding: 0;
+      background: transparent;
+    }
+    .review-page.manager-view .review-row {
+      position: relative;
+      display: block;
+      min-height: 0;
+      padding: 0 12px 14px;
+      overflow: hidden;
+      border-color: #e4e7ee;
+      border-radius: 12px;
+      box-shadow: 0 8px 22px rgba(16, 24, 40, .06);
+    }
+    .review-page.manager-view .review-check { position: absolute; z-index: 2; top: 10px; left: 10px; }
+    .review-page.manager-view .review-check input { width: 18px; height: 18px; }
+    .review-page.manager-view .review-item-main { margin: 0 -12px; }
+    .review-page.manager-view .review-thumb { width: 100%; height: auto; border: 0; border-radius: 0; }
+    .review-page.manager-view .review-thumb img { aspect-ratio: 1.4 / 1; }
+    .review-card-info { position: relative; gap: 7px; padding-top: 12px; }
+    .review-card-info strong { font-size: 14px; }
+    .review-card-info small { font-size: 12px; }
+    .review-card-info .review-status { min-height: 24px; padding: 0 8px; border-radius: 6px; }
+    .review-page.manager-view .review-card-actions {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      display: flex;
+      gap: 8px;
+      transform: translateY(-50%);
+    }
+    .review-page.manager-view .review-card-actions .review-mini-btn {
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    @media (max-width: 1380px) {
+      .review-page.employee-view .review-list,
+      .review-page.manager-view .review-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 1080px) {
+      .review-page.employee-view .review-list,
+      .review-page.manager-view .review-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      #page-review { padding: 22px 18px 30px; }
+      .review-toolbar { align-items: stretch; flex-wrap: wrap; }
+      .review-search { flex-basis: 100%; max-width: none; }
+      .review-search-stack { flex-basis: 100%; }
+      .review-page.employee-view .review-list,
+      .review-page.manager-view .review-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -8511,6 +8818,13 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 5V3m8 2V3M8 12h4m-4 4h8m0-7 2 2 3-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
           <span>智能创作</span>
+        </button>
+        <button class="nav-btn" data-page="review" title="审核中心">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 0 1 2 2v16l-7-3-7 3V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 10 2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span>审核中心</span>
+          <span class="nav-count" id="reviewNavCount">0</span>
         </button>
         <button class="nav-btn" data-page="assets" title="资产库">
           <span class="nav-icon" aria-hidden="true">
@@ -8558,6 +8872,14 @@
               </div>
               <div class="user-menu-divider"></div>
               <button class="user-menu-item" id="openAccountSettings" type="button" role="menuitem">账号设置</button>
+              <div class="user-menu-divider"></div>
+              <div class="demo-identity-switch">
+                <span>演示身份</span>
+                <div class="demo-identity-options">
+                  <button class="demo-identity-option active" type="button" data-demo-identity="employee">普通员工</button>
+                  <button class="demo-identity-option" type="button" data-demo-identity="supervisor">主管</button>
+                </div>
+              </div>
               <div class="user-menu-divider"></div>
               <button class="user-menu-item danger" id="openLogout" type="button" role="menuitem">退出登录</button>
             </div>
@@ -8918,6 +9240,16 @@
               <div class="session-thread" id="sessionThread" aria-live="polite"></div>
 
               <div class="session-composer-wrap" id="sessionComposerWrap">
+                <div class="session-review-selection" id="sessionReviewSelection" hidden>
+                  <div class="session-review-selection-copy">
+                    <strong id="sessionReviewSelectionCount">已选择 0 张图片</strong>
+                    <span>可跨本次会话选择多张图片，提交给账号设置中的默认审核主管</span>
+                  </div>
+                  <div class="session-review-selection-actions">
+                    <button class="btn" id="toggleGeneratedReviewSelection" type="button">全选</button>
+                    <button class="btn btn-primary review-submit-btn" id="submitGeneratedReviewSelection" type="button" data-submit-selected-review disabled>批量推送审核</button>
+                  </div>
+                </div>
                 <div class="session-composer-card">
                   <div class="session-composer-main">
                     <div class="chat-composer-shell session-chat-composer" id="sessionImagePicker">
@@ -9263,6 +9595,50 @@
           </div>
         </section>
 
+        <!-- 审核中心 -->
+        <section id="page-review" class="page review-page">
+          <div class="review-page-shell">
+            <div class="review-page-header">
+              <div class="review-page-heading">
+                <h1>审核记录</h1>
+                <p id="reviewPageDescription">处理员工提交的图片</p>
+              </div>
+            </div>
+
+            <section class="review-workspace">
+              <div class="employee-review-tabs" role="tablist" aria-label="审核状态">
+                <button class="employee-review-tab active" type="button" role="tab" data-employee-review-status="all">全部</button>
+                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="pending">未审核</button>
+                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="approved">已通过</button>
+                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="rejected">驳回</button>
+              </div>
+              <div class="review-toolbar">
+                <div class="review-search-stack">
+                  <label class="review-search"><input id="reviewSearchInput" type="search" placeholder="搜索提交人账号" autocomplete="off" /></label>
+                  <button class="review-select-all-btn" id="toggleReviewSelection" type="button">一键全选</button>
+                </div>
+                <button class="review-mini-btn" id="reviewSearchButton" type="button">搜索</button>
+                <label class="review-filter-control">审核状态
+                  <select id="reviewStatusFilter" aria-label="审核状态筛选">
+                    <option value="all">全部</option>
+                    <option value="pending">未审核</option>
+                    <option value="approved">已审核</option>
+                    <option value="rejected">驳回</option>
+                  </select>
+                </label>
+                <div class="review-batch-actions" id="reviewBatchActions">
+                  <button class="review-mini-btn approve" id="batchApproveReview" type="button">批量通过</button>
+                  <button class="review-mini-btn reject" id="batchRejectReview" type="button">批量驳回</button>
+                </div>
+              </div>
+              <div class="review-list-head" id="reviewListHead">
+                <span>选择</span><span>图片</span><span>提交人</span><span>提交时间</span><span>状态</span>
+              </div>
+              <div class="review-list" id="reviewList"></div>
+            </section>
+          </div>
+        </section>
+
         <!-- 资产库：轻量资产墙 -->
         <section id="page-assets" class="page asset-simple-page">
           <div class="asset-page-header">
@@ -9273,6 +9649,7 @@
             <div class="asset-utility-actions">
               <button class="btn btn-primary asset-upload-primary" id="assetNewFolderBtn" data-create-folder hidden>＋ 新建文件夹</button>
               <button class="btn btn-primary asset-upload-primary" id="assetUploadBtn" data-upload-local>↥ 上传素材</button>
+              <button class="btn btn-primary review-submit-btn" id="submitAssetReviewSelection" type="button" disabled>批量推送审核</button>
               <input id="assetUploadFile" type="file" accept="image/*,video/*" multiple hidden />
             </div>
           </div>
@@ -9295,18 +9672,29 @@
               <button class="btn agent-search-button" id="assetSearchBtn"><span aria-hidden="true">⌕</span>搜索</button>
             </div>
             <div class="asset-filter-controls">
-              <label><span>类型</span>
-                <select class="asset-control-select" id="assetTypeSelect" aria-label="素材类型">
-                  <option value="all">全部类型</option>
-                  <option value="image">图片</option>
-                  <option value="video">视频</option>
-                </select>
-              </label>
+              <div class="asset-type-filter">
+                <label><span>类型</span>
+                  <select class="asset-control-select" id="assetTypeSelect" aria-label="素材类型">
+                    <option value="all">全部类型</option>
+                    <option value="image">图片</option>
+                    <option value="video">视频</option>
+                  </select>
+                </label>
+                <button class="btn asset-select-all-btn" id="toggleAssetReviewSelection" type="button" hidden>全选</button>
+              </div>
               <label><span>来源</span>
                 <select class="asset-control-select" id="assetSourceFilter" aria-label="素材来源">
                   <option value="all">全部来源</option>
                   <option value="ai">AI生成</option>
                   <option value="local">本地上传</option>
+                </select>
+              </label>
+              <label><span>审核状态</span>
+                <select class="asset-control-select" id="assetReviewStatusFilter" aria-label="审核状态">
+                  <option value="all">全部状态</option>
+                  <option value="unreviewed">未审核</option>
+                  <option value="reviewed">已审核</option>
+                  <option value="rejected">驳回</option>
                 </select>
               </label>
               <label><span>日期</span>
@@ -9582,7 +9970,7 @@
                 <span>用户</span>
                 <span class="operation-log-search-control"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="operationLogKeyword" type="search" placeholder="搜索用户名称或手机号" autocomplete="off" /></span>
               </label>
-              <label class="operation-log-filter-field"><span>角色</span><select id="operationLogRole"><option value="all">全部角色</option><option value="superadmin">超级管理员</option><option value="admin">管理员</option><option value="viewer">普通用户</option></select></label>
+              <label class="operation-log-filter-field"><span>角色</span><select id="operationLogRole"><option value="all">全部角色</option><option value="superadmin">超级管理员</option><option value="admin">审核主管</option><option value="viewer">普通用户</option></select></label>
               <label class="operation-log-filter-field"><span>时间范围</span><select id="operationLogRange"><option value="all">全部时间</option><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="90">近 90 天</option></select></label>
               <div class="operation-log-filter-actions"><button class="btn btn-primary" type="submit">搜索</button><button class="btn" id="operationLogReset" type="button">重置</button></div>
             </form>
@@ -10145,6 +10533,7 @@
       <aside class="account-settings-side">
         <h2 id="accountSettingsTitle">账号设置</h2>
         <button class="account-tab active" type="button" data-account-tab="profile">基本信息</button>
+        <button class="account-tab" type="button" data-account-tab="review">审核设置</button>
         <button class="account-tab" type="button" data-account-tab="security">账号安全</button>
       </aside>
 
@@ -10161,6 +10550,24 @@
           <div class="account-form-actions">
             <button class="btn" type="button" data-close-account-settings>取消</button>
             <button class="btn btn-primary" id="saveProfile" type="button">保存修改</button>
+          </div>
+        </section>
+
+        <section class="account-panel" data-account-panel="review">
+          <div class="account-settings-head">
+            <div><h3>审核设置</h3></div>
+            <button class="close-btn" type="button" data-close-account-settings aria-label="关闭">×</button>
+          </div>
+          <div class="account-form">
+            <label class="profile-field">
+              <span>默认审核人</span>
+              <select id="defaultReviewerSelect"></select>
+            </label>
+              <p class="page-desc">仅展示系统中启用的审核主管；提交时会默认选中此人，你仍可以更换。</p>
+          </div>
+          <div class="account-form-actions">
+            <button class="btn" type="button" data-close-account-settings>取消</button>
+            <button class="btn btn-primary" id="saveDefaultReviewer" type="button">保存设置</button>
           </div>
         </section>
 
@@ -10188,6 +10595,38 @@
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审核图片预览 -->
+  <div class="modal-mask" id="reviewDetailModal" role="dialog" aria-modal="true" aria-label="审核图片预览">
+    <div class="modal review-detail-dialog">
+      <button class="close-btn review-preview-close" type="button" data-close-review-detail aria-label="关闭图片预览">×</button>
+      <div class="modal-body" id="reviewDetailBody"></div>
+      <div class="modal-actions" id="reviewDetailActions"></div>
+    </div>
+  </div>
+
+  <!-- 驳回审核 -->
+  <div class="modal-mask" id="reviewRejectModal" role="dialog" aria-modal="true" aria-labelledby="reviewRejectTitle">
+    <div class="modal review-modal">
+      <div class="modal-head">
+        <div>
+          <h2 class="modal-title" id="reviewRejectTitle">驳回图片</h2>
+          <p class="page-desc" id="reviewRejectDescription">可以填写需要修改的内容</p>
+        </div>
+        <button class="close-btn" type="button" data-close-review-reject aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <label class="review-form-field">
+          <span>驳回原因（选填）</span>
+          <textarea id="reviewRejectReason" maxlength="300" placeholder="例如：画面文字存在歧义，请调整后重新提交"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" data-close-review-reject>取消</button>
+        <button class="btn confirm-danger" id="confirmReviewReject" type="button">确认驳回</button>
       </div>
     </div>
   </div>
@@ -10253,7 +10692,11 @@
   <div class="modal-mask image-preview-mask" id="imagePreviewModal" role="dialog" aria-modal="true" aria-label="图片预览">
     <div class="image-preview-dialog" id="imagePreviewDialog">
       <button class="image-preview-close" type="button" data-close-image-preview aria-label="关闭图片预览">×</button>
-      <div class="image-preview-stage"><img id="imagePreviewContent" src="" alt="图片预览" /></div>
+      <div class="image-preview-stage">
+        <button class="image-preview-nav previous" id="imagePreviewPrevious" type="button" hidden aria-label="上一张">‹</button>
+        <img id="imagePreviewContent" src="" alt="图片预览" />
+        <button class="image-preview-nav next" id="imagePreviewNext" type="button" hidden aria-label="下一张">›</button>
+      </div>
       <aside class="image-preview-details" id="imagePreviewDetails" hidden>
         <div class="image-preview-profile">
           <span class="image-preview-avatar" id="imagePreviewAvatar"></span>
@@ -10265,6 +10708,8 @@
         <div class="image-preview-divider"></div>
         <span class="image-preview-prompt-label">图片提示词</span>
         <p class="image-preview-prompt" id="imagePreviewPrompt"></p>
+        <div class="image-preview-review-summary" id="imagePreviewReviewSummary"></div>
+        <div class="image-preview-review-actions" id="imagePreviewReviewActions" hidden></div>
       </aside>
     </div>
   </div>
@@ -10447,12 +10892,13 @@
       { id: "user-3", name: "设计师账号", mobile: "13700001234", role: "viewer", quota: 30000, status: "enabled", avatar: "S", tone: "amber", createdAt: "2026-08-02 16:45:18" },
       { id: "user-4", name: "产品专员", mobile: "13500005678", role: "viewer", quota: 20000, status: "enabled", avatar: "P", tone: "green", createdAt: "2026-07-28 11:12:35" },
       { id: "user-5", name: "测试账号", mobile: "13600009999", role: "viewer", quota: 10000, status: "disabled", avatar: "T", tone: "red", createdAt: "2026-07-21 13:08:26" },
-      { id: "user-6", name: "内容编辑", mobile: "18800002345", role: "viewer", quota: 8000, status: "enabled", avatar: "C", tone: "blue", createdAt: "2026-07-18 15:26:40" }
+      { id: "user-6", name: "内容编辑", mobile: "18800002345", role: "viewer", quota: 8000, status: "enabled", avatar: "C", tone: "blue", createdAt: "2026-07-18 15:26:40" },
+      { id: "user-7", name: "品牌主管", mobile: "15000003434", role: "admin", quota: 30000, status: "enabled", avatar: "B", tone: "green", createdAt: "2026-08-01 14:20:15" }
     ];
 
     let mockRoles = [
       { id: "superadmin", name: "超级管理员", desc: "系统最高管理权限", status: "enabled", protected: true },
-      { id: "admin", name: "管理员", desc: "日常系统管理权限", status: "enabled", protected: false },
+      { id: "admin", name: "审核主管", desc: "处理员工提交的图片审核，也可进行日常管理", status: "enabled", protected: false },
       { id: "viewer", name: "普通用户", desc: "AI 创作基础权限", status: "enabled", protected: false }
     ];
 
@@ -10584,13 +11030,26 @@
     let activeRoleEditorMode = "create";
     let activeRoleDetailMode = "view";
     const NAVIGATION_STATE_KEY = "superai-navigation-state";
-    const RESTORABLE_PAGES = new Set(["home", "workflows", "config", "session", "video-config", "assets", "settings"]);
+    const RESTORABLE_PAGES = new Set(["home", "workflows", "config", "session", "video-config", "review", "assets", "settings"]);
     const RESTORABLE_SETTINGS_VIEWS = new Set(["users", "roles", "quota", "models", "logs"]);
+    const REVIEW_DEMO_STATE_KEY = "chaoren-review-demo-state-v7";
+    const REVIEW_IDENTITIES = {
+      employee: { id: "user-3", label: "普通员工" },
+      supervisor: { id: "user-2", label: "审核主管" }
+    };
+    let reviewDemoState = loadReviewDemoState();
+    let activeReviewTab = reviewDemoState.identity === "supervisor" ? "inbox" : "mine";
+    let reviewSelectedIds = new Set();
+    let generatedReviewSelection = new Set();
+    let assetReviewSelection = new Set();
+    let pendingReviewRejectIds = [];
+    let activeReviewDetailId = null;
     const quotaUsageByUser = { "user-1": 3560.25, "user-2": 800, "user-3": 500, "user-4": 200, "user-5": 50, "user-6": 30 };
     const userFilters = { name: "", mobile: "", role: "all", status: "all" };
     let activeAssetScope = "generated";
     let activeAssetType = "all";
     let activeAssetSource = "all";
+    let activeAssetReviewStatus = "all";
     let activeAssetDate = "";
     let currentAssetPage = 1;
     let activeFavoriteFolderId = ROOT_FOLDER_ID;
@@ -10878,6 +11337,7 @@
         setSettingsNavExpanded(false, false);
       }
       saveNavigationState({ page: pageName });
+      if (pageName === "review") renderReviewCenter();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -10896,7 +11356,7 @@
 
     const userRoleMeta = {
       superadmin: { label: "超级管理员", className: "" },
-      admin: { label: "管理员", className: "admin" },
+      admin: { label: "审核主管", className: "admin" },
       viewer: { label: "普通用户", className: "viewer" }
     };
 
@@ -11215,8 +11675,21 @@
       const latestContent = latestType === "image"
         ? (/编辑/.test(user.latestAction) ? "使用 GPT Image 编辑图片" : "使用 GPT Image 生图")
         : latestType === "video" ? "使用 Seedance 生成视频" : user.latestAction;
+      const reviewExamples = user.id === "log-user-3"
+        ? [
+            { id: "review-submit-1", date: "2026-08-10", time: "14:18:26", type: "image", typeLabel: "生图", content: "提交 2 张图片给运营账号01审核", meta: "未审核" },
+            { id: "review-reject-1", date: "2026-08-10", time: "14:35:40", type: "image", typeLabel: "生图", content: "收到图片驳回结果：文字表达需调整", meta: "驳回" },
+            { id: "review-approved-1", date: "2026-08-09", time: "16:08:12", type: "image", typeLabel: "生图", content: "图片已审核，可收藏和下载", meta: "已审核" }
+          ]
+        : user.id === "log-user-2"
+          ? [
+              { id: "review-approve-1", date: "2026-08-10", time: "14:26:03", type: "image", typeLabel: "生图", content: "通过设计师账号提交的 2 张图片", meta: "审核通过" },
+              { id: "review-reject-2", date: "2026-08-10", time: "14:12:48", type: "image", typeLabel: "生图", content: "驳回 1 张图片并填写修改原因", meta: "审核驳回" }
+            ]
+          : [];
       return [
         { id: "latest", date: latestDate, time: `${latestClock}:18`, type: latestType, typeLabel: operationRecordTypeLabels[latestType], content: latestContent, meta: "" },
+        ...reviewExamples,
         { id: "image-1", date: "2026-08-10", time: "13:12:05", type: "image", typeLabel: "生图", content: "使用 GPT Image 编辑图片", meta: "GPT Image" },
         { id: "asset-1", date: "2026-08-10", time: "13:05:47", type: "asset", typeLabel: "素材管理", content: "上传 2 张商品图片", meta: "商品图片" },
         { id: "login-1", date: "2026-08-10", time: "12:58:21", type: "other", typeLabel: "其他", content: "登录", meta: "" },
@@ -14977,10 +15450,14 @@
       return {
         id: `${round.id}-${index + 1}`,
         assetIndex,
+        creatorId: currentReviewIdentity().id,
+        creatorName: currentReviewIdentity().name,
         prompt: round.prompt,
         images: round.images.map(image => ({ ...image })),
         settings: { ...round.settings, count: "1" },
-        isGenerating: false
+        isGenerating: false,
+        reviewStatus: currentReviewIdentity().canReview ? "approved" : "draft",
+        reviewReason: ""
       };
     }
 
@@ -14989,15 +15466,31 @@
       const isFavorite = Boolean(resultAsset?.favorite);
       const resultImage = resultAsset?.previewUrl || PRODUCT_IMAGE_URL;
       const resultName = resultAsset?.name || `生成结果 ${result.id}`;
+      const reviewKey = resultReviewKey(round.id, result.id);
+      const latestReview = latestReviewForResult(reviewKey);
+      const reviewStatus = result.reviewStatus || latestReview?.status || (currentReviewIdentity().canReview ? "approved" : "draft");
+      const reviewMeta = reviewStatusMeta(reviewStatus);
+      const canSubmitReview = canPushGeneratedReview(round, result);
+      const canUseImage = reviewStatus === "approved";
+      const useRestriction = canUseImage ? "" : ' title="审核通过后可收藏和下载"';
+      const pushLabel = currentReviewIdentity().canReview ? "推送复核" : "推送审核";
       return `
         <div class="generated-result-item ${result.isGenerating ? "is-regenerating" : ""}" id="generatedResult-${round.id}-${result.id}">
+          ${canSubmitReview ? `<label class="generated-review-select" title="选择图片"><input type="checkbox" data-generated-review-select data-round-id="${round.id}" data-result-id="${result.id}" ${generatedReviewSelection.has(reviewKey) ? "checked" : ""} aria-label="选择${escapeHtml(resultName)}${pushLabel}" /></label>` : ""}
           <div class="campaign-poster has-real-image" role="img" aria-label="${escapeHtml(resultName)}">
-            <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>
+            <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" ${canUseImage ? `title="${isFavorite ? "取消收藏" : "加入收藏"}"` : useRestriction} aria-label="${canUseImage ? (isFavorite ? "取消收藏" : "加入收藏") : "审核通过后可收藏"}" aria-pressed="${isFavorite}" ${canUseImage ? "" : "disabled"}>${isFavorite ? "♥" : "♡"}</button>
             <img class="campaign-result-image" data-image-preview src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
           </div>
           <strong class="generated-item-name" title="${escapeHtml(resultName)}">${escapeHtml(resultName)}</strong>
+          <div class="generated-review-status">
+            <span class="review-status ${reviewStatus}">${reviewMeta.label}</span>
+            ${!currentReviewIdentity().canReview && reviewStatus === "draft" ? `<small>提交审核后可收藏和下载</small>` : ""}
+            ${currentReviewIdentity().canReview && reviewStatus === "approved" && canSubmitReview ? `<small>主管生成，无需审核；也可主动推送复核</small>` : ""}
+            ${reviewStatus === "rejected" && (result.reviewReason || latestReview?.reason) ? `<small title="${escapeHtml(result.reviewReason || latestReview.reason)}">${escapeHtml(result.reviewReason || latestReview.reason)}</small>` : ""}
+          </div>
          <div class="generated-actions">
-            <button class="btn" data-download-generated data-round-id="${round.id}" data-result-id="${result.id}">⇩ 下载</button>
+            ${canSubmitReview ? `<button class="btn review-submit-btn" data-submit-generated-review data-round-id="${round.id}" data-result-id="${result.id}">${pushLabel}</button>` : ""}
+            <button class="btn" data-download-generated data-round-id="${round.id}" data-result-id="${result.id}" ${canUseImage ? "" : `disabled${useRestriction}`}>⇩ 下载</button>
            <button class="btn" data-rename-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重命名</button>
            <button class="btn" data-edit-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重新编辑</button>
            <button class="btn" data-regenerate-generated data-round-id="${round.id}" data-result-id="${result.id}" ${result.isGenerating ? "disabled" : ""}>↻ 再次生成</button>
@@ -15036,6 +15529,7 @@
 
       const aiContent = $(".conversation-ai-content", roundElement);
       aiContent.insertAdjacentHTML("beforeend", resultMarkup(round));
+      updateGeneratedReviewSelectionBar();
       requestAnimationFrame(() => {
         $(`#generationResult-${round.id}`)?.classList.add("show");
       });
@@ -15061,9 +15555,50 @@
       button.setAttribute("aria-pressed", String(Boolean(item.favorite)));
     }
 
+    function generatedReviewStatusForAssetIndex(assetIndex) {
+      for (const round of generationRounds) {
+        const result = (round.results || []).find(item => item.assetIndex === assetIndex);
+        if (!result) continue;
+        return result.reviewStatus || latestReviewForResult(resultReviewKey(round.id, result.id))?.status || "draft";
+      }
+      return latestReviewForResult(assetReviewKey(assetIndex))?.status || "draft";
+    }
+
+    function assetReviewKey(assetIndex) {
+      return `asset:${assetIndex}`;
+    }
+
+    function generatedResultForAssetIndex(assetIndex) {
+      for (const round of generationRounds) {
+        const result = (round.results || []).find(item => item.assetIndex === assetIndex);
+        if (result) return { round, result };
+      }
+      return null;
+    }
+
+    function canPushAssetReview(kind, assetIndex) {
+      if (kind !== "image" || currentReviewIdentity().canReview) return false;
+      return ["draft", "rejected"].includes(generatedReviewStatusForAssetIndex(assetIndex));
+    }
+
+    function canUseAsset(kind, index) {
+      return kind !== "image" || generatedReviewStatusForAssetIndex(index) === "approved";
+    }
+
+    function assetReviewStatus(kind, index) {
+      if (kind !== "image") return "not-required";
+      const status = generatedReviewStatusForAssetIndex(index);
+      if (status === "draft" || status === "pending") return "unreviewed";
+      return status === "approved" ? "reviewed" : "rejected";
+    }
+
     function toggleGeneratedFavorite(roundId, resultId) {
       const { round, result } = getGeneratedResult(roundId, resultId);
       if (!round || !result || !Number.isInteger(result.assetIndex)) return;
+      if (generatedReviewStatusForAssetIndex(result.assetIndex) !== "approved") {
+        showToast("图片审核通过后才可以收藏。");
+        return;
+      }
       const asset = mockAssets[result.assetIndex];
       if (!asset) return;
       if (!asset.favorite) {
@@ -15084,12 +15619,17 @@
    function updateGeneratedResultCard(round, result) {
      const card = $(`#generatedResult-${round.id}-${result.id}`);
      if (card) card.outerHTML = generatedResultMarkup(round, result);
+     updateGeneratedReviewSelectionBar();
    }
 
     function downloadGeneratedResult(roundId, resultId) {
       const { result } = getGeneratedResult(roundId, resultId);
       const asset = result ? mockAssets[result.assetIndex] : null;
       if (!result || !asset) return;
+      if (generatedReviewStatusForAssetIndex(result.assetIndex) !== "approved") {
+        showToast("图片审核通过后才可以下载。");
+        return;
+      }
       downloadResource(asset.previewUrl || PRODUCT_IMAGE_URL, `${asset.name || "生成图片"}.png`);
     }
 
@@ -15111,6 +15651,8 @@
             if (round.results.length) resultHost.outerHTML = resultMarkup(round);
             else resultHost.remove();
           }
+          generatedReviewSelection.delete(resultReviewKey(round.id, result.id));
+          updateGeneratedReviewSelectionBar();
           renderAssets();
           showToast("生成图片已删除。");
         }
@@ -15200,6 +15742,11 @@
           asset.tags = `${result.settings.goal}、${result.settings.style}`;
         }
         result.isGenerating = false;
+        result.creatorId = currentReviewIdentity().id;
+        result.creatorName = currentReviewIdentity().name;
+        result.reviewStatus = currentReviewIdentity().canReview ? "approved" : "draft";
+        result.reviewReason = "";
+        generatedReviewSelection.delete(resultReviewKey(round.id, result.id));
         updateGeneratedResultCard(round, result);
         renderAssets();
         showToast("当前图片已重新生成，其他图片保持不变。");
@@ -15328,20 +15875,27 @@
       favoriteButton.innerHTML = `<span aria-hidden="true">${presentation.isFavorite ? "♥" : "♡"}</span><span>${presentation.favoriteCount}</span>`;
     }
 
-    function openImagePreview(src, alt = "图片预览", inspirationWork = null) {
+    function openImagePreview(src, alt = "图片预览", inspirationWork = null, reviewRecord = null) {
       if (!src) return;
       const modal = $("#imagePreviewModal");
       const dialog = $("#imagePreviewDialog");
       const details = $("#imagePreviewDetails");
       const previewImage = $("#imagePreviewContent");
+      const favoriteButton = $("#imagePreviewFavorite");
+      const reviewActions = $("#imagePreviewReviewActions");
       previewImage.src = src;
       previewImage.alt = alt;
       activeInspirationPreviewId = inspirationWork?.id || "";
-      const hasDetails = Boolean(inspirationWork);
+      const hasDetails = Boolean(inspirationWork || reviewRecord);
       modal.classList.toggle("inspiration-mode", hasDetails);
+      modal.classList.toggle("review-mode", Boolean(reviewRecord));
       dialog.classList.toggle("has-details", hasDetails);
       details.hidden = !hasDetails;
+      favoriteButton.hidden = Boolean(reviewRecord);
+      reviewActions.hidden = !reviewRecord;
+      reviewActions.innerHTML = "";
       if (inspirationWork) renderInspirationPreviewDetails(inspirationWork);
+      if (reviewRecord) renderReviewImagePreviewDetails(reviewRecord);
       modal.classList.add("show");
       document.body.style.overflow = "hidden";
     }
@@ -15366,29 +15920,42 @@
       if (!modal.classList.contains("show")) return;
       modal.classList.remove("show");
       modal.classList.remove("inspiration-mode");
+      const wasReviewPreview = modal.classList.contains("review-mode");
+      modal.classList.remove("review-mode");
       $("#imagePreviewDialog").classList.remove("has-details");
       $("#imagePreviewDetails").hidden = true;
+      $("#imagePreviewFavorite").hidden = false;
+      $("#imagePreviewPrevious").hidden = true;
+      $("#imagePreviewNext").hidden = true;
+      $("#imagePreviewReviewActions").hidden = true;
+      $("#imagePreviewReviewActions").innerHTML = "";
       $("#imagePreviewContent").src = "";
       activeInspirationPreviewId = "";
+      if (wasReviewPreview) activeReviewDetailId = null;
       document.body.style.overflow = "";
     }
 
-    function renderAssetPreview(kind, item, index, favoriteClass = "") {
+    function renderAssetPreview(kind, item, index, favoriteClass = "", reviewSelectable = false) {
       const previewClass = kind === "video" ? "video-preview" : "simple-poster-preview";
+      const canUse = canUseAsset(kind, index);
+      const favoriteDisabled = canUse ? "" : 'disabled title="审核通过后可收藏"';
+      const kindBadge = reviewSelectable
+        ? `<label class="asset-kind-badge asset-review-badge" title="选择图片"><input type="checkbox" data-asset-review-select="${index}" ${assetReviewSelection.has(index) ? "checked" : ""} aria-label="选择${escapeHtml(item.name)}推送审核" /></label>`
+        : `<span class="asset-kind-badge">${kind === "video" ? "视频" : "图片"}</span>`;
       if (item.previewUrl) {
         return `
           <div class="${previewClass}">
-            <span class="asset-kind-badge">${kind === "video" ? "视频" : "图片"}</span>
-            <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" title="${item.favorite ? "取消收藏" : "收藏"}">${item.favorite ? "♥" : "♡"}</button>
+            ${kindBadge}
+            <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? `title="${item.favorite ? "取消收藏" : "收藏"}"` : favoriteDisabled}>${item.favorite ? "♥" : "♡"}</button>
             ${kind === "video" ? `<video class="asset-real-preview" src="${item.previewUrl}" muted playsinline></video>` : `<img class="asset-real-preview" data-image-preview src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" />`}
           </div>
         `;
       }
 
       return `
-        <div class="${previewClass}">
-          <span class="asset-kind-badge">${kind === "video" ? "视频" : "图片"}</span>
-          <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" title="${item.favorite ? "取消收藏" : "收藏"}">${item.favorite ? "♥" : "♡"}</button>
+          <div class="${previewClass}">
+            ${kindBadge}
+          <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? `title="${item.favorite ? "取消收藏" : "收藏"}"` : favoriteDisabled}>${item.favorite ? "♥" : "♡"}</button>
           ${kind === "image" ? `<div class="poster-wordmark">邀请好友<br>共享<b>好礼</b></div><div class="poster-bottom-card"></div><div class="poster-share-block">立即分享</div>` : ""}
         </div>
       `;
@@ -15534,12 +16101,14 @@
       fileShell.classList.toggle("is-folder-root", isFavoriteScope && resolvedFavoriteFolderId === ROOT_FOLDER_ID);
       $("#assetNewFolderBtn").hidden = !isFavoriteScope;
       $("#assetUploadBtn").hidden = isFavoriteScope;
+      $("#submitAssetReviewSelection").hidden = isFavoriteScope || currentReviewIdentity().canReview;
       $(".asset-filter-controls").hidden = false;
       $("#assetSearchBtn").hidden = false;
       $("#assetSearch").placeholder = isFavoriteScope ? "搜索文件夹名称" : "搜索素材名称、关键词";
       $("#assetScopeSelect").value = activeAssetScope;
       $("#assetTypeSelect").value = activeAssetType;
       $("#assetSourceFilter").value = activeAssetSource;
+      $("#assetReviewStatusFilter").value = activeAssetReviewStatus;
       $("#assetDateFilter").value = activeAssetDate;
       $$("[data-asset-scope]").forEach(button => {
         const active = button.dataset.assetScope === activeAssetScope;
@@ -15550,23 +16119,25 @@
       let records = getAssetRecords().filter(({ item, index, kind }) => {
         const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
         const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
+        const matchesReviewStatus = activeAssetReviewStatus === "all" || assetReviewStatus(kind, index) === activeAssetReviewStatus;
         const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
-        return source.includes(keyword) && matchesSource && matchesDate;
+        return source.includes(keyword) && matchesSource && matchesReviewStatus && matchesDate;
       });
 
       if (isFavoriteScope) {
         const activeFolderId = resolvedFavoriteFolderId;
         const favoriteRecords = getFavoriteRecordsByType().filter(({ item, index, kind }) => {
           const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
+          const matchesReviewStatus = activeAssetReviewStatus === "all" || assetReviewStatus(kind, index) === activeAssetReviewStatus;
           const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
-          return matchesSource && matchesDate;
+          return matchesSource && matchesReviewStatus && matchesDate;
         });
-        const folderRecords = activeAssetDate ? [] : keyword
+        const folderRecords = activeAssetDate || activeAssetReviewStatus !== "all" ? [] : keyword
           ? assetFolders.filter(folder => folder.name.toLowerCase().includes(keyword))
           : getChildFolders(activeFolderId);
 
         pathbar.innerHTML = renderPathbar(activeFolderId, keyword, typeText);
-        records = keyword || activeAssetDate
+        records = keyword || activeAssetDate || activeAssetReviewStatus !== "all"
           ? favoriteRecords.filter(({ item }) => {
               const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
               return source.includes(keyword);
@@ -15594,6 +16165,7 @@
         grid.innerHTML = pageHtml
           ? pageHtml
           : `<div class="empty-state" style="grid-column: 1 / -1">当前文件夹还没有素材。</div>`;
+        updateAssetReviewSelectionBar();
         return;
       }
 
@@ -15606,20 +16178,102 @@
 
       if (!records.length) {
         grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1">没有找到匹配${typeText}</div>`;
+        updateAssetReviewSelectionBar();
         return;
       }
 
       grid.innerHTML = pageRecords.map(({ item, index, kind }) => renderAssetCard(item, index, kind, isFavoriteScope)).join("");
+      updateAssetReviewSelectionBar();
+    }
+
+    function availableAssetReviewIndexes() {
+      if (activeAssetScope === "favorites") return [];
+      const keyword = ($("#assetSearch")?.value || "").trim().toLowerCase();
+      return getAssetRecords()
+        .filter(({ item, index, kind }) => {
+          const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
+          const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
+          const matchesReviewStatus = activeAssetReviewStatus === "all" || assetReviewStatus(kind, index) === activeAssetReviewStatus;
+          const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
+          return !item.deleted && source.includes(keyword) && matchesSource && matchesReviewStatus && matchesDate && canPushAssetReview(kind, index);
+        })
+        .map(({ index }) => index);
+    }
+
+    function updateAssetReviewSelectionBar() {
+      const toggle = $("#toggleAssetReviewSelection");
+      const submitButton = $("#submitAssetReviewSelection");
+      if (!toggle || !submitButton) return;
+      const available = availableAssetReviewIndexes();
+      assetReviewSelection = new Set([...assetReviewSelection].filter(index => available.includes(index)));
+      const selectedCount = assetReviewSelection.size;
+      toggle.hidden = !available.length;
+      toggle.textContent = selectedCount === available.length && selectedCount ? "取消全选" : "全选";
+      submitButton.disabled = selectedCount === 0;
+    }
+
+    function toggleAssetReviewSelection() {
+      const available = availableAssetReviewIndexes();
+      const allSelected = available.length && available.every(index => assetReviewSelection.has(index));
+      assetReviewSelection = allSelected ? new Set() : new Set(available);
+      renderAssets();
+    }
+
+    function pushAssetReviews() {
+      const identity = currentReviewIdentity();
+      const indexes = [...assetReviewSelection].filter(index => canPushAssetReview("image", index));
+      if (!indexes.length) {
+        showToast("请先选择需要推送审核的图片。");
+        return;
+      }
+      const reviewer = reviewSupervisorOptions(identity.id).find(item => item.id === reviewDemoState.defaultReviewerId);
+      if (!reviewer) {
+        showToast("请先在账号设置中设置一位启用的审核主管。");
+        return;
+      }
+      const submittedAt = formatAgentDateTime();
+      const batchId = `B${Date.now().toString().slice(-8)}`;
+      indexes.forEach((assetIndex, offset) => {
+        const asset = mockAssets[assetIndex];
+        const linked = generatedResultForAssetIndex(assetIndex);
+        reviewDemoState.records.push({
+          id: `review-asset-${Date.now()}-${offset}`,
+          batchId,
+          resultKey: linked ? resultReviewKey(linked.round.id, linked.result.id) : assetReviewKey(assetIndex),
+          title: asset?.name || "图片素材",
+          image: asset?.previewUrl || PRODUCT_IMAGE_URL,
+          requirement: linked?.result.prompt || "已生成图片，提交审核后方可正式使用。",
+          referenceImages: [],
+          submitterId: identity.id,
+          submitterName: identity.name,
+          reviewerId: reviewer.id,
+          reviewerName: reviewer.name,
+          status: "pending",
+          submittedAt,
+          reviewedAt: "",
+          reason: ""
+        });
+        if (linked) linked.result.reviewStatus = "pending";
+      });
+      assetReviewSelection.clear();
+      saveReviewDemoState();
+      renderAssets();
+      renderAllGeneratedReviewCards();
+      renderReviewCenter();
+      showToast(`已推送 ${indexes.length} 张图片给${reviewer.name}审核。`);
     }
 
     function renderAssetCard(item, index, kind, isFavoriteScope) {
       const isLocal = getAssetSource(item) === "local";
+      const canUse = canUseAsset(kind, index);
+      const useRestriction = canUse ? "" : 'disabled title="审核通过后可下载或收藏"';
       const menuKey = `${kind}-${index}`;
       const isMenuOpen = openAssetMenuKey === menuKey;
+      const canSubmitReview = !isFavoriteScope && canPushAssetReview(kind, index);
       const displayDate = item.assetDate || (String(item.time).includes("-") ? item.time : kind === "video" ? "2026-07-08" : `2026-07-${String(Math.max(1, 10 - (index % 5))).padStart(2, "0")}`);
       return `
         <article class="asset-card-lite" aria-label="${item.name}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
-          ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive")}
+          ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive", canSubmitReview)}
           <div class="asset-card-info">
             <h3 class="asset-card-title">${escapeHtml(item.name)}</h3>
             <div class="asset-state-row">
@@ -15629,8 +16283,8 @@
             <div class="asset-card-actions">
               <button class="link-btn" data-rename-asset data-asset-kind="${kind}" data-asset-index="${index}">✎ 重命名</button>
               ${isFavoriteScope ? `<button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>` : ""}
-              ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}">取消收藏</button>` : ""}
-              <button class="link-btn" data-download-asset>⇩ 下载</button>
+              ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>取消收藏</button>` : ""}
+              <button class="link-btn" data-download-asset data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>⇩ 下载</button>
               <button class="link-btn asset-card-more ${isMenuOpen ? "active" : ""}" data-asset-menu="${menuKey}" aria-label="更多操作" aria-expanded="${isMenuOpen}">···</button>
               ${isMenuOpen ? `<div class="asset-card-menu" role="menu"><button type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}" role="menuitem">删除素材</button></div>` : ""}
             </div>
@@ -15677,6 +16331,10 @@
     function toggleAssetFavorite(kind, index) {
       const item = getAssetItem(kind, index);
       if (!item) return;
+      if (!canUseAsset(kind, index)) {
+        showToast("图片审核通过后才可以收藏。");
+        return;
+      }
 
       if (!item.favorite) {
         item.favorite = true;
@@ -16742,6 +17400,16 @@
         return;
       }
 
+      if (event.target.closest("#toggleAssetReviewSelection")) {
+        toggleAssetReviewSelection();
+        return;
+      }
+
+      if (event.target.closest("#submitAssetReviewSelection")) {
+        pushAssetReviews();
+        return;
+      }
+
       const renameAssetBtn = event.target.closest("[data-rename-asset]");
       if (renameAssetBtn) {
         renameAsset(renameAssetBtn.dataset.assetKind, Number(renameAssetBtn.dataset.assetIndex));
@@ -16850,6 +17518,11 @@
       }
 
       if (event.target.closest("[data-download-asset]")) {
+        const button = event.target.closest("[data-download-asset]");
+        if (!canUseAsset(button.dataset.assetKind, Number(button.dataset.assetIndex))) {
+          showToast("图片审核通过后才可以下载。");
+          return;
+        }
         showToast("已开始下载素材。");
         return;
       }
@@ -17056,6 +17729,13 @@
 
       if (event.target === $("#assetSourceFilter")) {
         activeAssetSource = event.target.value;
+        currentAssetPage = 1;
+        renderAssets();
+        return;
+      }
+
+      if (event.target === $("#assetReviewStatusFilter")) {
+        activeAssetReviewStatus = event.target.value;
         currentAssetPage = 1;
         renderAssets();
         return;
@@ -17410,6 +18090,8 @@
       closeImagePreview();
       closeQuotaAdjustment();
       closeModelEditor();
+      closeReviewDetail();
+      closeReviewReject();
       if ($("#assetSelectorModal").classList.contains("show")) closeAssetSelector();
     });
     $("#moveFolderSearch").addEventListener("input", renderMoveFolderOptions);
@@ -17678,8 +18360,639 @@
     window.addEventListener("resize", () => { closeUserRowMenu(); closeRoleRowMenu(); setVideoPreferenceOpen(false); setVideoModelMenuOpen(false); closeVideoMentionMenu(); closeVideoAuxiliaryMenus(); closeImageSourceMenu(); });
     window.addEventListener("scroll", () => { closeUserRowMenu(); closeRoleRowMenu(); setVideoPreferenceOpen(false); setVideoModelMenuOpen(false); closeVideoAuxiliaryMenus(); }, true);
 
+    /* =========================
+       人工审核 Demo
+       - 使用浏览器本地数据演示员工提交、主管审核与状态回看
+       - 不发送消息通知，不请求后端接口
+    ========================= */
+    function loadReviewDemoState() {
+      const fallback = {
+        identity: "employee",
+        defaultReviewerId: "user-2",
+        records: [
+          {
+            id: "review-seed-1",
+            batchId: "batch-seed-1",
+            resultKey: null,
+            title: "秋季保温杯场景海报",
+            image: "./login-assets-v4/carousel-diffuser.png",
+            requirement: "保留杯身结构与原有印字，使用秋日暖色场景，画面突出商品主体，不新增容易引起误解的功效文案。",
+            referenceImages: ["./login-assets-v2/home.png"],
+            submitterId: "user-3",
+            submitterName: "设计师账号",
+            reviewerId: "user-2",
+            reviewerName: "运营账号01",
+            status: "pending",
+            submittedAt: "2026-09-11 10:26",
+            reviewedAt: "",
+            reason: ""
+          },
+          {
+            id: "review-seed-2",
+            batchId: "batch-seed-1",
+            resultKey: null,
+            title: "毛绒玩具节日陈列图",
+            image: "./login-assets-v2/teddy-after.png",
+            requirement: "保留毛绒玩具的外观比例与蝴蝶结配件，以温暖节日陈列场景呈现主体。",
+            referenceImages: [],
+            submitterId: "user-3",
+            submitterName: "设计师账号",
+            reviewerId: "user-2",
+            reviewerName: "运营账号01",
+            status: "pending",
+            submittedAt: "2026-09-11 10:18",
+            reviewedAt: "",
+            reason: ""
+          },
+          {
+            id: "review-seed-3",
+            batchId: "batch-seed-1",
+            resultKey: null,
+            title: "春日盲盒场景海报",
+            image: "./login-assets-v4/carousel-fairy-tale.png",
+            requirement: "保持盲盒主体清晰完整，以自然柔和的春日场景表达新品氛围。",
+            referenceImages: [],
+            submitterId: "user-3",
+            submitterName: "设计师账号",
+            reviewerId: "user-2",
+            reviewerName: "运营账号01",
+            status: "pending",
+            submittedAt: "2026-09-11 10:05",
+            reviewedAt: "",
+            reason: ""
+          },
+          {
+            id: "review-seed-4",
+            batchId: "batch-seed-2",
+            resultKey: null,
+            title: "毛绒玩具卧室场景图",
+            image: "./login-assets-v2/teddy-after-photo.png",
+            requirement: "毛绒玩具保持原有五官、比例和配件，置于柔和自然光的卧室场景，整体温暖治愈。",
+            referenceImages: [],
+            submitterId: "user-3",
+            submitterName: "设计师账号",
+            reviewerId: "user-2",
+            reviewerName: "运营账号01",
+            status: "approved",
+            submittedAt: "2026-09-10 16:42",
+            reviewedAt: "2026-09-10 17:08",
+            reason: ""
+          },
+          {
+            id: "review-seed-5",
+            batchId: "batch-seed-3",
+            resultKey: null,
+            title: "分享有礼活动海报",
+            image: "./login-assets-v2/poster.png",
+            requirement: "制作邀请好友主题活动海报，保持品牌调性，标题清晰，商品和活动利益点突出。",
+            referenceImages: ["./login-assets-v4/carousel-fairy-tale.png"],
+            submitterId: "user-3",
+            submitterName: "设计师账号",
+            reviewerId: "user-2",
+            reviewerName: "运营账号01",
+            status: "rejected",
+            submittedAt: "2026-09-09 14:18",
+            reviewedAt: "2026-09-09 15:02",
+            reason: "标题容易被理解为所有用户都能直接领取礼品，请调整表达后重新提交。"
+          }
+        ]
+      };
+      try {
+        const stored = JSON.parse(localStorage.getItem(REVIEW_DEMO_STATE_KEY) || "null");
+        if (!stored || !Array.isArray(stored.records)) return fallback;
+        return {
+          identity: stored.identity === "supervisor" ? "supervisor" : "employee",
+          defaultReviewerId: reviewSupervisorOptions().some(item => item.id === stored.defaultReviewerId) ? stored.defaultReviewerId : reviewSupervisorOptions()[0]?.id || "",
+          records: stored.records
+        };
+      } catch {
+        return fallback;
+      }
+    }
+
+    function saveReviewDemoState() {
+      try { localStorage.setItem(REVIEW_DEMO_STATE_KEY, JSON.stringify(reviewDemoState)); } catch {}
+    }
+
+    function isReviewSupervisor(user) {
+      return Boolean(user && user.status === "enabled" && user.role === "admin");
+    }
+
+    function reviewSupervisorOptions(excludedId = "") {
+      return mockUsers
+        .filter(user => user.id !== excludedId && isReviewSupervisor(user))
+        .map(user => ({ id: user.id, name: user.name }));
+    }
+
+    function currentReviewIdentity() {
+      const base = REVIEW_IDENTITIES[reviewDemoState.identity] || REVIEW_IDENTITIES.employee;
+      const user = mockUsers.find(item => item.id === base.id);
+      return {
+        ...base,
+        name: user?.name || "未知用户",
+        avatar: user?.avatar || "?",
+        canReview: isReviewSupervisor(user)
+      };
+    }
+
+    function reviewerName(reviewerId) {
+      return reviewSupervisorOptions().find(item => item.id === reviewerId)?.name || "未设置";
+    }
+
+    function reviewStatusMeta(status) {
+      return {
+        draft: { label: "未审核" },
+        pending: { label: "未审核" },
+        approved: { label: "已审核" },
+        rejected: { label: "驳回" }
+      }[status] || { label: "未审核" };
+    }
+
+    function resultReviewKey(roundId, resultId) {
+      return `${roundId}:${resultId}`;
+    }
+
+    function latestReviewForResult(resultKey) {
+      return [...reviewDemoState.records].reverse().find(item => item.resultKey === resultKey) || null;
+    }
+
+    function reviewResultByKey(resultKey) {
+      if (!resultKey) return null;
+      for (const round of generationRounds) {
+        const result = (round.results || []).find(item => resultReviewKey(round.id, item.id) === resultKey);
+        if (result) return { round, result };
+      }
+      return null;
+    }
+
+    function reviewReviewerOptions(selectedId, excludedId = "") {
+      const reviewers = reviewSupervisorOptions(excludedId);
+      return reviewers.length
+        ? reviewers.map(item => `<option value="${item.id}" ${item.id === selectedId ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")
+        : '<option value="">暂无可选审核主管</option>';
+    }
+
+    function syncReviewIdentity() {
+      const identity = currentReviewIdentity();
+      $("#topUserName").textContent = identity.name;
+      $("#dropdownUserName").textContent = identity.name;
+      $("#topUserAvatar").textContent = identity.avatar;
+      $$("[data-demo-identity]").forEach(button => button.classList.toggle("active", button.dataset.demoIdentity === reviewDemoState.identity));
+      $("#reviewPageDescription").textContent = identity.canReview ? "处理员工提交的图片，支持单张和批量审核" : "";
+      if (identity.canReview) $("#reviewStatusFilter").value = "pending";
+      else $("#reviewStatusFilter").value = "all";
+      const defaultReviewers = reviewSupervisorOptions(identity.id);
+      $("#defaultReviewerSelect").innerHTML = reviewReviewerOptions(reviewDemoState.defaultReviewerId, identity.id);
+      $("#defaultReviewerSelect").disabled = !defaultReviewers.length;
+      renderReviewNavigationCount();
+    }
+
+    function switchReviewIdentity(identityName) {
+      if (!REVIEW_IDENTITIES[identityName] || identityName === reviewDemoState.identity) {
+        closeUserDropdown();
+        return;
+      }
+      reviewDemoState.identity = identityName;
+      activeReviewTab = identityName === "supervisor" ? "inbox" : "mine";
+      reviewSelectedIds.clear();
+      generatedReviewSelection.clear();
+      saveReviewDemoState();
+      syncReviewIdentity();
+      renderAllGeneratedReviewCards();
+      renderReviewCenter();
+      closeUserDropdown();
+      showToast(identityName === "supervisor" ? "已切换为主管身份。" : "已切换为普通员工身份。");
+    }
+
+    function renderReviewNavigationCount() {
+      const identity = currentReviewIdentity();
+      const count = identity.canReview
+        ? reviewDemoState.records.filter(item => item.reviewerId === identity.id && item.status === "pending").length
+        : 0;
+      $("#reviewNavCount").textContent = String(count);
+      $("#reviewNavCount").classList.toggle("show", count > 0);
+    }
+
+    function recordsForReviewTab() {
+      const identity = currentReviewIdentity();
+      const status = $("#reviewStatusFilter")?.value || "all";
+      const keyword = identity.canReview ? ($("#reviewSearchInput")?.value || "").trim().toLowerCase() : "";
+      return reviewDemoState.records
+        .filter(item => activeReviewTab === "mine" ? item.submitterId === identity.id : item.reviewerId === identity.id)
+        .filter(item => status === "all" || item.status === status)
+        .filter(item => !keyword || item.submitterName.toLowerCase().includes(keyword))
+        .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+    }
+
+    function renderReviewRow(record) {
+      const identity = currentReviewIdentity();
+      const canDecide = identity.canReview && record.reviewerId === identity.id && record.status === "pending";
+      const status = reviewStatusMeta(record.status);
+      return `
+        <article class="review-row" data-review-row="${record.id}">
+          <label class="review-check">${canDecide ? `<input type="checkbox" data-review-select="${record.id}" ${reviewSelectedIds.has(record.id) ? "checked" : ""} aria-label="选择${escapeHtml(record.title)}" />` : ""}</label>
+          <div class="review-item-main">
+            <button class="review-thumb" type="button" data-review-preview="${record.id}" aria-label="放大查看图片"><img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" /></button>
+          </div>
+          <div class="review-card-info">
+            <strong>${escapeHtml(record.submitterName)}</strong>
+            <small>提交时间 ${escapeHtml(record.submittedAt)}</small>
+            <span class="review-status ${record.status}">${status.label}</span>
+            ${canDecide ? `<div class="review-card-actions"><button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="review-mini-btn approve" type="button" data-review-approve="${record.id}">通过</button></div>` : ""}
+          </div>
+        </article>`;
+    }
+
+    function renderEmployeeReviewCard(record) {
+      return `
+        <article class="employee-review-card">
+          <button class="employee-review-image" type="button" data-review-preview="${record.id}" aria-label="放大查看${escapeHtml(record.title)}">
+            <img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" />
+          </button>
+          <time class="employee-review-time" datetime="${escapeHtml(record.submittedAt)}">提交时间 ${escapeHtml(record.submittedAt)}</time>
+        </article>`;
+    }
+
+    function renderReviewCenter() {
+      const identity = currentReviewIdentity();
+      const reviewPage = $("#page-review");
+      reviewPage.classList.toggle("employee-view", !identity.canReview);
+      reviewPage.classList.toggle("manager-view", identity.canReview);
+      if (activeReviewTab === "inbox" && !identity.canReview) activeReviewTab = "mine";
+      if (identity.canReview) activeReviewTab = "inbox";
+      const status = $("#reviewStatusFilter").value;
+      $$("[data-employee-review-status]").forEach(button => button.classList.toggle("active", button.dataset.employeeReviewStatus === status));
+      const records = recordsForReviewTab();
+      $("#reviewList").innerHTML = records.length
+        ? records.map(identity.canReview ? renderReviewRow : renderEmployeeReviewCard).join("")
+        : `<div class="review-empty"><div><strong>${activeReviewTab === "mine" ? "还没有提交记录" : "当前没有待处理的图片"}</strong><p>${activeReviewTab === "mine" ? "在生图结果中选择满意的图片并提交审核，记录会显示在这里。" : "员工提交图片后，你可以在这里进行单张或批量审核。"}</p></div></div>`;
+      $("#reviewListHead").children[0].textContent = identity.canReview ? "选择" : "";
+      updateReviewBatchActions();
+      renderReviewNavigationCount();
+    }
+
+    function updateReviewBatchActions() {
+      const available = new Set(recordsForReviewTab().filter(item => item.status === "pending").map(item => item.id));
+      reviewSelectedIds = new Set([...reviewSelectedIds].filter(id => available.has(id)));
+      $("#reviewBatchActions").hidden = !currentReviewIdentity().canReview;
+      const toggle = $("#toggleReviewSelection");
+      const canSelect = currentReviewIdentity().canReview && available.size > 0;
+      toggle.hidden = !canSelect;
+      toggle.textContent = available.size > 0 && reviewSelectedIds.size === available.size ? "一键取消" : "一键全选";
+    }
+
+    function toggleReviewSelection() {
+      const available = recordsForReviewTab().filter(item => item.status === "pending").map(item => item.id);
+      if (!available.length) return;
+      const allSelected = available.every(id => reviewSelectedIds.has(id));
+      reviewSelectedIds = allSelected ? new Set() : new Set(available);
+      renderReviewCenter();
+    }
+
+    function requireReviewSelection() {
+      if (reviewSelectedIds.size) return true;
+      showToast("请先勾选需要审核的图片。");
+      return false;
+    }
+
+    function renderAllGeneratedReviewCards() {
+      generationRounds.forEach(round => {
+        const host = $(`#generationResult-${round.id}`);
+        if (host && round.results?.length) host.outerHTML = resultMarkup(round);
+      });
+      updateGeneratedReviewSelectionBar();
+    }
+
+    function canPushGeneratedReview(round, result) {
+      if (!round || !result || result.isGenerating) return false;
+      const identity = currentReviewIdentity();
+      if (result.creatorId && result.creatorId !== identity.id) return false;
+      const status = result.reviewStatus || (identity.canReview ? "approved" : "draft");
+      if (["draft", "rejected"].includes(status)) return true;
+      return identity.canReview && status === "approved" && !latestReviewForResult(resultReviewKey(round.id, result.id));
+    }
+
+    function selectedGeneratedResults(roundId = null) {
+      const selected = [];
+      generationRounds.forEach(round => {
+        if (roundId !== null && String(round.id) !== String(roundId)) return;
+        (round.results || []).forEach(result => {
+          if (generatedReviewSelection.has(resultReviewKey(round.id, result.id)) && canPushGeneratedReview(round, result)) selected.push({ round, result });
+        });
+      });
+      return selected;
+    }
+
+    function updateGeneratedReviewSelectionBar() {
+      const availableKeys = new Set();
+      generationRounds.forEach(round => {
+        (round.results || []).forEach(result => {
+          if (canPushGeneratedReview(round, result)) availableKeys.add(resultReviewKey(round.id, result.id));
+        });
+      });
+      generatedReviewSelection = new Set([...generatedReviewSelection].filter(key => availableKeys.has(key)));
+      const selectedCount = generatedReviewSelection.size;
+      const bar = $("#sessionReviewSelection");
+      if (!bar) return;
+      bar.hidden = availableKeys.size === 0;
+      $("#sessionReviewSelectionCount").textContent = `已选择 ${selectedCount} 张图片`;
+      $("#toggleGeneratedReviewSelection").textContent = selectedCount ? "取消选择" : "全选";
+      const submitButton = $("#submitGeneratedReviewSelection");
+      const hasReviewer = reviewSupervisorOptions(currentReviewIdentity().id).length > 0;
+      submitButton.disabled = selectedCount === 0 || !hasReviewer;
+      submitButton.textContent = currentReviewIdentity().canReview ? "批量推送复核" : "批量推送审核";
+    }
+
+    function toggleGeneratedReviewSelection() {
+      if (generatedReviewSelection.size) {
+        generatedReviewSelection.clear();
+      } else {
+        generationRounds.forEach(round => {
+          (round.results || []).forEach(result => {
+            if (canPushGeneratedReview(round, result)) generatedReviewSelection.add(resultReviewKey(round.id, result.id));
+          });
+        });
+      }
+      $$('[data-generated-review-select]').forEach(input => {
+        input.checked = generatedReviewSelection.has(resultReviewKey(input.dataset.roundId, input.dataset.resultId));
+      });
+      updateGeneratedReviewSelectionBar();
+    }
+
+    function pushGeneratedReviews(results) {
+      const pushableResults = results.filter(({ round, result }) => canPushGeneratedReview(round, result));
+      if (!pushableResults.length) {
+        showToast("请先勾选需要推送审核的图片。");
+        return;
+      }
+      const reviewerId = reviewDemoState.defaultReviewerId;
+      const reviewer = reviewSupervisorOptions(currentReviewIdentity().id).find(item => item.id === reviewerId);
+      if (!reviewer) {
+        showToast("请先在账号设置中设置一位启用的审核主管。");
+        return;
+      }
+      const identity = currentReviewIdentity();
+      const batchId = `B${Date.now().toString().slice(-8)}`;
+      const submittedAt = formatAgentDateTime();
+      pushableResults.forEach(({ round, result }, index) => {
+        const asset = mockAssets[result.assetIndex];
+        const imageSources = (result.images || []).map(image => image.previewUrl || image.url || image.src).filter(Boolean);
+        reviewDemoState.records.push({
+          id: `review-${Date.now()}-${index}`,
+          batchId,
+          resultKey: resultReviewKey(round.id, result.id),
+          title: asset?.name || `生成结果 ${result.id}`,
+          image: asset?.previewUrl || PRODUCT_IMAGE_URL,
+          requirement: result.prompt || "按本轮已确认的商品和画面需求生成。",
+          referenceImages: imageSources.slice(0, 3),
+          submitterId: identity.id,
+          submitterName: identity.name,
+          reviewerId,
+          reviewerName: reviewer.name,
+          status: "pending",
+          submittedAt,
+          reviewedAt: "",
+          reason: ""
+        });
+        result.reviewStatus = "pending";
+        result.reviewReason = "";
+        generatedReviewSelection.delete(resultReviewKey(round.id, result.id));
+      });
+      const count = pushableResults.length;
+      saveReviewDemoState();
+      renderAllGeneratedReviewCards();
+      renderReviewCenter();
+      showToast(`已推送 ${count} 张图片给${reviewer.name}审核。`);
+    }
+
+    function applyReviewDecision(ids, status, reason = "") {
+      const identity = currentReviewIdentity();
+      if (!identity.canReview) return;
+      let changed = 0;
+      reviewDemoState.records.forEach(record => {
+        if (!ids.includes(record.id) || record.reviewerId !== identity.id || record.status !== "pending") return;
+        record.status = status;
+        record.reason = status === "rejected" ? reason.trim() : "";
+        record.reviewedAt = formatAgentDateTime();
+        const linked = reviewResultByKey(record.resultKey);
+        if (linked) {
+          linked.result.reviewStatus = status;
+          linked.result.reviewReason = record.reason;
+        }
+        changed += 1;
+      });
+      reviewSelectedIds.clear();
+      saveReviewDemoState();
+      renderAllGeneratedReviewCards();
+      renderReviewCenter();
+      if (activeReviewDetailId && ids.includes(activeReviewDetailId)) closeReviewDetail();
+      showToast(status === "approved" ? `已审核 ${changed} 张图片。` : `已驳回 ${changed} 张图片。`);
+    }
+
+    function openReviewReject(ids) {
+      pendingReviewRejectIds = ids;
+      $("#reviewRejectDescription").textContent = ids.length > 1 ? `将驳回选中的 ${ids.length} 张图片` : "可以填写需要修改的内容";
+      $("#reviewRejectReason").value = "";
+      $("#reviewRejectModal").classList.add("show");
+      document.body.style.overflow = "hidden";
+      setTimeout(() => $("#reviewRejectReason").focus(), 0);
+    }
+
+    function closeReviewReject() {
+      $("#reviewRejectModal").classList.remove("show");
+      pendingReviewRejectIds = [];
+      document.body.style.overflow = "";
+    }
+
+    function confirmReviewReject() {
+      const ids = [...pendingReviewRejectIds];
+      const reason = $("#reviewRejectReason").value;
+      closeReviewReject();
+      applyReviewDecision(ids, "rejected", reason);
+    }
+
+    function openReviewDetail(recordId) {
+      const record = reviewDemoState.records.find(item => item.id === recordId);
+      if (!record) return;
+      const previewRecords = recordsForReviewTab();
+      const currentIndex = previewRecords.findIndex(item => item.id === recordId);
+      const previousRecord = previewRecords[currentIndex - 1];
+      const nextRecord = previewRecords[currentIndex + 1];
+      activeReviewDetailId = recordId;
+      $("#reviewDetailBody").innerHTML = `
+        <div class="review-preview-stage">
+          <button class="review-preview-switch" type="button" data-review-preview-previous="${previousRecord?.id || ""}" aria-label="上一张" ${previousRecord ? "" : "disabled"}>‹</button>
+          <div class="review-preview-art"><img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" /></div>
+          <button class="review-preview-switch" type="button" data-review-preview-next="${nextRecord?.id || ""}" aria-label="下一张" ${nextRecord ? "" : "disabled"}>›</button>
+        </div>`;
+      const canDecide = currentReviewIdentity().canReview && record.reviewerId === currentReviewIdentity().id && record.status === "pending";
+      $("#reviewDetailBody").insertAdjacentHTML("beforeend", `<div class="review-preview-meta"><span>提交人：<strong>${escapeHtml(record.submitterName)}</strong></span><span>提交时间：<strong>${escapeHtml(record.submittedAt)}</strong></span></div>`);
+      $("#reviewDetailActions").innerHTML = canDecide
+        ? `<button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="btn btn-primary" type="button" data-review-approve="${record.id}">通过</button>`
+        : "";
+      $("#reviewDetailModal").classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function renderReviewImagePreviewDetails(record) {
+      const canDecide = currentReviewIdentity().canReview && record.reviewerId === currentReviewIdentity().id && record.status === "pending";
+      $("#imagePreviewReviewSummary").innerHTML = `<span>账号：${escapeHtml(record.submitterName)}</span><span>提交时间：${escapeHtml(record.submittedAt)}</span>`;
+      $("#imagePreviewReviewActions").innerHTML = canDecide
+        ? `<button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="btn btn-primary" type="button" data-review-approve="${record.id}">通过</button>`
+        : "";
+      $("#imagePreviewReviewActions").hidden = !canDecide;
+    }
+
+    function openReviewImagePreview(recordId) {
+      const record = reviewDemoState.records.find(item => item.id === recordId);
+      if (!record) return;
+      const previewRecords = recordsForReviewTab();
+      const currentIndex = previewRecords.findIndex(item => item.id === recordId);
+      const previousRecord = previewRecords[currentIndex - 1];
+      const nextRecord = previewRecords[currentIndex + 1];
+      activeReviewDetailId = recordId;
+      $("#imagePreviewPrevious").dataset.reviewPreviewPrevious = previousRecord?.id || "";
+      $("#imagePreviewNext").dataset.reviewPreviewNext = nextRecord?.id || "";
+      $("#imagePreviewPrevious").hidden = !previousRecord;
+      $("#imagePreviewNext").hidden = !nextRecord;
+      openImagePreview(record.image, record.title, null, record);
+    }
+
+    function closeReviewDetail() {
+      $("#reviewDetailModal").classList.remove("show");
+      if ($("#imagePreviewModal").classList.contains("review-mode")) closeImagePreview();
+      activeReviewDetailId = null;
+      document.body.style.overflow = "";
+    }
+
+    function returnRejectedReviewToEditor(recordId) {
+      const record = reviewDemoState.records.find(item => item.id === recordId);
+      if (!record) return;
+      showPage("session");
+      $("#sessionPrompt").value = record.requirement;
+      $("#sessionPromptCount").textContent = String(record.requirement.length);
+      resizeComposerTextarea($("#sessionPrompt"));
+      $("#sessionPrompt").focus();
+      showToast("已带回被驳回图片的生成需求，可以修改后重新生成。", "查看原因", () => openReviewDetail(recordId));
+    }
+
+    function saveDefaultReviewerSetting() {
+      const reviewerId = $("#defaultReviewerSelect").value;
+      if (!reviewSupervisorOptions(currentReviewIdentity().id).some(item => item.id === reviewerId)) {
+        showToast("请选择一位启用的审核主管。");
+        return;
+      }
+      reviewDemoState.defaultReviewerId = reviewerId;
+      saveReviewDemoState();
+      closeAccountSettings();
+      showToast(`默认审核人已设置为${reviewerName(reviewerId)}。`);
+    }
+
+    $$('[data-demo-identity]').forEach(button => {
+      button.addEventListener('click', () => switchReviewIdentity(button.dataset.demoIdentity));
+    });
+
+    document.addEventListener("click", event => {
+      const employeeStatusTab = event.target.closest("[data-employee-review-status]");
+      if (employeeStatusTab) {
+        reviewSelectedIds.clear();
+        $("#reviewStatusFilter").value = employeeStatusTab.dataset.employeeReviewStatus;
+        renderReviewCenter();
+        return;
+      }
+      const submitOne = event.target.closest("[data-submit-generated-review]");
+      if (submitOne) {
+        const item = getGeneratedResult(submitOne.dataset.roundId, submitOne.dataset.resultId);
+        if (item.round && item.result) pushGeneratedReviews([item]);
+        return;
+      }
+      if (event.target.closest("[data-submit-selected-review]")) {
+        pushGeneratedReviews(selectedGeneratedResults());
+        return;
+      }
+      const preview = event.target.closest("[data-review-preview]");
+      if (preview) {
+        openReviewImagePreview(preview.dataset.reviewPreview);
+        return;
+      }
+      const detail = event.target.closest("[data-review-detail]");
+      if (detail) {
+        openReviewDetail(detail.dataset.reviewDetail);
+        return;
+      }
+      const previousPreview = event.target.closest("[data-review-preview-previous]");
+      if (previousPreview?.dataset.reviewPreviewPrevious) {
+        openReviewImagePreview(previousPreview.dataset.reviewPreviewPrevious);
+        return;
+      }
+      const nextPreview = event.target.closest("[data-review-preview-next]");
+      if (nextPreview?.dataset.reviewPreviewNext) {
+        openReviewImagePreview(nextPreview.dataset.reviewPreviewNext);
+        return;
+      }
+      const approve = event.target.closest("[data-review-approve]");
+      if (approve) {
+        applyReviewDecision([approve.dataset.reviewApprove], "approved");
+        return;
+      }
+      const reject = event.target.closest("[data-review-reject]");
+      if (reject) {
+        if (activeReviewDetailId === reject.dataset.reviewReject) closeReviewDetail();
+        openReviewReject([reject.dataset.reviewReject]);
+        return;
+      }
+      const edit = event.target.closest("[data-review-edit]");
+      if (edit) {
+        returnRejectedReviewToEditor(edit.dataset.reviewEdit);
+        return;
+      }
+      if (event.target.closest("[data-close-review-detail]") || event.target === $("#reviewDetailModal")) closeReviewDetail();
+      if (event.target.closest("[data-close-review-reject]") || event.target === $("#reviewRejectModal")) closeReviewReject();
+    });
+
+    document.addEventListener("change", event => {
+      if (event.target.matches("[data-asset-review-select]")) {
+        const assetIndex = Number(event.target.dataset.assetReviewSelect);
+        if (event.target.checked) assetReviewSelection.add(assetIndex);
+        else assetReviewSelection.delete(assetIndex);
+        updateAssetReviewSelectionBar();
+      }
+      if (event.target.matches("[data-generated-review-select]")) {
+        const key = resultReviewKey(event.target.dataset.roundId, event.target.dataset.resultId);
+        if (event.target.checked) generatedReviewSelection.add(key);
+        else generatedReviewSelection.delete(key);
+        updateGeneratedReviewSelectionBar();
+      }
+      if (event.target.matches("[data-review-select]")) {
+        if (event.target.checked) reviewSelectedIds.add(event.target.dataset.reviewSelect);
+        else reviewSelectedIds.delete(event.target.dataset.reviewSelect);
+        updateReviewBatchActions();
+      }
+    });
+
+    $("#reviewSearchButton").addEventListener("click", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
+    $("#toggleReviewSelection").addEventListener("click", toggleReviewSelection);
+    $("#reviewSearchInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); reviewSelectedIds.clear(); renderReviewCenter(); }
+    });
+    $("#reviewStatusFilter").addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
+    $("#batchApproveReview").addEventListener("click", () => {
+      if (requireReviewSelection()) applyReviewDecision([...reviewSelectedIds], "approved");
+    });
+    $("#batchRejectReview").addEventListener("click", () => {
+      if (requireReviewSelection()) openReviewReject([...reviewSelectedIds]);
+    });
+    $("#toggleGeneratedReviewSelection").addEventListener("click", toggleGeneratedReviewSelection);
+    $("#confirmReviewReject").addEventListener("click", confirmReviewReject);
+    $("#saveDefaultReviewer").addEventListener("click", saveDefaultReviewerSetting);
+    $("#reviewRejectReason").addEventListener("keydown", event => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") confirmReviewReject();
+    });
+
     // 页面初始化
     initAssetState();
+    syncReviewIdentity();
+    renderReviewCenter();
     syncSessionGenerationSettings();
     renderImagePicker("main");
     renderImagePicker("session");
