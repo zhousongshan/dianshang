@@ -8560,6 +8560,7 @@
     .review-toolbar select { width: 100%; min-height: 38px; border: 1px solid #dfe4ed; border-radius: 9px; color: #344054; background: #fff; font: inherit; font-size: 13px; outline: none; }
     .review-search input { padding: 0 13px; }
     .review-toolbar select { width: 132px; padding: 0 10px; }
+    .review-toolbar input[type="date"] { min-height: 38px; padding: 0 10px; border: 1px solid #dfe4ed; border-radius: 9px; color: #344054; background: #fff; font: inherit; font-size: 13px; outline: none; }
     .review-search input:focus,
     .review-toolbar select:focus { border-color: #8a82ee; box-shadow: 0 0 0 3px rgba(99,91,223,.1); }
     .review-batch-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
@@ -8595,7 +8596,11 @@
     .review-page.employee-view .review-list-head { display: none; }
     .review-page.employee-view .employee-review-tabs { display: flex; }
     .review-page.employee-view .review-workspace { box-shadow: 0 6px 20px rgba(28,39,65,.04); }
-    .review-page.employee-view .review-toolbar { display: none; }
+    .review-page.employee-view .review-toolbar { display: flex; margin: -4px 0 18px; }
+    .review-page.employee-view .review-search-stack,
+    .review-page.employee-view #reviewSearchButton,
+    .review-page.employee-view .review-toolbar > .review-filter-control:not(.review-date-filter),
+    .review-page.employee-view .review-batch-actions { display: none; }
     .review-filter-control { display: inline-flex; align-items: center; gap: 9px; color: #5f6879; font-size: 13px; font-weight: 700; }
     .review-page.employee-view .review-toolbar select { width: 148px; }
     .review-page.employee-view .review-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 320px)); justify-content: start; gap: 20px; min-height: 0; padding: 22px; background: #fcfcfe; }
@@ -8605,6 +8610,9 @@
     .employee-review-image:hover img { transform: scale(1.025); }
     .employee-review-image:focus-visible { outline: 3px solid rgba(99,91,223,.28); outline-offset: 3px; }
     .employee-review-time { display: block; margin-top: 9px; color: #7b8496; font-size: 12px; line-height: 1.45; }
+    .employee-review-card > small { display: block; margin-top: 4px; color: #7b8496; font-size: 12px; line-height: 1.45; }
+    .employee-review-meta { display: grid; gap: 5px; padding-top: 10px; color: #697386; font-size: 12px; line-height: 1.45; }
+    .employee-review-meta time { color: inherit; }
     .review-page.employee-view .review-empty { grid-column: 1 / -1; }
     .review-page.manager-view .review-list-head { display: none; }
     .review-page.manager-view .review-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 560px)); justify-content: start; gap: 16px; min-height: 0; padding: 20px; background: #fcfcfe; }
@@ -8707,7 +8715,8 @@
     .review-select-all-btn:hover { border-color: #958bea; color: #4036ba; background: #eeebff; }
     .review-select-all-btn:focus-visible { outline: 3px solid rgba(99, 91, 223, .24); outline-offset: 3px; border-radius: 3px; }
     .review-search input,
-    .review-toolbar select {
+    .review-toolbar select,
+    .review-toolbar input[type="date"] {
       min-height: 44px;
       border-color: #dfe3ec;
       border-radius: 10px;
@@ -8719,6 +8728,9 @@
     .review-search input { padding: 0 14px; }
     .review-toolbar select { width: 180px; }
     .review-filter-control { gap: 10px; color: #344054; font-weight: 800; }
+    .review-date-filter { white-space: nowrap; }
+    .review-date-filter input[type="date"] { width: 152px; min-height: 44px; padding: 0 10px; border-color: #dfe3ec; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 24, 40, .04); font-weight: 700; }
+    .review-date-filter span { color: #98a2b3; font-weight: 600; }
     .review-mini-btn { min-height: 44px; border-radius: 10px; font-size: 13px; }
     .review-batch-actions { gap: 10px; }
     .review-batch-actions .review-mini-btn { min-width: 96px; }
@@ -9625,6 +9637,11 @@
                     <option value="approved">已审核</option>
                     <option value="rejected">驳回</option>
                   </select>
+                </label>
+                <label class="review-filter-control review-date-filter">首次提交时间
+                  <input id="reviewFirstSubmittedStart" type="date" aria-label="首次提交开始日期" />
+                  <span>至</span>
+                  <input id="reviewFirstSubmittedEnd" type="date" aria-label="首次提交结束日期" />
                 </label>
                 <div class="review-batch-actions" id="reviewBatchActions">
                   <button class="review-mini-btn approve" id="batchApproveReview" type="button">批量通过</button>
@@ -16250,6 +16267,8 @@
           reviewerName: reviewer.name,
           status: "pending",
           submittedAt,
+          firstSubmittedAt: submittedAt,
+          latestSubmittedAt: submittedAt,
           reviewedAt: "",
           reason: ""
         });
@@ -18577,17 +18596,24 @@
       const identity = currentReviewIdentity();
       const status = $("#reviewStatusFilter")?.value || "all";
       const keyword = identity.canReview ? ($("#reviewSearchInput")?.value || "").trim().toLowerCase() : "";
+      const startDate = $("#reviewFirstSubmittedStart")?.value || "";
+      const endDate = $("#reviewFirstSubmittedEnd")?.value || "";
       return reviewDemoState.records
         .filter(item => activeReviewTab === "mine" ? item.submitterId === identity.id : item.reviewerId === identity.id)
         .filter(item => status === "all" || item.status === status)
         .filter(item => !keyword || item.submitterName.toLowerCase().includes(keyword))
-        .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+        .filter(item => {
+          const firstSubmittedDate = String(item.firstSubmittedAt || item.submittedAt || "").slice(0, 10);
+          return (!startDate || firstSubmittedDate >= startDate) && (!endDate || firstSubmittedDate <= endDate);
+        })
+        .sort((a, b) => String(b.latestSubmittedAt || b.submittedAt).localeCompare(String(a.latestSubmittedAt || a.submittedAt)));
     }
 
     function renderReviewRow(record) {
       const identity = currentReviewIdentity();
       const canDecide = identity.canReview && record.reviewerId === identity.id && record.status === "pending";
       const status = reviewStatusMeta(record.status);
+      const latestSubmittedAt = record.latestSubmittedAt || record.submittedAt;
       return `
         <article class="review-row" data-review-row="${record.id}">
           <label class="review-check">${canDecide ? `<input type="checkbox" data-review-select="${record.id}" ${reviewSelectedIds.has(record.id) ? "checked" : ""} aria-label="选择${escapeHtml(record.title)}" />` : ""}</label>
@@ -18595,8 +18621,10 @@
             <button class="review-thumb" type="button" data-review-preview="${record.id}" aria-label="放大查看图片"><img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" /></button>
           </div>
           <div class="review-card-info">
-            <strong>${escapeHtml(record.submitterName)}</strong>
-            <small>提交时间 ${escapeHtml(record.submittedAt)}</small>
+            <strong>提交人：${escapeHtml(record.submitterName)}</strong>
+            <small>审核人：${escapeHtml(record.reviewerName || "—")}</small>
+            <small>提交时间：${escapeHtml(latestSubmittedAt)}</small>
+            <small>审核时间：${escapeHtml(record.reviewedAt || "—")}</small>
             <span class="review-status ${record.status}">${status.label}</span>
             ${canDecide ? `<div class="review-card-actions"><button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="review-mini-btn approve" type="button" data-review-approve="${record.id}">通过</button></div>` : ""}
           </div>
@@ -18604,12 +18632,17 @@
     }
 
     function renderEmployeeReviewCard(record) {
+      const submittedAt = record.latestSubmittedAt || record.submittedAt;
       return `
         <article class="employee-review-card">
           <button class="employee-review-image" type="button" data-review-preview="${record.id}" aria-label="放大查看${escapeHtml(record.title)}">
             <img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" />
           </button>
-          <time class="employee-review-time" datetime="${escapeHtml(record.submittedAt)}">提交时间 ${escapeHtml(record.submittedAt)}</time>
+          <div class="employee-review-meta">
+            <span>审核人：${escapeHtml(record.reviewerName || "—")}</span>
+            <time datetime="${escapeHtml(submittedAt)}">提交时间：${escapeHtml(submittedAt)}</time>
+            <span>审核时间：${escapeHtml(record.reviewedAt || "—")}</span>
+          </div>
         </article>`;
     }
 
@@ -18751,6 +18784,8 @@
           reviewerName: reviewer.name,
           status: "pending",
           submittedAt,
+          firstSubmittedAt: submittedAt,
+          latestSubmittedAt: submittedAt,
           reviewedAt: "",
           reason: ""
         });
@@ -18976,6 +19011,9 @@
       if (event.key === "Enter") { event.preventDefault(); reviewSelectedIds.clear(); renderReviewCenter(); }
     });
     $("#reviewStatusFilter").addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
+    ["#reviewFirstSubmittedStart", "#reviewFirstSubmittedEnd"].forEach(selector => {
+      $(selector).addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
+    });
     $("#batchApproveReview").addEventListener("click", () => {
       if (requireReviewSelection()) applyReviewDecision([...reviewSelectedIds], "approved");
     });
