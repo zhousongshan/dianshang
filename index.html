@@ -8550,6 +8550,7 @@
     .review-page-heading h1 { margin: 0; color: #172033; font-size: 28px; line-height: 1.25; }
     .review-page-heading p { margin: 7px 0 0; color: #7b8496; font-size: 14px; }
     .review-workspace { overflow: hidden; border: 1px solid #e4e8f0; border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(28,39,65,.05); }
+    .review-filter-row { display: flex; align-items: center; gap: 58px; border-bottom: 1px solid #edf0f5; }
     .employee-review-tabs { display: none; gap: 28px; padding: 0 22px; border-bottom: 1px solid #edf0f5; }
     .employee-review-tab { position: relative; min-height: 54px; padding: 0 2px; border: 0; color: #7e8798; background: transparent; font: inherit; font-size: 14px; font-weight: 750; cursor: pointer; }
     .employee-review-tab.active { color: #4f46c8; }
@@ -8595,8 +8596,12 @@
     .review-page.employee-view .review-page-heading p,
     .review-page.employee-view .review-list-head { display: none; }
     .review-page.employee-view .employee-review-tabs { display: flex; }
+    .employee-review-date { display: none; }
+    .review-page.employee-view .employee-review-date { display: inline-flex; }
+    .review-page.employee-view .manager-review-date { display: none; }
+    .review-page.employee-view .review-filter-row { border-bottom-color: #e4e7ee; }
     .review-page.employee-view .review-workspace { box-shadow: 0 6px 20px rgba(28,39,65,.04); }
-    .review-page.employee-view .review-toolbar { display: flex; margin: -4px 0 18px; }
+    .review-page.employee-view .review-toolbar { display: none; }
     .review-page.employee-view .review-search-stack,
     .review-page.employee-view #reviewSearchButton,
     .review-page.employee-view .review-toolbar > .review-filter-control:not(.review-date-filter),
@@ -8702,10 +8707,11 @@
     .employee-review-tabs {
       gap: 28px;
       min-height: 48px;
-      margin-bottom: 20px;
+      margin-bottom: 0;
       padding: 0;
       border-bottom-color: #e4e7ee;
     }
+    .review-page.employee-view .employee-review-tabs { align-self: stretch; }
     .employee-review-tab { padding: 0 18px; color: #475467; font-size: 15px; }
     .review-toolbar { min-height: 44px; align-items: flex-start; padding: 0; border: 0; background: transparent; }
     .review-search { flex: 0 1 360px; max-width: 360px; }
@@ -8729,12 +8735,15 @@
     .review-toolbar select { width: 180px; }
     .review-filter-control { gap: 10px; color: #344054; font-weight: 800; }
     .review-date-filter { white-space: nowrap; }
+    .review-filter-row > .employee-review-date { display: none; }
+    .review-filter-row > .review-date-filter { margin: 0; }
     .review-date-filter input[type="date"] { width: 152px; min-height: 44px; padding: 0 10px; border-color: #dfe3ec; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 24, 40, .04); font-weight: 700; }
     .review-date-filter span { color: #98a2b3; font-weight: 600; }
     .review-mini-btn { min-height: 44px; border-radius: 10px; font-size: 13px; }
     .review-batch-actions { gap: 10px; }
     .review-batch-actions .review-mini-btn { min-width: 96px; }
     .review-list { margin-top: 20px; }
+    .review-page.employee-view .review-list { margin-top: 12px; }
     .review-page.employee-view .review-list {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 18px;
@@ -9258,7 +9267,6 @@
                     <span>可跨本次会话选择多张图片，提交给账号设置中的默认审核主管</span>
                   </div>
                   <div class="session-review-selection-actions">
-                    <button class="btn" id="toggleGeneratedReviewSelection" type="button">全选</button>
                     <button class="btn btn-primary review-submit-btn" id="submitGeneratedReviewSelection" type="button" data-submit-selected-review disabled>批量推送审核</button>
                   </div>
                 </div>
@@ -9618,11 +9626,18 @@
             </div>
 
             <section class="review-workspace">
-              <div class="employee-review-tabs" role="tablist" aria-label="审核状态">
-                <button class="employee-review-tab active" type="button" role="tab" data-employee-review-status="all">全部</button>
-                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="pending">未审核</button>
-                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="approved">已通过</button>
-                <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="rejected">驳回</button>
+              <div class="review-filter-row">
+                <div class="employee-review-tabs" role="tablist" aria-label="审核状态">
+                  <button class="employee-review-tab active" type="button" role="tab" data-employee-review-status="all">全部</button>
+                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="pending">未审核</button>
+                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="approved">已通过</button>
+                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="rejected">驳回</button>
+                </div>
+                <label class="review-filter-control review-date-filter employee-review-date">首次提交时间
+                  <input type="date" data-review-date="start" aria-label="首次提交开始日期" />
+                  <span>至</span>
+                  <input type="date" data-review-date="end" aria-label="首次提交结束日期" />
+                </label>
               </div>
               <div class="review-toolbar">
                 <div class="review-search-stack">
@@ -9638,10 +9653,10 @@
                     <option value="rejected">驳回</option>
                   </select>
                 </label>
-                <label class="review-filter-control review-date-filter">首次提交时间
-                  <input id="reviewFirstSubmittedStart" type="date" aria-label="首次提交开始日期" />
+                <label class="review-filter-control review-date-filter manager-review-date">首次提交时间
+                  <input type="date" data-review-date="start" aria-label="首次提交开始日期" />
                   <span>至</span>
-                  <input id="reviewFirstSubmittedEnd" type="date" aria-label="首次提交结束日期" />
+                  <input type="date" data-review-date="end" aria-label="首次提交结束日期" />
                 </label>
                 <div class="review-batch-actions" id="reviewBatchActions">
                   <button class="review-mini-btn approve" id="batchApproveReview" type="button">批量通过</button>
@@ -15489,13 +15504,12 @@
       const reviewMeta = reviewStatusMeta(reviewStatus);
       const canSubmitReview = canPushGeneratedReview(round, result);
       const canUseImage = reviewStatus === "approved";
-      const useRestriction = canUseImage ? "" : ' title="审核通过后可收藏和下载"';
       const pushLabel = currentReviewIdentity().canReview ? "推送复核" : "推送审核";
       return `
         <div class="generated-result-item ${result.isGenerating ? "is-regenerating" : ""}" id="generatedResult-${round.id}-${result.id}">
           ${canSubmitReview ? `<label class="generated-review-select" title="选择图片"><input type="checkbox" data-generated-review-select data-round-id="${round.id}" data-result-id="${result.id}" ${generatedReviewSelection.has(reviewKey) ? "checked" : ""} aria-label="选择${escapeHtml(resultName)}${pushLabel}" /></label>` : ""}
           <div class="campaign-poster has-real-image" role="img" aria-label="${escapeHtml(resultName)}">
-            <button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" ${canUseImage ? `title="${isFavorite ? "取消收藏" : "加入收藏"}"` : useRestriction} aria-label="${canUseImage ? (isFavorite ? "取消收藏" : "加入收藏") : "审核通过后可收藏"}" aria-pressed="${isFavorite}" ${canUseImage ? "" : "disabled"}>${isFavorite ? "♥" : "♡"}</button>
+            ${canUseImage ? `<button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>` : ""}
             <img class="campaign-result-image" data-image-preview src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
           </div>
           <strong class="generated-item-name" title="${escapeHtml(resultName)}">${escapeHtml(resultName)}</strong>
@@ -15507,11 +15521,10 @@
           </div>
          <div class="generated-actions">
             ${canSubmitReview ? `<button class="btn review-submit-btn" data-submit-generated-review data-round-id="${round.id}" data-result-id="${result.id}">${pushLabel}</button>` : ""}
-            <button class="btn" data-download-generated data-round-id="${round.id}" data-result-id="${result.id}" ${canUseImage ? "" : `disabled${useRestriction}`}>⇩ 下载</button>
+            ${canUseImage ? `<button class="btn" data-download-generated data-round-id="${round.id}" data-result-id="${result.id}">⇩ 下载</button>` : ""}
            <button class="btn" data-rename-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重命名</button>
            <button class="btn" data-edit-generated data-round-id="${round.id}" data-result-id="${result.id}">✎ 重新编辑</button>
            <button class="btn" data-regenerate-generated data-round-id="${round.id}" data-result-id="${result.id}" ${result.isGenerating ? "disabled" : ""}>↻ 再次生成</button>
-            <button class="btn danger" data-delete-generated data-round-id="${round.id}" data-result-id="${result.id}">删除</button>
          </div>
         </div>
       `;
@@ -15648,32 +15661,6 @@
         return;
       }
       downloadResource(asset.previewUrl || PRODUCT_IMAGE_URL, `${asset.name || "生成图片"}.png`);
-    }
-
-    function deleteGeneratedResult(roundId, resultId) {
-      const { round, result } = getGeneratedResult(roundId, resultId);
-      const asset = result ? mockAssets[result.assetIndex] : null;
-      if (!round || !result || !asset) return;
-      openConfirmModal({
-        title: "删除生成图片？",
-        desc: `确认删除“${asset.name || "生成图片"}”吗？删除后不会影响同一轮的其他图片。`,
-        confirmText: "确认删除",
-        onConfirm: () => {
-          round.results = (round.results || []).filter(item => item.id !== result.id);
-          asset.deleted = true;
-          asset.favorite = false;
-          asset.folderId = "";
-          const resultHost = $(`#generationResult-${round.id}`);
-          if (resultHost) {
-            if (round.results.length) resultHost.outerHTML = resultMarkup(round);
-            else resultHost.remove();
-          }
-          generatedReviewSelection.delete(resultReviewKey(round.id, result.id));
-          updateGeneratedReviewSelectionBar();
-          renderAssets();
-          showToast("生成图片已删除。");
-        }
-      });
     }
 
     function forEachGeneratedResultByAssetIndex(assetIndex, callback) {
@@ -17389,11 +17376,6 @@
         return;
       }
 
-      const deleteGeneratedBtn = event.target.closest("[data-delete-generated]");
-      if (deleteGeneratedBtn) {
-        deleteGeneratedResult(deleteGeneratedBtn.dataset.roundId, deleteGeneratedBtn.dataset.resultId);
-        return;
-      }
 
      const renameGeneratedBtn = event.target.closest("[data-rename-generated]");
       if (renameGeneratedBtn) {
@@ -18596,8 +18578,10 @@
       const identity = currentReviewIdentity();
       const status = $("#reviewStatusFilter")?.value || "all";
       const keyword = identity.canReview ? ($("#reviewSearchInput")?.value || "").trim().toLowerCase() : "";
-      const startDate = $("#reviewFirstSubmittedStart")?.value || "";
-      const endDate = $("#reviewFirstSubmittedEnd")?.value || "";
+      const reviewPage = document.querySelector(".review-page");
+      const dateFilterScope = reviewPage?.classList.contains("employee-view") ? ".employee-review-date" : ".manager-review-date";
+      const startDate = document.querySelector(`${dateFilterScope} [data-review-date="start"]`)?.value || "";
+      const endDate = document.querySelector(`${dateFilterScope} [data-review-date="end"]`)?.value || "";
       return reviewDemoState.records
         .filter(item => activeReviewTab === "mine" ? item.submitterId === identity.id : item.reviewerId === identity.id)
         .filter(item => status === "all" || item.status === status)
@@ -18729,27 +18713,10 @@
       if (!bar) return;
       bar.hidden = availableKeys.size === 0;
       $("#sessionReviewSelectionCount").textContent = `已选择 ${selectedCount} 张图片`;
-      $("#toggleGeneratedReviewSelection").textContent = selectedCount ? "取消选择" : "全选";
       const submitButton = $("#submitGeneratedReviewSelection");
       const hasReviewer = reviewSupervisorOptions(currentReviewIdentity().id).length > 0;
       submitButton.disabled = selectedCount === 0 || !hasReviewer;
       submitButton.textContent = currentReviewIdentity().canReview ? "批量推送复核" : "批量推送审核";
-    }
-
-    function toggleGeneratedReviewSelection() {
-      if (generatedReviewSelection.size) {
-        generatedReviewSelection.clear();
-      } else {
-        generationRounds.forEach(round => {
-          (round.results || []).forEach(result => {
-            if (canPushGeneratedReview(round, result)) generatedReviewSelection.add(resultReviewKey(round.id, result.id));
-          });
-        });
-      }
-      $$('[data-generated-review-select]').forEach(input => {
-        input.checked = generatedReviewSelection.has(resultReviewKey(input.dataset.roundId, input.dataset.resultId));
-      });
-      updateGeneratedReviewSelectionBar();
     }
 
     function pushGeneratedReviews(results) {
@@ -19011,8 +18978,8 @@
       if (event.key === "Enter") { event.preventDefault(); reviewSelectedIds.clear(); renderReviewCenter(); }
     });
     $("#reviewStatusFilter").addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
-    ["#reviewFirstSubmittedStart", "#reviewFirstSubmittedEnd"].forEach(selector => {
-      $(selector).addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); });
+    ['[data-review-date="start"]', '[data-review-date="end"]'].forEach(selector => {
+      $$(selector).forEach(input => input.addEventListener("change", () => { reviewSelectedIds.clear(); renderReviewCenter(); }));
     });
     $("#batchApproveReview").addEventListener("click", () => {
       if (requireReviewSelection()) applyReviewDecision([...reviewSelectedIds], "approved");
@@ -19020,7 +18987,6 @@
     $("#batchRejectReview").addEventListener("click", () => {
       if (requireReviewSelection()) openReviewReject([...reviewSelectedIds]);
     });
-    $("#toggleGeneratedReviewSelection").addEventListener("click", toggleGeneratedReviewSelection);
     $("#confirmReviewReject").addEventListener("click", confirmReviewReject);
     $("#saveDefaultReviewer").addEventListener("click", saveDefaultReviewerSetting);
     $("#reviewRejectReason").addEventListener("keydown", event => {
