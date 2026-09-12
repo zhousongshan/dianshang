@@ -9264,9 +9264,10 @@
                 <div class="session-review-selection" id="sessionReviewSelection" hidden>
                   <div class="session-review-selection-copy">
                     <strong id="sessionReviewSelectionCount">已选择 0 张图片</strong>
-                    <span>可跨本次会话选择多张图片，提交给账号设置中的默认审核主管</span>
+                    <span>勾选图片后可批量下载；普通用户也可提交给默认审核主管</span>
                   </div>
                   <div class="session-review-selection-actions">
+                    <button class="btn" id="downloadGeneratedReviewSelection" type="button" disabled>批量下载</button>
                     <button class="btn btn-primary review-submit-btn" id="submitGeneratedReviewSelection" type="button" data-submit-selected-review disabled>批量推送审核</button>
                   </div>
                 </div>
@@ -15507,7 +15508,7 @@
       const pushLabel = currentReviewIdentity().canReview ? "推送复核" : "推送审核";
       return `
         <div class="generated-result-item ${result.isGenerating ? "is-regenerating" : ""}" id="generatedResult-${round.id}-${result.id}">
-          ${canSubmitReview ? `<label class="generated-review-select" title="选择图片"><input type="checkbox" data-generated-review-select data-round-id="${round.id}" data-result-id="${result.id}" ${generatedReviewSelection.has(reviewKey) ? "checked" : ""} aria-label="选择${escapeHtml(resultName)}${pushLabel}" /></label>` : ""}
+          ${canSubmitReview || canUseImage ? `<label class="generated-review-select" title="选择图片"><input type="checkbox" data-generated-review-select data-round-id="${round.id}" data-result-id="${result.id}" ${generatedReviewSelection.has(reviewKey) ? "checked" : ""} aria-label="选择${escapeHtml(resultName)}" /></label>` : ""}
           <div class="campaign-poster has-real-image" role="img" aria-label="${escapeHtml(resultName)}">
             ${canUseImage ? `<button class="generated-favorite-btn ${isFavorite ? "active" : ""}" type="button" data-toggle-generated-favorite data-round-id="${round.id}" data-result-id="${result.id}" title="${isFavorite ? "取消收藏" : "加入收藏"}" aria-label="${isFavorite ? "取消收藏" : "加入收藏"}" aria-pressed="${isFavorite}">${isFavorite ? "♥" : "♡"}</button>` : ""}
             <img class="campaign-result-image" data-image-preview src="${escapeHtml(resultImage)}" alt="${escapeHtml(resultName)}" />
@@ -18700,11 +18701,36 @@
       return selected;
     }
 
+    function selectedGeneratedDownloadResults() {
+      const selected = [];
+      generationRounds.forEach(round => {
+        (round.results || []).forEach(result => {
+          const status = result.reviewStatus || latestReviewForResult(resultReviewKey(round.id, result.id))?.status || "draft";
+          if (generatedReviewSelection.has(resultReviewKey(round.id, result.id)) && status === "approved") selected.push({ round, result });
+        });
+      });
+      return selected;
+    }
+
+    function downloadGeneratedReviewSelection() {
+      const downloadableResults = selectedGeneratedDownloadResults();
+      if (!downloadableResults.length) {
+        showToast("请先勾选审核通过的图片。");
+        return;
+      }
+      downloadableResults.forEach(({ round, result }) => {
+        const asset = mockAssets[result.assetIndex];
+        downloadResource(asset?.previewUrl || PRODUCT_IMAGE_URL, `${asset?.name || `生成结果 ${round.id}-${result.id}`}.png`);
+      });
+      showToast(`已开始下载 ${downloadableResults.length} 张图片。`);
+    }
+
     function updateGeneratedReviewSelectionBar() {
       const availableKeys = new Set();
       generationRounds.forEach(round => {
         (round.results || []).forEach(result => {
-          if (canPushGeneratedReview(round, result)) availableKeys.add(resultReviewKey(round.id, result.id));
+          const status = result.reviewStatus || latestReviewForResult(resultReviewKey(round.id, result.id))?.status || "draft";
+          if (canPushGeneratedReview(round, result) || status === "approved") availableKeys.add(resultReviewKey(round.id, result.id));
         });
       });
       generatedReviewSelection = new Set([...generatedReviewSelection].filter(key => availableKeys.has(key)));
@@ -18713,9 +18739,11 @@
       if (!bar) return;
       bar.hidden = availableKeys.size === 0;
       $("#sessionReviewSelectionCount").textContent = `已选择 ${selectedCount} 张图片`;
+      const downloadButton = $("#downloadGeneratedReviewSelection");
+      downloadButton.disabled = selectedGeneratedDownloadResults().length === 0;
       const submitButton = $("#submitGeneratedReviewSelection");
       const hasReviewer = reviewSupervisorOptions(currentReviewIdentity().id).length > 0;
-      submitButton.disabled = selectedCount === 0 || !hasReviewer;
+      submitButton.disabled = selectedGeneratedResults().length === 0 || !hasReviewer;
       submitButton.textContent = currentReviewIdentity().canReview ? "批量推送复核" : "批量推送审核";
     }
 
@@ -18910,6 +18938,10 @@
       }
       if (event.target.closest("[data-submit-selected-review]")) {
         pushGeneratedReviews(selectedGeneratedResults());
+        return;
+      }
+      if (event.target.closest("#downloadGeneratedReviewSelection")) {
+        downloadGeneratedReviewSelection();
         return;
       }
       const preview = event.target.closest("[data-review-preview]");
