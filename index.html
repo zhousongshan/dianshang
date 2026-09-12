@@ -18683,10 +18683,10 @@
     function canPushGeneratedReview(round, result) {
       if (!round || !result || result.isGenerating) return false;
       const identity = currentReviewIdentity();
+      if (identity.canReview) return false;
       if (result.creatorId && result.creatorId !== identity.id) return false;
       const status = result.reviewStatus || (identity.canReview ? "approved" : "draft");
-      if (["draft", "rejected"].includes(status)) return true;
-      return identity.canReview && status === "approved" && !latestReviewForResult(resultReviewKey(round.id, result.id));
+      return ["draft", "rejected"].includes(status);
     }
 
     function selectedGeneratedResults(roundId = null) {
