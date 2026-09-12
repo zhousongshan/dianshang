@@ -9722,7 +9722,7 @@
                   <option value="local">本地上传</option>
                 </select>
               </label>
-              <label><span>审核状态</span>
+              <label class="asset-review-status-control"><span>审核状态</span>
                 <select class="asset-control-select" id="assetReviewStatusFilter" aria-label="审核状态">
                   <option value="all">全部状态</option>
                   <option value="unreviewed">未审核</option>
@@ -16101,6 +16101,7 @@
       const pathbar = $("#assetPathbar");
       const resolvedFavoriteFolderId = getFolderById(activeFavoriteFolderId) ? activeFavoriteFolderId : ROOT_FOLDER_ID;
 
+      if (isFavoriteScope) activeAssetReviewStatus = "all";
       sectionTitle.hidden = true;
       fileShell.classList.toggle("is-favorite", isFavoriteScope);
       fileShell.classList.toggle("is-folder-root", isFavoriteScope && resolvedFavoriteFolderId === ROOT_FOLDER_ID);
@@ -16114,6 +16115,7 @@
       $("#assetTypeSelect").value = activeAssetType;
       $("#assetSourceFilter").value = activeAssetSource;
       $("#assetReviewStatusFilter").value = activeAssetReviewStatus;
+      $(".asset-review-status-control").hidden = isFavoriteScope;
       $("#assetDateFilter").value = activeAssetDate;
       $$("[data-asset-scope]").forEach(button => {
         const active = button.dataset.assetScope === activeAssetScope;
