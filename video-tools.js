@@ -136,4 +136,3 @@
   else if(!aiApplications.some(a=>a.id===saved))activeAiApplicationId='video-removal';
   renderAiApplications();renderAiAppEditor();
 })();
-
