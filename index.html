@@ -5692,8 +5692,11 @@
 
     .video-chat-main { position: relative; display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr); overflow: hidden; }
     .video-chat-main:not(.workspace-collapsed) { grid-template-columns: minmax(420px, 40%) minmax(0, 60%); }
-    .video-chat-main.workspace-collapsed { grid-template-columns: minmax(0, 1fr); }
+    .video-chat-main.workspace-collapsed { grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: minmax(0, 1fr) auto; }
     .video-chat-column { position: relative; display: grid; min-width: 0; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+    .workspace-collapsed .video-chat-column { display: contents; }
+    .workspace-collapsed .video-chat-thread { grid-column: 1; grid-row: 1; }
+    .workspace-collapsed .video-chat-composer-wrap { grid-column: 1 / -1; grid-row: 2; }
 
     .video-chat-thread {
       min-height: 0;
@@ -5702,7 +5705,7 @@
       background: transparent;
     }
 
-    .video-chat-thread.is-empty { display: grid; place-items: start center; padding-top: 52px; }
+    .video-chat-thread.is-empty { display: grid; place-items: center; padding: 30px 34px; }
 
     .video-chat-welcome { max-width: 520px; color: #667085; text-align: center; }
     .video-chat-welcome-icon { display: grid; width: 52px; height: 52px; margin: 0 auto 16px; place-items: center; border-radius: 14px; color: #fff; background: #6d3bf5; box-shadow: 0 12px 28px rgba(109, 59, 245, .22); font-size: 14px; font-weight: 900; }
@@ -5956,14 +5959,75 @@
     .video-send-btn:disabled { opacity: .45; cursor: not-allowed; }
 
     .video-artifact-workspace { position: relative; min-width: 0; overflow: hidden; border-left: 1px solid #e2e5ea; background: #f3f5fa; }
-    .workspace-collapsed .video-artifact-workspace { position: absolute; inset: 0; z-index: 230; border-left: 0; background: transparent; pointer-events: none; }
+    .workspace-collapsed .video-artifact-workspace { position: relative; inset: auto; grid-column: 2; grid-row: 1; border-left: 0; background: transparent; }
     .video-artifact-inner { display: grid; width: 100%; height: 100%; grid-template-rows: auto minmax(0, 1fr); }
     .workspace-collapsed .video-artifact-inner { display: none; }
-    .video-resource-closed-state { display: none; height: 100%; align-items: center; justify-content: center; }
-    .workspace-collapsed .video-resource-closed-state { position: absolute; inset: 0 0 0 60%; display: flex; justify-content: flex-end; padding-right: 24px; pointer-events: none; }
-    .workspace-collapsed .video-resource-closed-state button { pointer-events: auto; }
-    .video-resource-closed-state button { display: inline-flex; height: 40px; align-items: center; gap: 9px; padding: 0 18px; border: 0; border-radius: 22px; color: #344054; background: #e5e6e9; font-size: 12px; font-weight: 800; }
-    .video-resource-closed-state button:hover { background: #dcdde1; }
+    .video-resource-closed-state { display: none; height: 100%; align-items: center; justify-content: center; padding: 20px 24px 20px 16px; }
+    .workspace-collapsed .video-resource-closed-state { display: flex; }
+    .video-settings-capsule {
+      width: 300px;
+      max-width: 100%;
+      padding: 20px;
+      border: 1px solid #e7e9f1;
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 8px 28px rgba(34, 43, 72, .055), 0 2px 5px rgba(34, 43, 72, .02);
+    }
+    .video-capsule-row { display: flex; min-height: 40px; align-items: center; justify-content: space-between; gap: 12px; }
+    .video-capsule-row + .video-capsule-row { margin-top: 12px; }
+    .video-capsule-label { margin: 0; color: #475467; font-size: 13px; font-weight: 500; line-height: 1.5; white-space: nowrap; }
+    .video-capsule-select { position: relative; width: 116px; flex: 0 0 116px; }
+    .video-capsule-select select {
+      display: block;
+      width: 100%;
+      height: 36px;
+      padding: 0 30px 0 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      outline: 0;
+      color: #344054;
+      background: #f3f5f9;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .16s ease, border-color .16s ease;
+    }
+    .video-capsule-select select:hover { background: #eceff5; }
+    .video-capsule-select svg { position: absolute; top: 11px; right: 12px; width: 14px; height: 14px; color: #667085; pointer-events: none; }
+    .video-capsule-segments { display: grid; width: 116px; flex: 0 0 116px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 999px; background: #f0f2f7; }
+    .video-capsule-segments label { position: relative; min-width: 0; cursor: pointer; }
+    .video-capsule-segments input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+    .video-capsule-segments span { display: grid; height: 30px; place-items: center; border-radius: 999px; color: #7a8496; font-size: 13px; font-weight: 500; transition: color .16s ease, background .16s ease, box-shadow .16s ease; }
+    .video-capsule-segments input:checked + span { color: #6d43e8; background: #fff; box-shadow: 0 2px 6px rgba(34, 43, 72, .065); }
+    .video-capsule-segments label:hover span { color: #6d43e8; }
+    .video-capsule-resource {
+      display: flex;
+      width: 100%;
+      min-height: 42px;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      padding: 14px 0 0;
+      border: 0;
+      border-top: 1px solid #eef0f5;
+      border-radius: 0;
+      color: #475467;
+      background: transparent;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: color .16s ease;
+    }
+    .video-capsule-resource:hover { color: #6d43e8; }
+    .video-capsule-resource svg { width: 16px; height: 16px; flex: 0 0 auto; }
+    .video-capsule-resource .video-capsule-chevron { width: 14px; height: 14px; margin-left: auto; }
+    .video-capsule-select select:focus-visible,
+    .video-capsule-segments input:focus-visible + span,
+    .video-capsule-resource:focus-visible { outline: 2px solid #a897f2; outline-offset: 3px; }
     .video-artifact-head { display: flex; min-height: 64px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; border-bottom: 1px solid #edf0f4; }
     .video-artifact-head strong { color: #182230; font-size: 16px; }
     .video-resource-head-actions { display: flex; align-items: center; gap: 7px; }
@@ -6143,7 +6207,11 @@
 
     @media (max-width: 1100px) and (min-width: 761px) {
       .video-chat-main:not(.workspace-collapsed) { grid-template-columns: minmax(380px, 44%) minmax(0, 56%); }
-      .video-chat-main.workspace-collapsed { grid-template-columns: minmax(0, 1fr); }
+      .video-chat-main.workspace-collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+      .workspace-collapsed .video-artifact-workspace { grid-column: 1; grid-row: 2; }
+      .workspace-collapsed .video-chat-composer-wrap { grid-row: 3; }
+      .workspace-collapsed .video-resource-closed-state { height: auto; padding: 8px 20px 20px; }
+      .video-settings-capsule { width: 300px; padding: 16px 20px; border-radius: 26px; }
     }
 
     @media (max-width: 760px) {
@@ -6151,6 +6219,13 @@
       .video-chat-shell { min-height: calc(100vh - 64px); height: calc(100vh - 64px); padding-bottom: 64px; border-radius: 0; }
       .video-session-backbar { min-height: 58px; padding: 0 12px; }
       .video-chat-main { grid-template-columns: minmax(0, 1fr); }
+      .video-chat-main.workspace-collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+      .workspace-collapsed .video-artifact-workspace { position: relative; inset: auto; grid-column: 1; grid-row: 2; }
+      .workspace-collapsed .video-chat-composer-wrap { grid-row: 3; }
+      .workspace-collapsed .video-resource-closed-state { height: auto; padding: 4px 16px 12px; }
+      .video-settings-capsule { width: 300px; padding: 14px 18px; border-radius: 24px; }
+      .video-capsule-row + .video-capsule-row { margin-top: 4px; }
+      .video-capsule-resource { min-height: 36px; margin-top: 10px; padding-top: 10px; }
       .video-artifact-workspace { position: absolute; inset: 0; z-index: 230; width: 100%; box-shadow: none; }
       .video-artifact-inner { width: 100%; }
       .video-chat-thread { min-height: 0; padding: 22px 14px; }
@@ -9702,7 +9777,34 @@
 
               <aside class="video-artifact-workspace" id="videoArtifactWorkspace" aria-label="资源">
                 <div class="video-resource-closed-state">
-                  <button id="videoOpenResourceEmpty" type="button"><span aria-hidden="true">☷</span><span>查看对话资源</span></button>
+                  <section class="video-settings-capsule" aria-label="视频设置">
+                    <div class="video-capsule-row">
+                      <label class="video-capsule-label" for="videoNamingCategory">视频命名分类</label>
+                      <div class="video-capsule-select">
+                        <select id="videoNamingCategory">
+                          <option value="盲盒">盲盒</option>
+                          <option value="ckw毛绒">ckw毛绒</option>
+                          <option value="其他毛绒">其他毛绒</option>
+                          <option value="数码香薰">数码香薰</option>
+                          <option value="生活百货">生活百货</option>
+                          <option value="TME">TME</option>
+                        </select>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+                      </div>
+                    </div>
+                    <div class="video-capsule-row">
+                      <span class="video-capsule-label" id="videoViralRemakeLabel">是否为爆款复刻</span>
+                      <div class="video-capsule-segments" role="group" aria-labelledby="videoViralRemakeLabel">
+                        <label><input type="radio" name="videoViralRemake" value="false" checked /><span>否</span></label>
+                        <label><input type="radio" name="videoViralRemake" value="true" /><span>是</span></label>
+                      </div>
+                    </div>
+                    <button class="video-capsule-resource" id="videoOpenResourceEmpty" type="button" aria-expanded="false" aria-controls="videoArtifactWorkspace">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></svg>
+                      <span>查看对话资源</span>
+                      <svg class="video-capsule-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                    </button>
+                  </section>
                 </div>
                 <div class="video-artifact-inner">
                   <div class="video-artifact-head">
@@ -11152,6 +11254,8 @@
     let currentMode = "agent";
     let selectedWorkflowType = "image";
     let currentAgentName = "电商内容创作 Agent";
+    let activeVideoSettingsKey = "video-default";
+    let videoSettings = { namingCategory: "盲盒", viralRemake: false };
     let currentAgentPage = 1;
     let currentUserPage = 1;
     let currentRolePage = 1;
@@ -11323,6 +11427,40 @@
           // 页面在受限浏览环境中仍可正常使用，只是不保存导航状态。
         }
       });
+    }
+
+    function getVideoSettings() {
+      return { ...videoSettings };
+    }
+
+    function setVideoSettings(settings, persist = true) {
+      const categorySelect = $("#videoNamingCategory");
+      const categories = Array.from(categorySelect.options, option => option.value);
+      videoSettings = {
+        namingCategory: categories.includes(settings?.namingCategory) ? settings.namingCategory : "盲盒",
+        viralRemake: settings?.viralRemake === true
+      };
+      categorySelect.value = videoSettings.namingCategory;
+      $$('input[name="videoViralRemake"]').forEach(input => {
+        input.checked = input.value === String(videoSettings.viralRemake);
+      });
+      if (persist) {
+        const state = readNavigationState();
+        const settingsByAgent = state.videoSettingsByAgent && typeof state.videoSettingsByAgent === "object" && !Array.isArray(state.videoSettingsByAgent)
+          ? state.videoSettingsByAgent : {};
+        saveNavigationState({
+          videoSettingsAgentKey: activeVideoSettingsKey,
+          videoSettingsByAgent: { ...settingsByAgent, [activeVideoSettingsKey]: getVideoSettings() }
+        });
+      }
+    }
+
+    function restoreVideoSettings(source = null) {
+      const state = readNavigationState();
+      activeVideoSettingsKey = source
+        ? `video-agent:${source.createdAt || ""}:${source.name}`
+        : (typeof state.videoSettingsAgentKey === "string" ? state.videoSettingsAgentKey : "video-default");
+      setVideoSettings(state.videoSettingsByAgent?.[activeVideoSettingsKey] || source?.videoSettings, false);
     }
 
     function saveVideoConversationState() {
@@ -13499,7 +13637,8 @@
 
     function openVideoAgent(source) {
       currentAgentName = source.name;
-      saveNavigationState({ page: "video-config", videoAgentName: source.name });
+      restoreVideoSettings(source);
+      saveNavigationState({ page: "video-config", videoAgentName: source.name, videoSettingsAgentKey: activeVideoSettingsKey });
       videoStartImages = [];
       videoReferenceVideos = [];
       videoRoundSequence = 0;
@@ -13694,6 +13833,7 @@
     function setVideoWorkspaceOpen(open) {
       $("#videoChatMain")?.classList.toggle("workspace-collapsed", !open);
       $("#videoWorkspaceToggle")?.setAttribute("aria-expanded", String(open));
+      $("#videoOpenResourceEmpty")?.setAttribute("aria-expanded", String(open));
       if (!open) closeVideoSubjectAddMenu();
     }
 
@@ -14463,6 +14603,7 @@
       const subject = videoStartImages.length ? (getActiveVideoSubjectProduct()?.name || "当前商品") : "待补充商品主体";
       videoPrimaryFlow = {
         ...(videoPrimaryFlow || {}),
+        settings: videoPrimaryFlow?.settings || getVideoSettings(),
         stage: "script",
         channel: videoPrimaryFlow?.channel || "",
         audience: videoPrimaryFlow?.audience || "",
@@ -14619,6 +14760,7 @@
       const prompt = String(round.prompt || "");
       videoPrimaryFlow = {
         stage: "intake",
+        settings: round.settings || getVideoSettings(),
         channel: prompt.includes("小红书") ? "小红书" : (prompt.includes("抖音") ? "抖音" : ""),
         audience: prompt.includes("年轻女性") ? "年轻女性" : (prompt.includes("送礼") ? "送礼人群" : ""),
         creativeTitle: "",
@@ -14932,6 +15074,7 @@
         image,
         reference,
         keyframeTarget,
+        settings: getVideoSettings(),
         generationMode: $("#videoModeSelect").value,
         modelLabel: $("#videoModelSelect").selectedOptions[0].textContent,
         ratio: getVideoRatio(),
@@ -14950,7 +15093,7 @@
         chat: "正在理解你的需求"
       }[intent];
       thread.insertAdjacentHTML("beforeend", `
-        <div class="video-chat-message user">
+        <div class="video-chat-message user" data-video-naming-category="${escapeHtml(round.settings.namingCategory)}" data-video-viral-remake="${round.settings.viralRemake}">
           <div class="video-user-bubble">
             ${videoRoundImageMarkup(image)}
             ${videoRoundReferenceMarkup(reference)}
@@ -17898,6 +18041,16 @@
     });
 
     document.addEventListener("change", event => {
+      if (event.target === $("#videoNamingCategory")) {
+        setVideoSettings({ ...getVideoSettings(), namingCategory: event.target.value });
+        return;
+      }
+
+      if (event.target.matches('input[name="videoViralRemake"]')) {
+        setVideoSettings({ ...getVideoSettings(), viralRemake: event.target.value === "true" });
+        return;
+      }
+
       if (event.target === $("#videoKeyframeInput")) {
         const file = Array.from(event.target.files || []).find(item => item.type?.startsWith("image/"));
         if (file && pendingVideoKeyframeUpload) replaceVideoKeyframeWithFile(pendingVideoKeyframeUpload, file);
@@ -19334,6 +19487,7 @@
     renderOperationLogs();
     renderQuotaManagement();
     restoreNavigationState();
+    restoreVideoSettings();
     restoreVideoConversationState();
   </script>
   <script src="./video-tools.js"></script>
