@@ -1,0 +1,16 @@
+{
+  "source": "https://github.com/mumuy/data_location",
+  "revision": "1756d559ede7161b5d5a8d062a466beeb31cb714",
+  "snapshot_commit_date": "2026-10-12T15:37:11Z",
+  "retrieved_at": "2026-10-15",
+  "license": "MIT",
+  "province_count": 34,
+  "city_group_count": 353,
+  "district_count": 3061,
+  "town_count": 38725,
+  "notes": [
+    "乡镇街道不保证完整或实时；未收录项可手动填写。",
+    "港澳台编码沿用上游自定义编码，仅用于本地地址选择。",
+    "直辖市和不设区县城市增加界面层级占位，完整地址会去除重复名称。"
+  ]
+}
