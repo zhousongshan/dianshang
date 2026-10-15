@@ -28,11 +28,11 @@
   const CREATOR_PRESET_TAGS=['内容好','互动好','配合好','可长期合作'];
   const CREATOR_TAG_STORAGE_KEY='chaoren-crm-tags-v1';
   const CREATOR_STORAGE_KEY='chaoren-crm-creators-v1';
-  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorLoadError:'',creatorMarkEdit:null,creators:[]};
+  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorLoadError:'',creatorMarkEdit:null,creatorImportResult:null,creators:[]};
   state.creators=loadCreators();
   addCreatorExample();
   state.tagNames=loadCreatorTags();
-  let importReview=null,importReadVersion=0;
+  let creatorImportBusy=false;
   const CREATOR_AI_STORAGE_KEY='chaoren-crm-ai-conversations-v1';
   let aiHistoryLoadFailed=false,aiHistoryError='',aiScope='',aiReturnFocus=null;
   const aiDrafts=Object.create(null),aiSessions=loadCreatorAiSessions();
@@ -258,7 +258,7 @@
     return `<div class="crm-creator-date-range" role="group" aria-labelledby="crmCreatorDateLabel"><span id="crmCreatorDateLabel" class="crm-creator-date-label">日期</span><input id="crmCreatorDateStart" type="date" value="${esc(state.creatorDateStart)}" aria-label="开始日期" /><span class="crm-creator-date-separator">至</span><input id="crmCreatorDateEnd" type="date" value="${esc(state.creatorDateEnd)}" aria-label="结束日期" /></div>`;
   }
   function creatorPageMarkup(){
-    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError?'disabled':''}>导入达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="导出当前筛选下的全部记录，包含其他分页" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup>${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><span>达人资料与寄样信息</span><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
+    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError||creatorImportBusy?'disabled':''}>${creatorImportBusy?'正在导入…':'导入达人'}</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="导出当前筛选下的全部记录，包含其他分页" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}${creatorImportResultMarkup()}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup>${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><span>达人资料与寄样信息</span><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
   }
   function localDate(){
     const date=new Date(),pad=value=>String(value).padStart(2,'0');
@@ -343,9 +343,7 @@
     const detailEdit=e.target.closest('[data-crm-detail-edit]');if(detailEdit){q('#crmCreatorDetails').close();openCreatorEditor(detailEdit.dataset.crmDetailEdit);return;}
     if(e.target.closest('[data-crm-creator-export]')){exportCreatorRecords();return;}
     if(e.target.closest('[data-crm-creator-import]')){openCreatorImport();return;}
-    if(e.target.closest('[data-crm-import-close]')){importReadVersion++;q('#crmCreatorImport')?.close();return;}
-    if(e.target.closest('[data-crm-import-template]')){window.CreatorImport.downloadTemplate();return;}
-    if(e.target.closest('[data-crm-import-confirm]')){confirmCreatorImport();return;}
+    if(e.target.closest('[data-crm-import-dismiss]')){state.creatorImportResult=null;q('.crm-direct-import-result')?.remove();return;}
     if(e.target.closest('[data-crm-creator-add]')){openCreatorEditor();return;}
     const mark=e.target.closest('[data-crm-creator-mark]');
     if(mark){
@@ -491,33 +489,40 @@
     }catch{showToast('导出失败，请重试或刷新页面后再试。');}
   }
   function openCreatorImport(){
-    if(state.creatorLoadError)return;importReview=null;importReadVersion++;
-    let dialog=q('#crmCreatorImport');if(!dialog){dialog=document.createElement('dialog');dialog.id='crmCreatorImport';dialog.className='crm-creator-dialog crm-import-dialog';dialog.setAttribute('aria-labelledby','crmCreatorImportTitle');document.body.append(dialog);dialog.addEventListener('cancel',()=>{importReadVersion++;});}
-    dialog.innerHTML=`<header class="crm-creator-dialog-head"><div><h2 id="crmCreatorImportTitle">导入达人</h2><p>上传表格 → 预览校验 → 确认导入</p></div><button type="button" data-crm-import-close aria-label="关闭">×</button></header><div class="crm-import-body"><div class="crm-import-upload"><div><strong>使用模板，批量添加达人</strong><p>支持 Excel（.xlsx / .xls）、CSV、TSV，最多 2000 行、10 MB。只读取第一个工作表，达人名称必填。</p></div><button type="button" class="crm-creator-secondary" data-crm-import-template>下载 Excel 模板</button><label class="crm-creator-primary crm-import-file-label">选择文件<input id="crmCreatorImportFile" type="file" accept=".xlsx,.xls,.csv,.tsv" /></label></div><p class="crm-import-rule">按抖音 UID、主页链接或达人名称＋手机号识别重复。重复行和错误行会跳过，已有记录保留。</p><p id="crmImportError" class="crm-creator-alert" role="alert" hidden></p><div id="crmImportPreview" aria-live="polite"><div class="crm-import-placeholder">选择文件后，在这里检查导入结果。</div></div></div><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-import-close>取消</button><button type="button" class="crm-creator-primary" data-crm-import-confirm disabled>确认导入</button></footer>`;
-    dialog.showModal();
+    if(state.creatorLoadError||creatorImportBusy)return;
+    let input=q('#crmCreatorImportFile');
+    if(!input){input=document.createElement('input');input.id='crmCreatorImportFile';input.type='file';input.accept='.xlsx,.xls,.csv,.tsv';input.hidden=true;document.body.append(input);}
+    input.value='';input.click();
+  }
+  function creatorImportResultMarkup(){
+    const result=state.creatorImportResult;if(!result)return '';
+    return `<section class="crm-direct-import-result ${result.error?'is-error':''}" role="${result.error?'alert':'status'}"><div><p>${esc(result.message)}</p><button type="button" data-crm-import-dismiss aria-label="关闭导入结果">×</button></div>${result.issues.length?`<details><summary>查看未导入原因（${result.issues.length} 条）</summary><ul>${result.issues.map(issue=>`<li>${esc(issue)}</li>`).join('')}</ul></details>`:''}</section>`;
+  }
+  function updateCreatorImportButton(){
+    const button=q('[data-crm-creator-import]');if(!button)return;
+    button.disabled=Boolean(state.creatorLoadError)||creatorImportBusy;button.textContent=creatorImportBusy?'正在导入…':'导入达人';
   }
   async function readCreatorImportFile(file){
-    const version=++importReadVersion;importReview=null;const button=q('[data-crm-import-confirm]');button.disabled=true;
-    q('#crmImportError').hidden=true;if(!file)return;
-    q('#crmImportPreview').textContent='正在读取并校验…';
+    if(!file||creatorImportBusy||state.creatorLoadError)return;
+    creatorImportBusy=true;state.creatorImportResult=null;q('.crm-direct-import-result')?.remove();updateCreatorImportButton();
     try{
-      const review=await window.CreatorImport.readFile(file,state.creators);if(version!==importReadVersion||!q('#crmCreatorImport').open)return;
-      importReview=review;renderCreatorImportPreview(review,file.name);
-    }catch(error){if(version!==importReadVersion)return;q('#crmImportPreview').textContent='请调整表格后重新选择文件。';q('#crmImportError').textContent=error.message||'读取失败，请重试。';q('#crmImportError').hidden=false;}
-  }
-  function renderCreatorImportPreview(review,filename=''){
-    const rows=review.rows,ready=rows.filter(row=>row.status==='ready').length,errors=rows.filter(row=>row.status==='error').length,duplicates=rows.filter(row=>row.status==='duplicate').length;
-    q('#crmImportPreview').innerHTML=`<div class="crm-import-summary"><strong>${esc(filename||review.sheetName)}</strong><span>可导入 <b>${ready}</b> 条</span><span>重复跳过 ${duplicates} 条</span><span class="${errors?'is-danger':''}">待修正 ${errors} 条</span></div><p class="crm-import-rule">确认后仅导入校验通过的 ${ready} 条。${errors?'错误行请在原文件中修改后再次导入。':''}</p><div class="crm-import-table-scroll"><table class="crm-tag-table"><thead><tr><th>行号</th><th>达人名称</th><th>抖音 UID</th><th>标签</th><th>校验结果</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${row.row}</td><td>${esc(row.record.name)||'—'}</td><td>${esc(row.record.douyinUid)||'—'}</td><td>${esc(row.record.mark.tags.join('、'))||'—'}</td><td class="${row.status==='error'?'is-danger':''}">${row.status==='ready'?'✓ ':''}${esc(row.message)}</td></tr>`).join('')}</tbody></table>${!rows.length?'<p class="crm-tag-empty">表格中没有达人数据。</p>':''}</div>`;
-    q('[data-crm-import-confirm]').disabled=!ready;q('[data-crm-import-confirm]').textContent=ready?`确认导入 ${ready} 条`:'确认导入';
-  }
-  function confirmCreatorImport(){
-    if(!importReview)return;
-    // 确认前再次去重，避免预览期间列表发生变化而产生重复记录。
-    const seen=new Set(state.creators.flatMap(window.CreatorImport.duplicateKeys)),valid=[];
-    for(const row of importReview.rows){if(row.status!=='ready')continue;const keys=window.CreatorImport.duplicateKeys(row.record);if(keys.some(key=>seen.has(key)))continue;keys.forEach(key=>seen.add(key));valid.push({...row.record,id:crypto.randomUUID?.()||`import-${Date.now()}-${Math.random().toString(16).slice(2)}`});}
-    if(!valid.length){q('#crmImportError').textContent='没有可新增的数据，记录可能已经导入。';q('#crmImportError').hidden=false;return;}
-    if(!saveCreators([...valid,...state.creators])){q('#crmImportError').textContent='导入未保存，请检查本地存储后重试。';q('#crmImportError').hidden=false;return;}
-    importReview=null;importReadVersion++;q('#crmCreatorImport').close();state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;render();showToast(`成功导入 ${valid.length} 位达人。`);
+      const review=await window.CreatorImport.readFile(file,state.creators);
+      // 文件解析期间可能新增达人，写入前使用最新数据再去重。
+      const seen=new Set(state.creators.flatMap(window.CreatorImport.duplicateKeys)),valid=[],issues=[];
+      let duplicates=0,errors=0;
+      for(const row of review.rows){
+        if(row.status==='error'){errors++;issues.push(`第 ${row.row} 行：${row.message}`);continue;}
+        if(row.status==='duplicate'){duplicates++;issues.push(`第 ${row.row} 行：重复记录，已跳过。`);continue;}
+        const keys=window.CreatorImport.duplicateKeys(row.record);
+        if(keys.some(key=>seen.has(key))){duplicates++;issues.push(`第 ${row.row} 行：重复记录，已跳过。`);continue;}
+        keys.forEach(key=>seen.add(key));valid.push({...row.record,aiAnalysis:'',id:crypto.randomUUID?.()||`import-${Date.now()}-${Math.random().toString(16).slice(2)}`});
+      }
+      if(valid.length&&!saveCreators([...valid,...state.creators]))throw new Error('导入未能保存，请检查本地存储后重试，原有记录保留。');
+      const message=review.rows.length?`已导入 ${valid.length} 位达人${duplicates?`，跳过重复 ${duplicates} 条`:''}${errors?`，跳过错误 ${errors} 条`:''}。`:'表格中没有达人数据，请填写后重新导入。';
+      state.creatorImportResult={message,issues,error:!valid.length&&errors>0};
+      if(valid.length){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;}
+    }catch(error){state.creatorImportResult={message:error.message||'导入失败，请检查文件后重试。',issues:[],error:true};}
+    finally{creatorImportBusy=false;render();showToast(state.creatorImportResult.message);}
   }
   function enableCreatorAiDrag(launcher){
     const storageKey='chaoren-crm-ai-launcher-position-v1';
