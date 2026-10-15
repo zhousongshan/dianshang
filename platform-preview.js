@@ -243,6 +243,7 @@
     refreshCreatorTagFilter();
     const hasFilters=Boolean(state.creatorQuery.trim()||state.creatorTags.length||state.creatorDateStart||state.creatorDateEnd);
     const records=filteredCreators();
+    q('[data-crm-creator-export]').disabled=Boolean(state.creatorLoadError)||records.length===0;
     const pageSize=20,totalPages=Math.max(1,Math.ceil(records.length/pageSize));
     state.creatorPage=Math.min(Math.max(1,state.creatorPage),totalPages);
     const start=(state.creatorPage-1)*pageSize;
@@ -257,7 +258,7 @@
     return `<div class="crm-creator-date-range" role="group" aria-labelledby="crmCreatorDateLabel"><span id="crmCreatorDateLabel" class="crm-creator-date-label">日期</span><input id="crmCreatorDateStart" type="date" value="${esc(state.creatorDateStart)}" aria-label="开始日期" /><span class="crm-creator-date-separator">至</span><input id="crmCreatorDateEnd" type="date" value="${esc(state.creatorDateEnd)}" aria-label="结束日期" /></div>`;
   }
   function creatorPageMarkup(){
-    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError?'disabled':''}>导入达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup>${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><span>达人资料与寄样信息</span><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
+    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError?'disabled':''}>导入达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="导出当前筛选下的全部记录，包含其他分页" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup>${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><span>达人资料与寄样信息</span><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
   }
   function localDate(){
     const date=new Date(),pad=value=>String(value).padStart(2,'0');
@@ -340,6 +341,7 @@
     const detail=e.target.closest('[data-crm-creator-view]');if(detail){openCreatorDetails(detail.dataset.crmCreatorView);return;}
     if(e.target.closest('[data-crm-detail-close]')){q('#crmCreatorDetails')?.close();return;}
     const detailEdit=e.target.closest('[data-crm-detail-edit]');if(detailEdit){q('#crmCreatorDetails').close();openCreatorEditor(detailEdit.dataset.crmDetailEdit);return;}
+    if(e.target.closest('[data-crm-creator-export]')){exportCreatorRecords();return;}
     if(e.target.closest('[data-crm-creator-import]')){openCreatorImport();return;}
     if(e.target.closest('[data-crm-import-close]')){importReadVersion++;q('#crmCreatorImport')?.close();return;}
     if(e.target.closest('[data-crm-import-template]')){window.CreatorImport.downloadTemplate();return;}
@@ -471,6 +473,22 @@
     let dialog=q('#crmCreatorDetails');if(!dialog){dialog=document.createElement('dialog');dialog.id='crmCreatorDetails';dialog.className='crm-creator-dialog';dialog.setAttribute('aria-labelledby','crmCreatorDetailsTitle');document.body.append(dialog);}
     dialog.innerHTML=`<header class="crm-creator-dialog-head"><div><h2 id="crmCreatorDetailsTitle">达人详情</h2><p>${esc(record.name)}</p></div><button type="button" data-crm-detail-close aria-label="关闭">×</button></header><dl class="crm-creator-details">${creatorFields.map(field=>`<div class="${['mark','analysis'].includes(field.type)||['productName','address','profileUrl'].includes(field.key)?'is-wide':''}"><dt>${field.label}</dt><dd>${field.type==='analysis'?`<span>${esc(record.aiAnalysis)||'暂无已保存的分析结果'}</span>`:field.type==='mark'?`<div class="crm-creator-mark-tags">${record.mark.tags.map(tag=>`<span class="crm-creator-mark-tag">${esc(tag)}</span>`).join('')||'<span class="crm-creator-missing">未设置标签</span>'}</div><p>备注：${esc(record.mark.note)||'—'}</p><p>分组：${esc(record.mark.group)||'—'}</p>`:creatorCell(record,field)}</dd></div>`).join('')}</dl><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-detail-close>关闭</button><button type="button" class="crm-creator-primary" data-crm-detail-edit="${esc(id)}">编辑达人</button></footer>`;
     dialog.showModal();
+  }
+  function exportCreatorRecords(){
+    if(state.creatorLoadError)return;
+    const records=filteredCreators();if(!records.length){showToast('当前筛选下暂无可导出的达人。');return;}
+    if(!window.XLSX){showToast('导出组件未加载，请刷新页面后重试。');return;}
+    try{
+      const columns=creatorFields.flatMap(field=>field.type==='mark'?[{key:'tags',label:'标签'},{key:'note',label:'备注'},{key:'group',label:'分组'}]:[{key:field.key,label:field.label}]);
+      const rows=records.map(record=>columns.map(({key})=>String(key==='tags'?record.mark.tags.join('，'):['note','group'].includes(key)?record.mark[key]:record[key]??'')));
+      const x=window.XLSX,sheet=x.utils.aoa_to_sheet([columns.map(column=>column.label),...rows]),book=x.utils.book_new();
+      sheet['!cols']=columns.map(({key})=>({wch:key==='aiAnalysis'?60:['address','note','productName','profileUrl'].includes(key)?36:22}));
+      sheet['!autofilter']={ref:sheet['!ref']};
+      // 使用文本单元格，保留前导零与长号码，也不把用户文本当成公式。
+      records.forEach((_,row)=>columns.forEach((column,col)=>{const cell=sheet[x.utils.encode_cell({r:row+1,c:col})];if(cell){cell.t='s';if(['douyinUid','phone'].includes(column.key))cell.z='@';}}));
+      x.utils.book_append_sheet(book,sheet,'达人资料');
+      x.writeFile(book,`达人资料_${localDate()}.xlsx`);showToast(`已导出 ${records.length} 位达人。`);
+    }catch{showToast('导出失败，请重试或刷新页面后再试。');}
   }
   function openCreatorImport(){
     if(state.creatorLoadError)return;importReview=null;importReadVersion++;
