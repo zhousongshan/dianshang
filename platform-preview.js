@@ -28,7 +28,7 @@
   const CREATOR_PRESET_TAGS=['内容好','互动好','配合好','可长期合作'];
   const CREATOR_TAG_STORAGE_KEY='chaoren-crm-tags-v1';
   const CREATOR_STORAGE_KEY='chaoren-crm-creators-v1';
-  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorLoadError:'',creatorMarkEdit:null,creatorImportResult:null,creators:[]};
+  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorSelection:new Set(),creatorLoadError:'',creatorMarkEdit:null,creatorImportResult:null,creators:[]};
   state.creators=loadCreators();
   addCreatorExample();
   state.tagNames=loadCreatorTags();
@@ -238,16 +238,33 @@
       return matchesQuery&&matchesTag&&matchesStart&&matchesEnd;
     });
   }
+  function updateCreatorSelection(records=filteredCreators()){
+    const available=new Set(records.map(record=>record.id));
+    state.creatorSelection=new Set([...state.creatorSelection].filter(id=>available.has(id)));
+    const count=state.creatorSelection.size,all=q('#crmCreatorSelectAll');
+    if(all){all.checked=records.length>0&&count===records.length;all.indeterminate=count>0&&count<records.length;all.disabled=!records.length||Boolean(state.creatorLoadError);}
+    document.querySelectorAll('[data-crm-creator-select]').forEach(input=>{
+      input.checked=state.creatorSelection.has(input.dataset.crmCreatorSelect);input.closest('tr').classList.toggle('is-selected',input.checked);
+    });
+    const label=q('#crmCreatorSelectionCount');if(label)label.textContent=count?`已选 ${count} 位达人`:'勾选达人后导出';
+    const clear=q('[data-crm-selection-clear]');if(clear)clear.disabled=!count;
+    const selectAll=q('[data-crm-selection-all]');if(selectAll)selectAll.disabled=!records.length||count===records.length;
+    const exportButton=q('[data-crm-creator-export]');
+    if(exportButton){exportButton.disabled=!count||Boolean(state.creatorLoadError);exportButton.textContent=count?`导出达人（${count}）`:'导出达人';exportButton.title=count?`导出勾选的 ${count} 位达人，包含其他分页`:'请先勾选达人，或全选当前筛选结果';}
+  }
+  function selectAllCreators(checked){
+    const records=filteredCreators();state.creatorSelection=checked?new Set(records.map(record=>record.id)):new Set();updateCreatorSelection(records);
+  }
   function renderCreatorRecords(){
     const body=q('#crmCreatorRows');if(!body)return;
     refreshCreatorTagFilter();
     const hasFilters=Boolean(state.creatorQuery.trim()||state.creatorTags.length||state.creatorDateStart||state.creatorDateEnd);
     const records=filteredCreators();
-    q('[data-crm-creator-export]').disabled=Boolean(state.creatorLoadError)||records.length===0;
     const pageSize=20,totalPages=Math.max(1,Math.ceil(records.length/pageSize));
     state.creatorPage=Math.min(Math.max(1,state.creatorPage),totalPages);
     const start=(state.creatorPage-1)*pageSize;
-    body.innerHTML=records.slice(start,start+pageSize).map(record=>`<tr>${creatorFields.map(field=>`<td>${creatorCell(record,field)}</td>`).join('')}<td class="crm-creator-actions"><button type="button" data-crm-creator-view="${esc(record.id)}" aria-label="查看${esc(record.name)}">查看</button><button type="button" data-crm-creator-edit="${esc(record.id)}" aria-label="编辑${esc(record.name)}">编辑</button><button type="button" class="is-danger" data-crm-creator-delete="${esc(record.id)}" aria-label="删除${esc(record.name)}">删除</button></td></tr>`).join('');
+    body.innerHTML=records.slice(start,start+pageSize).map(record=>`<tr><td class="crm-creator-select-cell"><input type="checkbox" data-crm-creator-select="${esc(record.id)}" aria-label="选择${esc(record.name)}" /></td>${creatorFields.map(field=>`<td>${creatorCell(record,field)}</td>`).join('')}<td class="crm-creator-actions"><button type="button" data-crm-creator-view="${esc(record.id)}" aria-label="查看${esc(record.name)}">查看</button><button type="button" data-crm-creator-edit="${esc(record.id)}" aria-label="编辑${esc(record.name)}">编辑</button><button type="button" class="is-danger" data-crm-creator-delete="${esc(record.id)}" aria-label="删除${esc(record.name)}">删除</button></td></tr>`).join('');
+    updateCreatorSelection(records);
     if(q('#crmCreatorAnalysis')?.open)renderCreatorAnalysis();
     const empty=q('#crmCreatorEmpty');empty.hidden=records.length>0;
     q('#crmCreatorEmptyTitle').textContent=state.creatorLoadError?'暂时无法读取达人记录':(hasFilters?'没有找到匹配记录':'暂无达人记录');
@@ -258,7 +275,7 @@
     return `<div class="crm-creator-date-range" role="group" aria-labelledby="crmCreatorDateLabel"><span id="crmCreatorDateLabel" class="crm-creator-date-label">日期</span><input id="crmCreatorDateStart" type="date" value="${esc(state.creatorDateStart)}" aria-label="开始日期" /><span class="crm-creator-date-separator">至</span><input id="crmCreatorDateEnd" type="date" value="${esc(state.creatorDateEnd)}" aria-label="结束日期" /></div>`;
   }
   function creatorPageMarkup(){
-    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError||creatorImportBusy?'disabled':''}>${creatorImportBusy?'正在导入…':'导入达人'}</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="导出当前筛选下的全部记录，包含其他分页" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}${creatorImportResultMarkup()}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup>${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><span>达人资料与寄样信息</span><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
+    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError||creatorImportBusy?'disabled':''}>${creatorImportBusy?'正在导入…':'导入达人'}</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="请先勾选达人，或全选当前筛选结果" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}${creatorImportResultMarkup()}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup><col style="width:48px" />${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr><th scope="col" class="crm-creator-select-cell"><input id="crmCreatorSelectAll" type="checkbox" aria-label="全选当前筛选下的全部达人" title="全选当前筛选结果，包含其他分页" /></th>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><div class="crm-creator-selection"><span id="crmCreatorSelectionCount" role="status">勾选达人后导出</span><button type="button" data-crm-selection-all>全选当前筛选结果</button><button type="button" data-crm-selection-clear disabled>清空</button></div><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
   }
   function localDate(){
     const date=new Date(),pad=value=>String(value).padStart(2,'0');
@@ -305,7 +322,7 @@
     const editing=Boolean(form.dataset.creatorId);
     const next=editing?state.creators.map(item=>item.id===record.id?record:item):[record,...state.creators];
     if(!saveCreators(next)){error.textContent='未能保存记录，请检查本地存储后重试。';error.hidden=false;return;}
-    q('#crmCreatorEditor').close();state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;render();showToast(editing?'达人记录已更新。':'达人记录已添加。');
+    q('#crmCreatorEditor').close();state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;state.creatorSelection.clear();render();showToast(editing?'达人记录已更新。':'达人记录已添加。');
   }
   function render(){
     if(state.platform!=='crm')closeCreatorAnalysis();
@@ -341,6 +358,8 @@
     const detail=e.target.closest('[data-crm-creator-view]');if(detail){openCreatorDetails(detail.dataset.crmCreatorView);return;}
     if(e.target.closest('[data-crm-detail-close]')){q('#crmCreatorDetails')?.close();return;}
     const detailEdit=e.target.closest('[data-crm-detail-edit]');if(detailEdit){q('#crmCreatorDetails').close();openCreatorEditor(detailEdit.dataset.crmDetailEdit);return;}
+    if(e.target.closest('[data-crm-selection-all]')){selectAllCreators(true);return;}
+    if(e.target.closest('[data-crm-selection-clear]')){selectAllCreators(false);return;}
     if(e.target.closest('[data-crm-creator-export]')){exportCreatorRecords();return;}
     if(e.target.closest('[data-crm-creator-import]')){openCreatorImport();return;}
     if(e.target.closest('[data-crm-import-dismiss]')){state.creatorImportResult=null;q('.crm-direct-import-result')?.remove();return;}
@@ -370,7 +389,7 @@
       const record=state.creators.find(item=>item.id===remove.dataset.crmCreatorDelete);if(!record)return;
       openConfirmModal({title:'删除达人记录',desc:`确认删除「${record.name}」的这条记录吗？`,confirmText:'确认删除',onConfirm:()=>{if(saveCreators(state.creators.filter(item=>item.id!==record.id))){renderCreatorRecords();showToast('达人记录已删除。');}}});return;
     }
-    if(e.target.closest('[data-crm-creator-reset]')){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;render();return;}
+    if(e.target.closest('[data-crm-creator-reset]')){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;state.creatorSelection.clear();render();return;}
     const paging=e.target.closest('[data-crm-creator-page]');if(paging&&!paging.disabled){const next=Number(paging.dataset.crmCreatorPage);if(Number.isInteger(next)){state.creatorPage=next;renderCreatorRecords();}}
   });
   function validateCreatorDateRange(){
@@ -392,7 +411,7 @@
     if(e.key==='Escape'&&e.target.closest('#crmCreatorInlineMarkForm')){e.preventDefault();closeInlineMarkEditor();}
   });
   document.addEventListener('input',e=>{if(e.target.id==='crmAiMessage'){aiDrafts[aiScope]=e.target.value;updateCreatorAnalysisSend();}if(e.target.id==='crmTagSearch'){state.tagQuery=e.target.value;renderCreatorTagRows();}if(e.target.matches('[data-crm-tag-custom]'))e.target.closest('.crm-creator-tag-picker').querySelector('[data-crm-tag-error]').hidden=true;});
-  document.addEventListener('change',e=>{if(e.target.id==='crmCreatorImportFile')readCreatorImportFile(e.target.files[0]);if(e.target.id==='crmCreatorTagMatch')state.creatorTagModeDraft=e.target.value;if(e.target.id==='crmCreatorDateStart'||e.target.id==='crmCreatorDateEnd')validateCreatorDateRange();});
+  document.addEventListener('change',e=>{if(e.target.id==='crmCreatorSelectAll'){selectAllCreators(e.target.checked);return;}if(e.target.matches('[data-crm-creator-select]')){const id=e.target.dataset.crmCreatorSelect;if(e.target.checked)state.creatorSelection.add(id);else state.creatorSelection.delete(id);updateCreatorSelection();return;}if(e.target.id==='crmCreatorImportFile')readCreatorImportFile(e.target.files[0]);if(e.target.id==='crmCreatorTagMatch')state.creatorTagModeDraft=e.target.value;if(e.target.id==='crmCreatorDateStart'||e.target.id==='crmCreatorDateEnd')validateCreatorDateRange();});
   document.addEventListener('submit',e=>{
     if(e.target.id==='crmAiComposer'){e.preventDefault();sendCreatorAnalysis();return;}
     if(e.target.id==='crmTagForm'){e.preventDefault();submitCreatorTag(e.target);return;}
@@ -407,7 +426,7 @@
       state.creatorTagMode=state.creatorTagModeDraft;
       state.creatorDateStart=q('#crmCreatorDateStart').value;
       state.creatorDateEnd=q('#crmCreatorDateEnd').value;
-      state.creatorPage=1;renderCreatorRecords();
+      state.creatorPage=1;state.creatorSelection.clear();renderCreatorRecords();
     }
   });
   function loadCreatorTags(){
@@ -474,7 +493,7 @@
   }
   function exportCreatorRecords(){
     if(state.creatorLoadError)return;
-    const records=filteredCreators();if(!records.length){showToast('当前筛选下暂无可导出的达人。');return;}
+    const records=filteredCreators().filter(record=>state.creatorSelection.has(record.id));if(!records.length){showToast('请先勾选达人，或全选当前筛选结果。');return;}
     if(!window.XLSX){showToast('导出组件未加载，请刷新页面后重试。');return;}
     try{
       const columns=creatorFields.flatMap(field=>field.type==='mark'?[{key:'tags',label:'标签'},{key:'note',label:'备注'},{key:'group',label:'分组'}]:[{key:field.key,label:field.label}]);
@@ -520,7 +539,7 @@
       if(valid.length&&!saveCreators([...valid,...state.creators]))throw new Error('导入未能保存，请检查本地存储后重试，原有记录保留。');
       const message=review.rows.length?`已导入 ${valid.length} 位达人${duplicates?`，跳过重复 ${duplicates} 条`:''}${errors?`，跳过错误 ${errors} 条`:''}。`:'表格中没有达人数据，请填写后重新导入。';
       state.creatorImportResult={message,issues,error:!valid.length&&errors>0};
-      if(valid.length){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;}
+      if(valid.length){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;state.creatorSelection.clear();}
     }catch(error){state.creatorImportResult={message:error.message||'导入失败，请检查文件后重试。',issues:[],error:true};}
     finally{creatorImportBusy=false;render();showToast(state.creatorImportResult.message);}
   }
