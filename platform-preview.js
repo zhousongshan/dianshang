@@ -12,23 +12,21 @@
   // CRM 仅保留达人管理与标签管理。
   const views={customers:'达人管理',tags:'标签管理'};
   const creatorFields=[
-    {key:'date',label:'日期',type:'date',width:124},
-    {key:'douyinUid',label:'抖音uid',type:'text',width:160,max:64},
+    {key:'date',label:'邮寄信息登记日期',type:'date',width:180,required:true},
     {key:'name',label:'达人名称',type:'text',width:160,max:100,required:true},
-    {key:'mark',label:'达人标记',type:'mark',width:300},
-    {key:'aiAnalysis',label:'AI分析',type:'analysis',width:240},
-    {key:'profileUrl',label:'抖音主页链接',type:'url',width:200,max:2000},
+    {key:'mark',label:'达人标记',type:'mark',width:280},
+    {key:'profileUrl',label:'主页链接',type:'url',width:200,max:2000},
+    {key:'publishedAt',label:'发布时间',type:'date',width:132},
+    {key:'workUrl',label:'作品链接',type:'text',width:200,max:2000},
     {key:'sender',label:'寄样人',type:'text',width:112,max:100},
-    {key:'contentType',label:'内容形式',type:'select',width:136,options:['种草-图文','种草-视频','带货-直播','带货-视频']},
-    {key:'productName',label:'寄样产品名称',type:'textarea',width:240,max:500},
-    {key:'address',label:'收货地址',type:'address',width:280,max:500},
-    {key:'phone',label:'手机号码',type:'tel',width:150,max:32},
-    {key:'recipient',label:'收件人',type:'text',width:120,max:100}
+    {key:'contentType',label:'内容形式',type:'select',width:144,options:['种草-图文','种草-视频','带货-直播','带货-视频','带货-图文','带货-无需寄样']},
+    {key:'category',label:'品类',type:'text',width:112,max:100},
+    {key:'productName',label:'寄样产品名称',type:'textarea',width:240,max:500,required:true}
   ];
   const CREATOR_PRESET_TAGS=['内容好','互动好','配合好','可长期合作'];
   const CREATOR_TAG_STORAGE_KEY='chaoren-crm-tags-v1';
   const CREATOR_STORAGE_KEY='chaoren-crm-creators-v1';
-  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorSelection:new Set(),creatorLoadError:'',creatorMarkEdit:null,creatorImportResult:null,creators:[]};
+  const state={platform:'crm',view:'customers',creatorQuery:'',creatorTags:[],creatorTagDraft:[],creatorTagMode:'any',creatorTagModeDraft:'any',tagNames:[],tagQuery:'',tagLoadError:'',creatorDateStart:'',creatorDateEnd:'',creatorPage:1,creatorSort:'desc',creatorSelection:new Set(),creatorLoadError:'',creatorMarkEdit:null,creatorImportResult:null,creators:[]};
   state.creators=loadCreators();
   addCreatorExample();
   state.tagNames=loadCreatorTags();
@@ -84,7 +82,7 @@
       return records.map(record=>{
         if(!record||typeof record.id!=='string'||!record.id||ids.has(record.id))throw new Error('Invalid creator record');
         ids.add(record.id);
-        const next={id:record.id};
+        const next={...record};
         creatorFields.forEach(field=>{
           if(field.type==='analysis'){
             if(record.aiAnalysis!==undefined&&typeof record.aiAnalysis!=='string')throw new Error('Invalid creator analysis');
@@ -95,8 +93,8 @@
             if(!mark||!Array.isArray(mark.tags)||!mark.tags.every(tag=>typeof tag==='string')||typeof mark.note!=='string'||typeof mark.group!=='string')throw new Error('Invalid creator mark');
             next.mark={tags:[...mark.tags],note:mark.note,group:mark.group};return;
           }
-          if(typeof record[field.key]!=='string')throw new Error('Invalid creator field');
-          next[field.key]=record[field.key];
+          if(record[field.key]!==undefined&&typeof record[field.key]!=='string')throw new Error('Invalid creator field');
+          next[field.key]=record[field.key]||'';
         });
         if(record.addressParts&&typeof record.addressParts==='object'&&!Array.isArray(record.addressParts)){
           const keys=['provinceCode','provinceName','cityCode','cityName','districtCode','districtName','townCode','townName','detail'];
@@ -118,7 +116,7 @@
       const example={
         id:'creator-example-1',date:localDate(),douyinUid:'DEMO10001',name:'小橙的好物日记（示例）',
         mark:{tags:['内容好','互动好'],note:'内容质量好，评论互动积极，寄样后 3 天跟进。',group:'小张负责'},
-        profileUrl:'',sender:'小李（示例）',contentType:'种草-视频',productName:'J 形小猪抱枕（示例）',
+        publishedAt:'',workUrl:'',category:'',profileUrl:'',sender:'小李（示例）',contentType:'种草-视频',productName:'J 形小猪抱枕（示例）',
         address:'广东省广州市天河区示例路 88 号（虚构地址）',phone:'138****0000',recipient:'小橙（示例）'
       };
       localStorage.setItem(CREATOR_STORAGE_KEY,JSON.stringify([example]));
@@ -221,7 +219,7 @@
     if(field.type==='mark')return creatorMarkCell(record);
     const value=record[field.key];
     if(!value)return '<span class="crm-creator-missing">—</span>';
-    if(field.key==='profileUrl'){
+    if(['profileUrl','workUrl'].includes(field.key)){
       const url=profileUrl(value);
       if(url)return `<a class="crm-creator-profile" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="${esc(value)}">${esc(value)}</a>`;
     }
@@ -231,11 +229,15 @@
   function filteredCreators(){
     const query=state.creatorQuery.trim().toLocaleLowerCase();
     return state.creators.filter(record=>{
-      const matchesQuery=!query||['name','douyinUid','phone'].some(key=>record[key].toLocaleLowerCase().includes(query));
+      const matchesQuery=!query||['name','productName','sender','category'].some(key=>String(record[key]||'').toLocaleLowerCase().includes(query));
       const matchesStart=!state.creatorDateStart||(record.date&&record.date>=state.creatorDateStart);
       const matchesEnd=!state.creatorDateEnd||(record.date&&record.date<=state.creatorDateEnd);
       const matchesTag=!state.creatorTags.length||(state.creatorTagMode==='all'?state.creatorTags.every(tag=>record.mark.tags.includes(tag)):state.creatorTags.some(tag=>record.mark.tags.includes(tag)));
       return matchesQuery&&matchesTag&&matchesStart&&matchesEnd;
+    }).sort((a,b)=>{
+      if(!a.date)return b.date?1:0;
+      if(!b.date)return -1;
+      return (state.creatorSort==='asc'?1:-1)*a.date.localeCompare(b.date);
     });
   }
   function updateCreatorSelection(records=filteredCreators()){
@@ -272,10 +274,10 @@
     q('#crmCreatorPagination').innerHTML=`<span>第 ${state.creatorPage} / ${totalPages} 页</span><button type="button" data-crm-creator-page="${state.creatorPage-1}" aria-label="上一页" ${state.creatorPage===1?'disabled':''}>‹</button><button type="button" data-crm-creator-page="${state.creatorPage+1}" aria-label="下一页" ${state.creatorPage===totalPages?'disabled':''}>›</button>`;
   }
   function creatorDateFiltersMarkup(){
-    return `<div class="crm-creator-date-range" role="group" aria-labelledby="crmCreatorDateLabel"><span id="crmCreatorDateLabel" class="crm-creator-date-label">日期</span><input id="crmCreatorDateStart" type="date" value="${esc(state.creatorDateStart)}" aria-label="开始日期" /><span class="crm-creator-date-separator">至</span><input id="crmCreatorDateEnd" type="date" value="${esc(state.creatorDateEnd)}" aria-label="结束日期" /></div>`;
+    return `<div class="crm-creator-date-range" role="group" aria-labelledby="crmCreatorDateLabel"><span id="crmCreatorDateLabel" class="crm-creator-date-label">邮寄信息登记日期</span><input id="crmCreatorDateStart" type="date" value="${esc(state.creatorDateStart)}" aria-label="开始日期" /><span class="crm-creator-date-separator">至</span><input id="crmCreatorDateEnd" type="date" value="${esc(state.creatorDateEnd)}" aria-label="结束日期" /></div>`;
   }
   function creatorPageMarkup(){
-    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError||creatorImportBusy?'disabled':''}>${creatorImportBusy?'正在导入…':'导入达人'}</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="请先勾选达人，或全选当前筛选结果" ${state.creatorLoadError?'disabled':''}>导出达人</button></div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}${creatorImportResultMarkup()}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、抖音 UID、手机号" aria-label="搜索达人名称、抖音 UID 或手机号" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup><col style="width:48px" />${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr><th scope="col" class="crm-creator-select-cell"><input id="crmCreatorSelectAll" type="checkbox" aria-label="全选当前筛选下的全部达人" title="全选当前筛选结果，包含其他分页" /></th>${creatorFields.map(field=>`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><div class="crm-creator-selection"><span id="crmCreatorSelectionCount" role="status">勾选达人后导出</span><button type="button" data-crm-selection-all>全选当前筛选结果</button><button type="button" data-crm-selection-clear disabled>清空</button></div><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
+    return `<div class="crm-container crm-creators"><header class="crm-creators-heading"><div><h1>达人管理</h1><p>集中管理达人资料与寄样信息。</p></div><div class="crm-creator-heading-actions"><button class="crm-creator-primary" type="button" data-crm-creator-add ${state.creatorLoadError?'disabled':''}>${icon('plus')}新增达人</button><button class="crm-creator-secondary" type="button" data-crm-creator-import ${state.creatorLoadError||creatorImportBusy?'disabled':''}>${creatorImportBusy?'正在导入…':'导入达人'}</button><button class="crm-creator-secondary" type="button" data-crm-creator-export title="请先勾选达人，或全选当前筛选结果" ${state.creatorLoadError?'disabled':''}>导出达人</button>${creatorImportResultMarkup()}</div></header>${state.creatorLoadError?`<p class="crm-creator-alert" role="alert">${esc(state.creatorLoadError)}</p>`:''}<section class="crm-creator-panel" aria-label="达人列表"><form id="crmCreatorFilters" class="crm-creator-toolbar" role="search" aria-label="达人搜索与日期筛选"><label class="crm-creator-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="crmCreatorSearch" type="search" value="${esc(state.creatorQuery)}" placeholder="搜索达人名称、产品、寄样人、品类" aria-label="搜索达人名称、产品、寄样人或品类" /></label><div class="crm-creator-tag-filter" id="crmCreatorTagFilter">${creatorTagFilterMarkup()}</div>${creatorDateFiltersMarkup()}<div class="crm-creator-filter-actions"><button type="submit" class="crm-creator-primary">搜索</button><button type="button" class="crm-creator-secondary" data-crm-creator-reset>重置</button></div><p class="crm-creator-filter-error" id="crmCreatorDateError" role="alert" hidden>开始日期不能晚于结束日期。</p></form><div class="crm-creator-table-scroll" tabindex="0" role="region" aria-label="达人资料表，可横向滚动"><table class="crm-creator-table" aria-label="达人寄样信息列表"><colgroup><col style="width:48px" />${creatorFields.map(field=>`<col style="width:${field.width}px" />`).join('')}<col style="width:166px" /></colgroup><thead><tr><th scope="col" class="crm-creator-select-cell"><input id="crmCreatorSelectAll" type="checkbox" aria-label="全选当前筛选下的全部达人" title="全选当前筛选结果，包含其他分页" /></th>${creatorFields.map(field=>field.key==='date'?`<th scope="col" id="crmCreatorDateHeading" aria-sort="${state.creatorSort==='asc'?'ascending':'descending'}"><button type="button" class="crm-date-sort" data-crm-date-sort aria-label="邮寄信息登记日期${state.creatorSort==='asc'?'升序':'降序'}，点击切换排序">邮寄信息登记日期 <span aria-hidden="true">${state.creatorSort==='asc'?'↑':'↓'}</span></button></th>`:`<th scope="col">${field.label}</th>`).join('')}<th scope="col" class="crm-creator-actions">操作</th></tr></thead><tbody id="crmCreatorRows"></tbody></table></div><div class="crm-creator-empty" id="crmCreatorEmpty"><span aria-hidden="true">${icon('customers')}</span><h2 id="crmCreatorEmptyTitle">暂无达人记录</h2><p id="crmCreatorEmptyHint"></p></div><footer class="crm-creator-footer"><div class="crm-creator-selection"><span id="crmCreatorSelectionCount" role="status">勾选达人后导出</span><button type="button" data-crm-selection-all>全选当前筛选结果</button><button type="button" data-crm-selection-clear disabled>清空</button></div><div id="crmCreatorPagination" class="crm-creator-pagination"></div></footer></section></div>`;
   }
   function localDate(){
     const date=new Date(),pad=value=>String(value).padStart(2,'0');
@@ -289,7 +291,7 @@
     if(!dialog){dialog=document.createElement('dialog');dialog.id='crmCreatorEditor';dialog.className='crm-creator-dialog';dialog.setAttribute('aria-labelledby','crmCreatorEditorTitle');document.body.append(dialog);}
     const fields=creatorFields.filter(field=>field.type!=='analysis').map(field=>{
       if(field.type==='mark')return creatorMarkEditor(record?.mark||{tags:[],note:'',group:''});
-      const value=record?.[field.key]??(field.type==='date'?localDate():''),fieldId=`crmCreatorField-${field.key}`;
+      const value=record?.[field.key]??(field.key==='date'?localDate():''),fieldId=`crmCreatorField-${field.key}`;
       const attrs=`id="${fieldId}" name="${field.key}" ${field.required?'required':''} ${field.max?`maxlength="${field.max}"`:''}`;
       let input;
       if(field.type==='address')input='<div id="crmCreatorAddress"></div>';
@@ -300,25 +302,21 @@
       else input=`<input ${attrs} type="${field.type}" value="${esc(value)}" ${field.type==='tel'?'inputmode="tel"':''} placeholder="${field.type==='url'?'https://www.douyin.com/user/…':`请输入${field.label}`}" />`;
       return `<div class="crm-creator-field ${['textarea','address'].includes(field.type)?'is-wide':''}"><label for="${fieldId}">${field.label}${field.required?'<span aria-hidden="true"> *</span>':''}</label>${input}</div>`;
     }).join('');
-    dialog.innerHTML=`<form id="crmCreatorForm" data-creator-id="${esc(id)}"><header class="crm-creator-dialog-head"><div><h2 id="crmCreatorEditorTitle">${record?'编辑达人':'新增达人'}</h2><p>填写达人资料与寄样收货信息。</p></div><button type="button" data-crm-creator-close aria-label="关闭">×</button></header><div class="crm-creator-form-grid">${fields}</div><p class="crm-creator-form-error" id="crmCreatorFormError" role="alert" hidden></p><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-creator-close>取消</button><button type="submit" class="crm-creator-primary">保存</button></footer></form>`;
-    q('#crmCreatorForm').creatorAddress=window.CreatorAddress.mount(q('#crmCreatorAddress'),{value:record?.address||'',parts:record?.addressParts||null});
+    dialog.innerHTML=`<form id="crmCreatorForm" data-creator-id="${esc(id)}"><header class="crm-creator-dialog-head"><div><h2 id="crmCreatorEditorTitle">${record?'编辑达人':'新增达人'}</h2><p>填写寄样信息、发布情况与达人标记。</p></div><button type="button" data-crm-creator-close aria-label="关闭">×</button></header><div class="crm-creator-form-grid">${fields}</div><p class="crm-creator-form-error" id="crmCreatorFormError" role="alert" hidden></p><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-creator-close>取消</button><button type="submit" class="crm-creator-primary">保存</button></footer></form>`;
     dialog.showModal();
   }
   function submitCreator(form){
     if(!form.reportValidity())return;
     const picker=form.querySelector('.crm-creator-tag-picker');if(picker&&!addCreatorCustomTag(picker))return;
-    const values=new FormData(form),record={id:form.dataset.creatorId||(crypto.randomUUID?.()||`creator-${Date.now()}-${Math.random().toString(16).slice(2)}`)};
+    const values=new FormData(form),record={...state.creators.find(item=>item.id===form.dataset.creatorId),id:form.dataset.creatorId||(crypto.randomUUID?.()||`creator-${Date.now()}-${Math.random().toString(16).slice(2)}`)};
     creatorFields.filter(field=>!['mark','analysis'].includes(field.type)).forEach(field=>{record[field.key]=String(values.get(field.key)||'').trim();});
     record.aiAnalysis=state.creators.find(item=>item.id===record.id)?.aiAnalysis||'';
     record.mark={tags:creatorMarkTags(String(values.get('markTags')||'')),note:String(values.get('markNote')||'').trim(),group:String(values.get('markGroup')||'').trim()};
     const error=q('#crmCreatorFormError');
     if(!record.name){error.textContent='请填写达人名称。';error.hidden=false;q('#crmCreatorField-name').focus();return;}
     if(record.mark.tags.length>10||record.mark.tags.some(tag=>tag.length>24)){error.textContent='最多添加 10 个标签，每个标签不超过 24 个字。';error.hidden=false;q('#crmCreatorMarkTagsCustom').focus();return;}
-    const address=form.creatorAddress.read();
-    if(!address.ok){error.textContent=address.message;error.hidden=false;address.focus.focus();return;}
-    record.address=address.address;
-    if(address.addressParts)record.addressParts=address.addressParts;
-    if(record.profileUrl&&!profileUrl(record.profileUrl)){error.textContent='抖音主页链接需要以 https:// 或 http:// 开头。';error.hidden=false;q('#crmCreatorField-profileUrl').focus();return;}
+    if(record.profileUrl&&!profileUrl(record.profileUrl)){error.textContent='主页链接需要以 https:// 或 http:// 开头。';error.hidden=false;q('#crmCreatorField-profileUrl').focus();return;}
+    if(/^\w+:/.test(record.workUrl)&&!profileUrl(record.workUrl)){error.textContent='作品链接请填写 http:// 或 https:// 地址，也可填写“已催”等跟进状态。';error.hidden=false;q('#crmCreatorField-workUrl').focus();return;}
     const editing=Boolean(form.dataset.creatorId);
     const next=editing?state.creators.map(item=>item.id===record.id?record:item):[record,...state.creators];
     if(!saveCreators(next)){error.textContent='未能保存记录，请检查本地存储后重试。';error.hidden=false;return;}
@@ -362,7 +360,19 @@
     if(e.target.closest('[data-crm-selection-clear]')){selectAllCreators(false);return;}
     if(e.target.closest('[data-crm-creator-export]')){exportCreatorRecords();return;}
     if(e.target.closest('[data-crm-creator-import]')){openCreatorImport();return;}
-    if(e.target.closest('[data-crm-import-dismiss]')){state.creatorImportResult=null;q('.crm-direct-import-result')?.remove();return;}
+    if(e.target.closest('[data-crm-date-sort]')){
+      state.creatorSort=state.creatorSort==='desc'?'asc':'desc';state.creatorPage=1;renderCreatorRecords();
+      const th=q('#crmCreatorDateHeading');th.setAttribute('aria-sort',state.creatorSort==='asc'?'ascending':'descending');
+      const button=th.querySelector('button');button.innerHTML=`邮寄信息登记日期 <span aria-hidden="true">${state.creatorSort==='asc'?'↑':'↓'}</span>`;
+      button.setAttribute('aria-label',`邮寄信息登记日期${state.creatorSort==='asc'?'升序':'降序'}，点击切换排序`);return;
+    }
+    if(e.target.closest('[data-crm-import-history]')){openCreatorImportHistory();return;}
+    if(e.target.closest('[data-crm-history-close]')){q('#crmImportHistoryDialog')?.close();return;}
+    if(e.target.closest('[data-crm-history-back]')){openCreatorImportHistory(importHistoryPage);return;}
+    const historyDetail=e.target.closest('[data-crm-history-detail]');if(historyDetail){showCreatorImportHistoryDetail(historyDetail.dataset.crmHistoryDetail);return;}
+    const historyDownload=e.target.closest('[data-crm-history-download]');if(historyDownload&&!historyDownload.disabled){downloadCreatorImportErrors(historyDownload.dataset.crmHistoryDownload,historyDownload);return;}
+    const historyPage=e.target.closest('[data-crm-history-page]');if(historyPage&&!historyPage.disabled){openCreatorImportHistory(Number(historyPage.dataset.crmHistoryPage));return;}
+    const detailPage=e.target.closest('[data-crm-history-detail-page]');if(detailPage&&!detailPage.disabled){openCreatorImportResult(Number(detailPage.dataset.crmHistoryDetailPage));return;}
     if(e.target.closest('[data-crm-creator-add]')){openCreatorEditor();return;}
     const mark=e.target.closest('[data-crm-creator-mark]');
     if(mark){
@@ -488,7 +498,7 @@
   function openCreatorDetails(id){
     const record=state.creators.find(item=>item.id===id);if(!record)return;
     let dialog=q('#crmCreatorDetails');if(!dialog){dialog=document.createElement('dialog');dialog.id='crmCreatorDetails';dialog.className='crm-creator-dialog';dialog.setAttribute('aria-labelledby','crmCreatorDetailsTitle');document.body.append(dialog);}
-    dialog.innerHTML=`<header class="crm-creator-dialog-head"><div><h2 id="crmCreatorDetailsTitle">达人详情</h2><p>${esc(record.name)}</p></div><button type="button" data-crm-detail-close aria-label="关闭">×</button></header><dl class="crm-creator-details">${creatorFields.map(field=>`<div class="${['mark','analysis'].includes(field.type)||['productName','address','profileUrl'].includes(field.key)?'is-wide':''}"><dt>${field.label}</dt><dd>${field.type==='analysis'?`<span>${esc(record.aiAnalysis)||'暂无已保存的分析结果'}</span>`:field.type==='mark'?`<div class="crm-creator-mark-tags">${record.mark.tags.map(tag=>`<span class="crm-creator-mark-tag">${esc(tag)}</span>`).join('')||'<span class="crm-creator-missing">未设置标签</span>'}</div><p>备注：${esc(record.mark.note)||'—'}</p><p>分组：${esc(record.mark.group)||'—'}</p>`:creatorCell(record,field)}</dd></div>`).join('')}</dl><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-detail-close>关闭</button><button type="button" class="crm-creator-primary" data-crm-detail-edit="${esc(id)}">编辑达人</button></footer>`;
+    dialog.innerHTML=`<header class="crm-creator-dialog-head"><div><h2 id="crmCreatorDetailsTitle">达人详情</h2><p>${esc(record.name)}</p></div><button type="button" data-crm-detail-close aria-label="关闭">×</button></header><dl class="crm-creator-details">${creatorFields.map(field=>`<div class="${['mark','analysis'].includes(field.type)||['productName','profileUrl','workUrl'].includes(field.key)?'is-wide':''}"><dt>${field.label}</dt><dd>${field.type==='analysis'?`<span>${esc(record.aiAnalysis)||'暂无已保存的分析结果'}</span>`:field.type==='mark'?`<div class="crm-creator-mark-tags">${record.mark.tags.map(tag=>`<span class="crm-creator-mark-tag">${esc(tag)}</span>`).join('')||'<span class="crm-creator-missing">未设置标签</span>'}</div><p>备注：${esc(record.mark.note)||'—'}</p><p>分组：${esc(record.mark.group)||'—'}</p>`:creatorCell(record,field)}</dd></div>`).join('')}</dl><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-detail-close>关闭</button><button type="button" class="crm-creator-primary" data-crm-detail-edit="${esc(id)}">编辑达人</button></footer>`;
     dialog.showModal();
   }
   function exportCreatorRecords(){
@@ -499,7 +509,7 @@
       const columns=creatorFields.flatMap(field=>field.type==='mark'?[{key:'tags',label:'标签'},{key:'note',label:'备注'},{key:'group',label:'分组'}]:[{key:field.key,label:field.label}]);
       const rows=records.map(record=>columns.map(({key})=>String(key==='tags'?record.mark.tags.join('，'):['note','group'].includes(key)?record.mark[key]:record[key]??'')));
       const x=window.XLSX,sheet=x.utils.aoa_to_sheet([columns.map(column=>column.label),...rows]),book=x.utils.book_new();
-      sheet['!cols']=columns.map(({key})=>({wch:key==='aiAnalysis'?60:['address','note','productName','profileUrl'].includes(key)?36:22}));
+      sheet['!cols']=columns.map(({key})=>({wch:key==='aiAnalysis'?60:['note','productName','profileUrl','workUrl'].includes(key)?36:22}));
       sheet['!autofilter']={ref:sheet['!ref']};
       // 使用文本单元格，保留前导零与长号码，也不把用户文本当成公式。
       records.forEach((_,row)=>columns.forEach((column,col)=>{const cell=sheet[x.utils.encode_cell({r:row+1,c:col})];if(cell){cell.t='s';if(['douyinUid','phone'].includes(column.key))cell.z='@';}}));
@@ -513,35 +523,89 @@
     if(!input){input=document.createElement('input');input.id='crmCreatorImportFile';input.type='file';input.accept='.xlsx,.xls,.csv,.tsv';input.hidden=true;document.body.append(input);}
     input.value='';input.click();
   }
+  let importHistoryCount=null,importHistoryPage=1,selectedImportHistory=null;
   function creatorImportResultMarkup(){
-    const result=state.creatorImportResult;if(!result)return '';
-    return `<section class="crm-direct-import-result ${result.error?'is-error':''}" role="${result.error?'alert':'status'}"><div><p>${esc(result.message)}</p><button type="button" data-crm-import-dismiss aria-label="关闭导入结果">×</button></div>${result.issues.length?`<details><summary>查看未导入原因（${result.issues.length} 条）</summary><ul>${result.issues.map(issue=>`<li>${esc(issue)}</li>`).join('')}</ul></details>`:''}</section>`;
+    return `<button type="button" class="crm-creator-secondary crm-import-history-button" data-crm-import-history>错误记录${importHistoryCount?`<span>${importHistoryCount}</span>`:''}</button>`;
+  }
+  async function refreshImportHistoryCount(){
+    try{importHistoryCount=(await window.CreatorImportHistory.list()).length;}catch{importHistoryCount=null;}
+    const button=q('[data-crm-import-history]');if(button)button.innerHTML=`错误记录${importHistoryCount?`<span>${importHistoryCount}</span>`:''}`;
+  }
+  function importHistoryDialog(){
+    let dialog=q('#crmImportHistoryDialog');
+    if(!dialog){dialog=document.createElement('dialog');dialog.id='crmImportHistoryDialog';dialog.className='crm-creator-dialog crm-import-history-dialog';dialog.setAttribute('aria-labelledby','crmImportHistoryTitle');document.body.append(dialog);dialog.addEventListener('close',()=>q('[data-crm-import-history]')?.focus());}
+    return dialog;
+  }
+  async function openCreatorImportHistory(pageNumber=1){
+    const dialog=importHistoryDialog();importHistoryPage=pageNumber;
+    dialog.innerHTML='<header class="crm-creator-dialog-head"><div><h2 id="crmImportHistoryTitle">错误记录</h2><p>历次导入失败记录 · 时间为北京时间</p></div><button type="button" data-crm-history-close aria-label="关闭错误记录">×</button></header><div class="crm-history-body" aria-live="polite">正在读取…</div>';
+    if(!dialog.open)dialog.showModal();
+    let records=[],readError='';
+    try{records=await window.CreatorImportHistory.list();importHistoryCount=records.length;}
+    catch{readError='历史记录读取失败，请稍后重试。';records=window.CreatorImportHistory.temporaryRecords();}
+    const pages=Math.max(1,Math.ceil(records.length/8));importHistoryPage=Math.max(1,Math.min(pages,pageNumber));
+    dialog.querySelector('.crm-history-body').innerHTML=`${readError?`<p role="alert" class="crm-history-warning">${readError}<button type="button" data-crm-import-history>重试</button></p>`:''}
+      ${records.length?`<div class="crm-history-table-scroll"><table class="crm-history-table"><thead><tr><th>错误时间</th><th>文件名称</th><th>错误问题</th><th>操作</th></tr></thead><tbody>${records.slice((importHistoryPage-1)*8,importHistoryPage*8).map(record=>`<tr><td><time datetime="${esc(record.occurredAt)}">${esc(window.CreatorImportHistory.formatTime(record.occurredAt)).replace(' ','<br>')}</time></td><td>${esc(record.filename)}<small>${esc(record.sheetName||'文件校验')}${record.temporary?' · 暂未保存':''}</small></td><td><strong>${record.errors?.length?`${record.errors.length} 行数据有误`:esc(record.title)}</strong><p>${esc(record.errors?.[0]?.message||record.message)}</p>${record.archiveWarning?`<small class="crm-history-warning">${esc(record.archiveWarning)}</small>`:''}</td><td><button type="button" data-crm-history-detail="${esc(record.id)}" aria-label="查看${esc(record.filename)}的错误详情">查看详情</button><button type="button" data-crm-history-download="${esc(record.id)}" aria-label="下载${esc(record.filename)}的问题表格">下载表格</button></td></tr>`).join('')}</tbody></table></div>`:`${readError?'':'<div class="crm-history-empty"><h3>暂无错误记录</h3><p>导入失败后，时间、问题和问题表格会保存在这里。</p></div>'}`}
+      <footer class="crm-history-list-footer"><span>共 ${records.length} 次失败 · 当前浏览器本地保存</span><div class="crm-import-pages"><span>${importHistoryPage} / ${pages}</span><button type="button" data-crm-history-page="${importHistoryPage-1}" ${importHistoryPage===1?'disabled':''}>上一页</button><button type="button" data-crm-history-page="${importHistoryPage+1}" ${importHistoryPage===pages?'disabled':''}>下一页</button></div></footer>`;
+    refreshImportHistoryCount();
+  }
+  async function showCreatorImportHistoryDetail(id,pageNumber=1){
+    try{selectedImportHistory=await window.CreatorImportHistory.get(id);if(!selectedImportHistory)throw new Error('未找到这条错误记录');openCreatorImportResult(pageNumber);}
+    catch(error){showToast(error.message||'记录读取失败，请重试。');}
+  }
+  function openCreatorImportResult(pageNumber=1){
+    const result=selectedImportHistory;if(!result)return;
+    const dialog=importHistoryDialog(),errors=result.errors||[],pages=Math.max(1,Math.ceil(errors.length/8)),current=Math.max(1,Math.min(pages,pageNumber));
+    dialog.innerHTML=`<header class="crm-creator-dialog-head"><div><button type="button" class="crm-history-back" data-crm-history-back>← 返回错误记录</button><h2 id="crmImportHistoryTitle">错误详情</h2><p>${esc(result.filename)} · ${esc(window.CreatorImportHistory.formatTime(result.occurredAt))}</p></div><button type="button" data-crm-history-close aria-label="关闭错误记录">×</button></header><div class="crm-import-dialog-body"><div class="crm-import-outcome is-error"><span class="crm-import-outcome-icon" aria-hidden="true">!</span><div><h3>${esc(result.title)}</h3><p>${esc(result.message)}</p></div></div>${result.archiveWarning?`<p class="crm-history-warning">${esc(result.archiveWarning)}</p>`:''}
+      ${errors.length?`<div class="crm-import-errors-heading"><h3>错误明细 · ${errors.length} 行</h3><span>工作表：${esc(result.sheetName)}</span></div><div class="crm-import-errors-scroll"><table class="crm-import-errors"><thead><tr><th>原表行号</th><th>达人名称</th><th>详细问题与修改建议</th></tr></thead><tbody>${errors.slice((current-1)*8,current*8).map(row=>`<tr><td>第 ${row.row} 行</td><td>${esc(row.record?.name)||'—'}</td><td>${row.message.split('；').map(message=>`<p>${esc(message)}</p>`).join('')}</td></tr>`).join('')}</tbody></table></div>${pages>1?`<div class="crm-import-pages"><span>第 ${current} / ${pages} 页</span><button type="button" data-crm-history-detail-page="${current-1}" ${current===1?'disabled':''}>上一页</button><button type="button" data-crm-history-detail-page="${current+1}" ${current===pages?'disabled':''}>下一页</button></div>`:''}`:''}
+      <p class="crm-history-download-hint">下载表格包含可读取的原始工作表，另附「导入问题备注」页，逐条记录问题。文件损坏或原文件未能保存时，提供问题说明表。</p></div><footer class="crm-creator-dialog-footer"><button type="button" class="crm-creator-secondary" data-crm-history-back>返回记录</button><button type="button" class="crm-creator-primary" data-crm-history-download="${esc(result.id)}">下载表格（含问题备注）</button></footer>`;
+    if(!dialog.open)dialog.showModal();
+  }
+  async function downloadCreatorImportErrors(id,button){
+    if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+    try{const result=await window.CreatorImportHistory.download(id);if(!result.sourceIncluded)showToast('已下载问题说明表，原文件无法读取或未能保存。');}
+    catch(error){showToast(error.message||'问题表格下载失败，请重试。');}
+    finally{if(button){button.disabled=false;button.removeAttribute('aria-busy');}}
   }
   function updateCreatorImportButton(){
-    const button=q('[data-crm-creator-import]');if(!button)return;
-    button.disabled=Boolean(state.creatorLoadError)||creatorImportBusy;button.textContent=creatorImportBusy?'正在导入…':'导入达人';
+    const button=q('[data-crm-creator-import]');
+    if(button){button.disabled=Boolean(state.creatorLoadError)||creatorImportBusy;button.textContent=creatorImportBusy?'正在校验…':'导入达人';}
   }
   async function readCreatorImportFile(file){
     if(!file||creatorImportBusy||state.creatorLoadError)return;
-    creatorImportBusy=true;state.creatorImportResult=null;q('.crm-direct-import-result')?.remove();updateCreatorImportButton();
+    creatorImportBusy=true;updateCreatorImportButton();
+    const meta={filename:file.name,sheetName:'',errors:[],error:true};
     try{
       const review=await window.CreatorImport.readFile(file,state.creators);
-      // 文件解析期间可能新增达人，写入前使用最新数据再去重。
-      const seen=new Set(state.creators.flatMap(window.CreatorImport.duplicateKeys)),valid=[],issues=[];
-      let duplicates=0,errors=0;
-      for(const row of review.rows){
-        if(row.status==='error'){errors++;issues.push(`第 ${row.row} 行：${row.message}`);continue;}
-        if(row.status==='duplicate'){duplicates++;issues.push(`第 ${row.row} 行：重复记录，已跳过。`);continue;}
-        const keys=window.CreatorImport.duplicateKeys(row.record);
-        if(keys.some(key=>seen.has(key))){duplicates++;issues.push(`第 ${row.row} 行：重复记录，已跳过。`);continue;}
-        keys.forEach(key=>seen.add(key));valid.push({...row.record,aiAnalysis:'',id:crypto.randomUUID?.()||`import-${Date.now()}-${Math.random().toString(16).slice(2)}`});
+      meta.sheetName=review.sheetName;meta.total=review.rows.length;
+      if(!review.rows.length)throw new Error('表格中没有数据，请填写后重新上传。');
+      // 整表校验先于任何保存；错误文件中的有效行也不写入。
+      const errors=review.rows.filter(row=>row.status==='error');
+      if(errors.length){
+        state.creatorImportResult={...meta,errors,inserted:0,duplicates:review.rows.filter(row=>row.status==='duplicate').length,title:`发现 ${errors.length} 行错误，整张表未导入`,message:'请按下面的原表行号修正后重新上传，重复记录无需修改。'};
+      }else{
+        // 解析可能耗时，写入前重读已有记录，保留这期间的编辑。
+        const latest=loadCreators();if(state.creatorLoadError)throw new Error(state.creatorLoadError);
+        const seen=new Set(latest.flatMap(window.CreatorImport.duplicateKeys)),valid=[];let skipped=0;
+        for(const row of review.rows){
+          const keys=window.CreatorImport.duplicateKeys(row.record);
+          if(keys.some(key=>seen.has(key))){skipped++;continue;}
+          keys.forEach(key=>seen.add(key));valid.push({...row.record,aiAnalysis:'',id:crypto.randomUUID?.()||`import-${Date.now()}-${Math.random().toString(16).slice(2)}`});
+        }
+        if(valid.length&&!saveCreators([...valid,...latest]))throw new Error('数据未能保存，请检查浏览器存储空间或权限后重试。');
+        if(!valid.length)state.creators=latest;
+        state.creatorImportResult={...meta,error:false,inserted:valid.length,duplicates:skipped,title:valid.length?'导入完成':'全部记录已存在，无需重复导入',message:`新增 ${valid.length} 条，重复跳过 ${skipped} 条，覆盖 0 条。`};
+        if(valid.length){state.creatorPage=1;state.creatorSelection.clear();}
       }
-      if(valid.length&&!saveCreators([...valid,...state.creators]))throw new Error('导入未能保存，请检查本地存储后重试，原有记录保留。');
-      const message=review.rows.length?`已导入 ${valid.length} 位达人${duplicates?`，跳过重复 ${duplicates} 条`:''}${errors?`，跳过错误 ${errors} 条`:''}。`:'表格中没有达人数据，请填写后重新导入。';
-      state.creatorImportResult={message,issues,error:!valid.length&&errors>0};
-      if(valid.length){state.creatorQuery='';state.creatorTags=[];state.creatorTagDraft=[];state.creatorTagMode='any';state.creatorTagModeDraft='any';state.creatorDateStart='';state.creatorDateEnd='';state.creatorPage=1;state.creatorSelection.clear();}
-    }catch(error){state.creatorImportResult={message:error.message||'导入失败，请检查文件后重试。',issues:[],error:true};}
-    finally{creatorImportBusy=false;render();showToast(state.creatorImportResult.message);}
+    }catch(error){state.creatorImportResult={...meta,title:'文件未导入',message:error.message||'无法读取该文件，请检查后重试。'};}
+    finally{
+      creatorImportBusy=false;render();
+      if(state.creatorImportResult.error){
+        const history=await window.CreatorImportHistory.add(state.creatorImportResult,file);
+        await refreshImportHistoryCount();
+        showToast(history.archiveWarning||'导入失败，未写入数据。请点击“错误记录”查看问题并下载表格。');
+      }else showToast(state.creatorImportResult.message);
+    }
   }
   function enableCreatorAiDrag(launcher){
     const storageKey='chaoren-crm-ai-launcher-position-v1';
@@ -657,4 +721,5 @@
     renderCreatorRecords();renderCreatorAnalysis();q('#crmAiFeedback').textContent='已保存到该达人的AI分析字段。';q('#crmAiFeedback').hidden=false;
   }
   render();
+  refreshImportHistoryCount();
 })();

@@ -1,0 +1,13 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const root=process.argv[2]||path.resolve(__dirname,'..'),XLSX=require(path.join(root,'vendor/sheetjs/xlsx.full.min.js'));
+const ctx={window:{XLSX},TextDecoder,Uint8Array,Intl,Date,crypto:require('node:crypto').webcrypto};vm.runInNewContext(fs.readFileSync(path.join(root,'creator-import-history.js'),'utf8'),ctx);
+const api=ctx.window.CreatorImportHistory;
+const record={id:'batch1',filename:'寄样记录.xlsx',sheetName:'寄样明细',occurredAt:'2026-10-21T02:30:45.000Z',title:'发现 2 行错误',message:'整张表未导入',errors:[{row:3,record:{name:'甲'},message:'日期不存在；产品名称不能为空'},{row:5,record:{name:'=1+1'},message:'达人名称不完整'}]};
+const original=XLSX.utils.book_new();XLSX.utils.book_append_sheet(original,XLSX.utils.aoa_to_sheet([['日期','达人名称'],['2026-02-30','甲']]),'寄样明细');XLSX.utils.book_append_sheet(original,XLSX.utils.aoa_to_sheet([['原有备注，不覆盖']]),'导入问题备注');
+const report=api.buildReport(record,XLSX.write(original,{type:'buffer',bookType:'xlsx'}));
+assert.equal(report.sourceIncluded,true);assert.equal(report.notesName,'导入问题备注_2');assert.equal(report.book.SheetNames.length,3);
+assert.equal(report.book.Sheets['寄样明细'].A2.v,'2026-02-30');assert.equal(report.book.Sheets['导入问题备注'].A1.v,'原有备注，不覆盖');
+const notes=XLSX.utils.sheet_to_json(report.book.Sheets[report.notesName],{header:1});assert.equal(notes.length,11);assert.equal(notes[1][1],'2026/10/21 10:30:45');assert.equal(notes[8][1],3);assert.equal(notes[9][3],'产品名称不能为空');assert.equal(report.book.Sheets[report.notesName].C11.t,'s');assert.equal(report.book.Sheets[report.notesName].C11.f,undefined);
+const corrupt=api.buildReport({...record,errors:[]},new Uint8Array([0,1,2,3]));assert(corrupt.book.SheetNames.includes(corrupt.notesName));
+const missing=api.buildReport({...record,errors:[]},null);assert.equal(missing.sourceIncluded,false);assert.equal(missing.book.SheetNames.length,1);
+(async()=>{const one=await api.add(record,new Blob(['a']));const two=await api.add(record,new Blob(['b']));assert.notEqual(one.id,two.id);assert.equal(api.temporaryRecords().length,2);assert.equal(one.temporary,true);assert.match(one.archiveWarning,/刷新/);console.log('PASS: original worksheets preserved, unique notes sheet, Beijing error time, per-issue row references, text formula safety, missing-file report, separate retries and explicit persistence failure.');})().catch(e=>{console.error(e);process.exitCode=1});
