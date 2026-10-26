@@ -36,7 +36,7 @@ const base = process.argv[2] || pathToFileURL(path.resolve(__dirname, '../index.
     await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-desktop.png' });
 
     // Composer has attachment/model controls, with no access badge or agent status.
-    assert.equal(await page.locator('#wbSend').isVisible(), false);
+    assert.equal(await page.locator('#wbSend').isVisible(), true);
     assert.equal(await page.locator('#wbComposer .wb-agent').count(), 0);
     assert.equal((await page.locator('#wbComposer').innerText()).includes('完全访问'), false);
     assert.equal(await page.locator('#wbThinkingLabel').innerText(), '高');

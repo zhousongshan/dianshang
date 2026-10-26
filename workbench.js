@@ -319,7 +319,6 @@
     $('#wbMic').innerHTML = active ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>';
     const empty = !$('#wbInput').value.trim() && !pendingFiles().length;
     $('#wbSend').disabled = active || empty;
-    $('#wbSend').hidden = empty;
   }
   function syncComposer() {
     syncSettings();
