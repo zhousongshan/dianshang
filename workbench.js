@@ -5,6 +5,7 @@
   if (!root) return;
   const $ = selector => root.querySelector(selector);
   const STORAGE_KEY = 'chaoren-workbench-v1';
+  const thinkingLevels = { low: '低', medium: '中', high: '高' };
   const catalogTabs = {
     experts: { label: '专家', description: '为不同工作场景选择专业视角，查看示例后新建任务。' },
     skills: { label: '技能', description: '把常用工作方法整理成技能，从示例任务开始使用。' },
@@ -79,7 +80,7 @@
   const copyIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/></svg>';
   const seed = () => ({
     selectedId: 'sample-ppt',
-    view: 'chat', catalogTab: 'experts', tasksCollapsed: false, savedResourceIds: [],
+    view: 'chat', catalogTab: 'experts', tasksCollapsed: false, savedResourceIds: [], thinkingLevel: 'high',
     chats: [
       { id: 'sample-ppt', title: '制作PPT协助', date: '10:24', draft: '', messages: [
         { role: 'assistant', thought: '1分钟25秒', paragraphs: [
@@ -115,6 +116,7 @@
         chats, view: saved.view === 'catalog' ? 'catalog' : 'chat',
         catalogTab: Object.hasOwn(catalogTabs, saved.catalogTab) ? saved.catalogTab : 'experts',
         tasksCollapsed: saved.tasksCollapsed === true,
+        thinkingLevel: Object.hasOwn(thinkingLevels, saved.thinkingLevel) ? saved.thinkingLevel : 'high',
         savedResourceIds: Array.isArray(saved.savedResourceIds) ? saved.savedResourceIds.filter(id => allResources.some(item => item.id === id)) : []
       };
     } catch { return seed(); }
@@ -211,6 +213,7 @@
     $('#wbScroll').hidden = catalog;
     $('.wb-composer-dock').hidden = catalog;
     $('#wbCatalog').hidden = !catalog;
+    if (catalog) $('#wbModelMenu').open = false;
     $('#wbTitle').textContent = catalog ? '专家·技能·连接器' : currentChat().title;
     const newTask = !catalog && currentChat().messages.length === 0;
     [['#wbNewChat', newTask], ['#wbCapabilities', catalog]].forEach(([selector, selected]) => {
@@ -269,12 +272,15 @@
   function resizeInput() {
     const input = $('#wbInput');
     input.style.height = 'auto';
-    input.style.height = `${Math.min(180, Math.max(56, input.scrollHeight))}px`;
+    input.style.height = `${Math.min(180, Math.max(72, input.scrollHeight))}px`;
     const dockHeight = $('.wb-composer-dock').offsetHeight;
     $('#wbTranscript').style.paddingBottom = `${Math.max(185, dockHeight + 65)}px`;
   }
   function syncComposer() {
     $('#wbSend').disabled = !$('#wbInput').value.trim() && !pendingFiles().length;
+    $('#wbSend').hidden = $('#wbSend').disabled;
+    $('#wbThinkingLabel').textContent = thinkingLevels[state.thinkingLevel];
+    root.querySelectorAll('input[name="wb-thinking"]').forEach(input => { input.checked = input.value === state.thinkingLevel; });
     const files = pendingFiles();
     $('#wbAttachments').hidden = !files.length;
     $('#wbAttachments').innerHTML = files.map((file, index) => `<span class="wb-attachment"><span class="wb-attachment-name">${escapeHtml(file.name)}</span><button class="wb-remove-attachment" type="button" data-wb-remove-file="${index}" aria-label="移除附件 ${escapeHtml(file.name)}">×</button></span>`).join('');
@@ -286,6 +292,7 @@
   }
   function renderChat() {
     const chat = currentChat();
+    $('#wbModelMenu').open = false;
     $('#wbTranscript').innerHTML = chat.messages.length ? chat.messages.map(renderMessage).join('') : '<div class="wb-welcome"><div class="wb-welcome-icon">✦</div><h2>有什么可以帮你？</h2><p>从一个想法开始，随心输入</p></div>';
     $('#wbInput').value = typeof chat.draft === 'string' ? chat.draft : '';
     renderView();
@@ -315,7 +322,7 @@
     if (!text && !files.length) return;
     const chat = currentChat();
     const isFirstMessage = !chat.messages.length;
-    chat.messages.push({ role: 'user', text: text || '查看附件', files: files.map(file => ({ name: file.name })) });
+    chat.messages.push({ role: 'user', text: text || '查看附件', files: files.map(file => ({ name: file.name })), settings: { model: 'gpt-6.1-sol', thinkingLevel: state.thinkingLevel } });
     // No request is sent to a provider in the frontend preview.
     chat.messages.push({ role: 'assistant', paragraphs: ['消息已记录。当前为工作台预览，暂未接入模型服务。'], time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) });
     if (isFirstMessage) chat.title = Array.from(text || files[0].name).slice(0, 24).join('');
@@ -442,7 +449,18 @@
     filesByChat.set(state.selectedId, files);
     syncComposer();
   });
-  $('#wbMicrophone').addEventListener('click', () => notify('语音输入暂未开放'));
+  $('.wb-thinking-options').addEventListener('change', event => {
+    const value = event.target.value;
+    if (!Object.hasOwn(thinkingLevels, value)) return;
+    state.thinkingLevel = value;
+    persist();
+    syncComposer();
+    $('#wbModelMenu').open = false;
+    $('.wb-model-summary').focus();
+  });
+  document.addEventListener('pointerdown', event => {
+    if (!$('#wbModelMenu').contains(event.target)) $('#wbModelMenu').open = false;
+  });
   $('#wbTranscript').addEventListener('click', event => {
     const button = event.target.closest('[data-wb-copy]');
     if (button) copyReply(Number(button.dataset.wbCopy));
@@ -452,7 +470,12 @@
     $('#wbSidebarToggle').setAttribute('aria-expanded', String(expanded));
   });
   $('#wbSidebarBackdrop').addEventListener('click', closeSidebar);
-  root.addEventListener('keydown', event => { if (event.key === 'Escape') closeSidebar(); });
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      if ($('#wbModelMenu').open) { $('#wbModelMenu').open = false; $('.wb-model-summary').focus(); }
+      closeSidebar();
+    }
+  });
   window.addEventListener('resize', resizeInput);
   new MutationObserver(() => {
     if (root.classList.contains('active')) requestAnimationFrame(resizeInput);

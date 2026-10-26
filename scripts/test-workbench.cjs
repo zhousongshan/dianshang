@@ -35,6 +35,23 @@ const base = process.argv[2] || pathToFileURL(path.resolve(__dirname, '../index.
     await page.mouse.move(2500, 50);
     await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-desktop.png' });
 
+    // Composer has attachment/model controls, with no access badge or agent status.
+    assert.equal(await page.locator('#wbSend').isVisible(), false);
+    assert.equal(await page.locator('#wbComposer .wb-agent').count(), 0);
+    assert.equal((await page.locator('#wbComposer').innerText()).includes('完全访问'), false);
+    assert.equal(await page.locator('#wbThinkingLabel').innerText(), '高');
+    await page.locator('.wb-model-summary').click();
+    await page.locator('input[name="wb-thinking"][value="low"]').check();
+    assert.equal(await page.locator('#wbThinkingLabel').innerText(), '低');
+    assert.equal(await page.locator('#wbModelMenu').getAttribute('open'), null);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#wbThinkingLabel').innerText(), '低');
+    await page.locator('.wb-model-summary').click();
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#wbModelMenu').getAttribute('open'), null);
+    await page.locator('.wb-model-summary').click();
+    await page.locator('input[name="wb-thinking"][value="high"]').check();
+
     // Task collapse is persistent and does not remove task records.
     assert.equal(await page.locator('#wbTaskToggle').innerText(), '任务');
     await page.locator('#wbTaskToggle').click();
@@ -182,7 +199,9 @@ const base = process.argv[2] || pathToFileURL(path.resolve(__dirname, '../index.
 
     // Attach/remove/reselect a file, then send attachment metadata in the preview.
     const file = { name: '方案.txt', mimeType: 'text/plain', buffer: Buffer.from('demo') };
-    await page.locator('#wbFileInput').setInputFiles(file);
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('#wbAttach').click();
+    await (await chooser).setFiles(file);
     assert.equal(await page.locator('#wbAttachments .wb-attachment').count(), 1);
     assert.equal(await page.locator('#wbSend').isDisabled(), false);
     await page.locator('[data-wb-remove-file]').click();
