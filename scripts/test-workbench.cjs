@@ -41,16 +41,31 @@ const base = process.argv[2] || pathToFileURL(path.resolve(__dirname, '../index.
     assert.equal((await page.locator('#wbComposer').innerText()).includes('完全访问'), false);
     assert.equal(await page.locator('#wbThinkingLabel').innerText(), '高');
     await page.locator('.wb-model-summary').click();
-    await page.locator('input[name="wb-thinking"][value="low"]').check();
+    await page.locator('#wbThinkingFast').click();
     assert.equal(await page.locator('#wbThinkingLabel').innerText(), '低');
-    assert.equal(await page.locator('#wbModelMenu').getAttribute('open'), null);
+    await page.locator('#wbModelPicker').click();
+    const models = await page.locator('[data-wb-model]').allTextContents();
+    assert.deepEqual(models, ['GPT-6.1 Sol', 'GPT-6 Sol', 'GPT-6 Luna', 'GPT-5.6 Sol', 'GPT-5.6 Terra', 'GPT-5.6 Luna']);
+    await page.locator('[data-wb-model="gpt-5.6-terra"]').click();
+    assert.equal(await page.locator('#wbModelLabel').innerText(), 'GPT-5.6 Terra');
     await page.reload({ waitUntil: 'domcontentloaded' });
     assert.equal(await page.locator('#wbThinkingLabel').innerText(), '低');
+    assert.equal(await page.locator('#wbModelLabel').innerText(), 'GPT-5.6 Terra');
     await page.locator('.wb-model-summary').click();
+    await page.locator('#wbThinkingRange').focus();
+    await page.keyboard.press('End');
+    assert.equal(await page.locator('#wbThinkingLabel').innerText(), '极高');
+    assert.equal(await page.locator('#wbThinkingRange').getAttribute('aria-valuetext'), '极高');
+    await page.locator('#wbThinkingReset').click();
+    assert.equal(await page.locator('#wbThinkingLabel').innerText(), '高');
+    await page.locator('#wbModelPicker').click();
+    await page.locator('[data-wb-model="gpt-6.1-sol"]').click();
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-strength.png' });
+    await page.locator('#wbModelPicker').click();
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-models.png' });
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#wbModelMenu').getAttribute('open'), null);
-    await page.locator('.wb-model-summary').click();
-    await page.locator('input[name="wb-thinking"][value="high"]').check();
+    assert.equal(await page.locator('#wbMic').getAttribute('aria-label'), '开始录音');
 
     // Task collapse is persistent and does not remove task records.
     assert.equal(await page.locator('#wbTaskToggle').innerText(), '任务');

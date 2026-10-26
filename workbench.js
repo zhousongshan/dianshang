@@ -5,7 +5,15 @@
   if (!root) return;
   const $ = selector => root.querySelector(selector);
   const STORAGE_KEY = 'chaoren-workbench-v1';
-  const thinkingLevels = { low: '低', medium: '中', high: '高' };
+  const thinkingLevels = { low: '低', medium: '中', high: '高', xhigh: '很高', max: '极高' };
+  const workbenchModels = [
+    { id: 'gpt-6.1-sol', label: 'GPT-6.1 Sol' },
+    { id: 'gpt-6-sol', label: 'GPT-6 Sol' },
+    { id: 'gpt-6-luna', label: 'GPT-6 Luna' },
+    { id: 'gpt-5.6-sol', label: 'GPT-5.6 Sol' },
+    { id: 'gpt-5.6-terra', label: 'GPT-5.6 Terra' },
+    { id: 'gpt-5.6-luna', label: 'GPT-5.6 Luna' }
+  ];
   const catalogTabs = {
     experts: { label: '专家', description: '为不同工作场景选择专业视角，查看示例后新建任务。' },
     skills: { label: '技能', description: '把常用工作方法整理成技能，从示例任务开始使用。' },
@@ -80,7 +88,7 @@
   const copyIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/></svg>';
   const seed = () => ({
     selectedId: 'sample-ppt',
-    view: 'chat', catalogTab: 'experts', tasksCollapsed: false, savedResourceIds: [], thinkingLevel: 'high',
+    view: 'chat', catalogTab: 'experts', tasksCollapsed: false, savedResourceIds: [], modelId: workbenchModels[0].id, thinkingLevel: 'high',
     chats: [
       { id: 'sample-ppt', title: '制作PPT协助', date: '10:24', draft: '', messages: [
         { role: 'assistant', thought: '1分钟25秒', paragraphs: [
@@ -116,6 +124,7 @@
         chats, view: saved.view === 'catalog' ? 'catalog' : 'chat',
         catalogTab: Object.hasOwn(catalogTabs, saved.catalogTab) ? saved.catalogTab : 'experts',
         tasksCollapsed: saved.tasksCollapsed === true,
+        modelId: workbenchModels.some(model => model.id === saved.modelId) ? saved.modelId : workbenchModels[0].id,
         thinkingLevel: Object.hasOwn(thinkingLevels, saved.thinkingLevel) ? saved.thinkingLevel : 'high',
         savedResourceIds: Array.isArray(saved.savedResourceIds) ? saved.savedResourceIds.filter(id => allResources.some(item => item.id === id)) : []
       };
@@ -124,6 +133,8 @@
   const state = readState();
   const filesByChat = new Map();
   const scrollByChat = new Map();
+  const audioUrls = new Map();
+  let recording = null;
   let statusTimer;
   let storageWarning = false;
   let catalogQuery = '';
@@ -227,6 +238,7 @@
     else requestAnimationFrame(resizeInput);
   }
   function openCatalog() {
+    cancelRecording();
     if (state.view !== 'catalog') scrollByChat.set(state.selectedId, $('#wbScroll').scrollTop);
     state.view = 'catalog';
     persist();
@@ -262,7 +274,7 @@
     document.querySelector('[data-asset-scope="public"]')?.click();
   }
   function attachmentMarkup(files) {
-    return files.map(file => `<span class="wb-attachment"><span class="wb-attachment-name">${escapeHtml(file.name)}</span></span>`).join('');
+    return files.map(file => `<span class="wb-attachment${file.audioId ? ' wb-audio-attachment' : ''}"><span class="wb-attachment-name">${escapeHtml(file.name)}</span>${audioPreview(file)}</span>`).join('');
   }
   function renderMessage(message, index) {
     if (message.role === 'user') return `<article class="wb-message wb-message-user" aria-label="我的消息"><div class="wb-user-bubble">${escapeHtml(message.text)}</div>${message.files?.length ? `<div class="wb-message-files">${attachmentMarkup(message.files)}</div>` : ''}</article>`;
@@ -276,15 +288,110 @@
     const dockHeight = $('.wb-composer-dock').offsetHeight;
     $('#wbTranscript').style.paddingBottom = `${Math.max(185, dockHeight + 65)}px`;
   }
-  function syncComposer() {
-    $('#wbSend').disabled = !$('#wbInput').value.trim() && !pendingFiles().length;
-    $('#wbSend').hidden = $('#wbSend').disabled;
+  function audioPreview(file) {
+    const url = audioUrls.get(file.audioId);
+    return url ? `<audio controls preload="metadata" src="${url}" aria-label="播放录音 ${escapeHtml(file.name)}"></audio>` : '';
+  }
+  function syncSettings() {
+    const label = workbenchModels.find(model => model.id === state.modelId).label;
+    $('#wbModelLabel').textContent = label;
+    $('#wbSelectedModel').textContent = label;
     $('#wbThinkingLabel').textContent = thinkingLevels[state.thinkingLevel];
-    root.querySelectorAll('input[name="wb-thinking"]').forEach(input => { input.checked = input.value === state.thinkingLevel; });
+    $('#wbStrengthValue').textContent = thinkingLevels[state.thinkingLevel];
+    const index = Object.keys(thinkingLevels).indexOf(state.thinkingLevel);
+    $('#wbThinkingRange').value = index;
+    $('#wbThinkingRange').setAttribute('aria-valuetext', thinkingLevels[state.thinkingLevel]);
+    $('.wb-strength-slider').style.setProperty('--wb-strength-fill', `${index * 25}%`);
+    root.querySelectorAll('.wb-strength-dots i').forEach((dot, position) => dot.classList.toggle('is-unfilled', position > index));
+    $('#wbModelOptions').innerHTML = workbenchModels.map(model => `<button class="wb-model-option" type="button" data-wb-model="${model.id}" aria-pressed="${model.id === state.modelId}"><span>${model.label}</span>${model.id === state.modelId ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>' : ''}</button>`).join('');
+  }
+  function syncRecording() {
+    const active = !!recording;
+    const pending = active && !recording.recorder;
+    $('#wbRecording').hidden = !active;
+    $('#wbRecordingStatus').textContent = pending ? '等待麦克风授权…' : '正在录音';
+    const elapsed = recording?.startedAt ? Math.floor((Date.now() - recording.startedAt) / 1000) : 0;
+    $('#wbRecordingTime').textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
+    $('#wbMic').disabled = !!pending;
+    $('#wbMic').setAttribute('aria-pressed', String(active));
+    $('#wbMic').setAttribute('aria-label', active ? '停止录音' : '开始录音');
+    $('#wbMic').title = active ? '停止录音' : '开始录音';
+    $('#wbMic').innerHTML = active ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>';
+    const empty = !$('#wbInput').value.trim() && !pendingFiles().length;
+    $('#wbSend').disabled = active || empty;
+    $('#wbSend').hidden = empty;
+  }
+  function syncComposer() {
+    syncSettings();
+    syncRecording();
     const files = pendingFiles();
     $('#wbAttachments').hidden = !files.length;
-    $('#wbAttachments').innerHTML = files.map((file, index) => `<span class="wb-attachment"><span class="wb-attachment-name">${escapeHtml(file.name)}</span><button class="wb-remove-attachment" type="button" data-wb-remove-file="${index}" aria-label="移除附件 ${escapeHtml(file.name)}">×</button></span>`).join('');
+    $('#wbAttachments').innerHTML = files.map((file, index) => `<span class="wb-attachment${file.audioId ? ' wb-audio-attachment' : ''}"><span class="wb-attachment-name">${escapeHtml(file.name)}</span><button class="wb-remove-attachment" type="button" data-wb-remove-file="${index}" aria-label="移除附件 ${escapeHtml(file.name)}">×</button>${audioPreview(file)}</span>`).join('');
     resizeInput();
+  }
+  function stopRecording(discard = false) {
+    const session = recording;
+    if (!session) return;
+    session.discard = discard;
+    recording = null;
+    clearInterval(session.timer);
+    if (session.recorder?.state !== 'inactive') session.recorder?.stop();
+    session.stream?.getTracks().forEach(track => track.stop());
+    syncRecording();
+    resizeInput();
+  }
+  function cancelRecording() { stopRecording(true); }
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      notify('当前浏览器不支持录音，请使用新版 Chrome 或 Safari 并通过 HTTPS 打开');
+      return;
+    }
+    const session = { owner: state.selectedId, discard: false, chunks: [] };
+    recording = session;
+    $('#wbModelMenu').open = false;
+    syncRecording();
+    resizeInput();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (recording !== session || state.view !== 'chat' || !root.getClientRects().length || document.hidden) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      session.stream = stream;
+      const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus'].find(type => MediaRecorder.isTypeSupported(type));
+      session.recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      session.recorder.addEventListener('dataavailable', event => { if (event.data.size) session.chunks.push(event.data); });
+      session.recorder.addEventListener('error', () => {
+        if (recording === session) cancelRecording();
+        notify('录音失败，请重新尝试');
+      });
+      session.recorder.addEventListener('stop', () => {
+        stream.getTracks().forEach(track => track.stop());
+        clearInterval(session.timer);
+        if (recording === session) { recording = null; syncRecording(); resizeInput(); }
+        if (session.discard) return;
+        const blob = new Blob(session.chunks, { type: session.recorder.mimeType });
+        if (!blob.size) { notify('没有录到声音，请重新录制'); return; }
+        const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        const file = new File([blob], `语音-${new Date().toLocaleTimeString('zh-CN', { hour12: false }).replace(/:/g, '')}.${extension}`, { type: blob.type });
+        file.audioId = crypto.randomUUID();
+        audioUrls.set(file.audioId, URL.createObjectURL(blob));
+        filesByChat.set(session.owner, [...(filesByChat.get(session.owner) || []), file]);
+        if (state.selectedId === session.owner) syncComposer();
+        notify('录音已添加，可试听后发送');
+      });
+      session.recorder.start();
+      session.startedAt = Date.now();
+      session.timer = setInterval(syncRecording, 1000);
+      syncRecording();
+    } catch (error) {
+      session.stream?.getTracks().forEach(track => track.stop());
+      if (recording !== session) return;
+      recording = null;
+      syncRecording();
+      resizeInput();
+      notify(error.name === 'NotAllowedError' ? '未获得麦克风权限，请在浏览器中允许录音后重试' : '无法使用麦克风，请检查设备后重试');
+    }
   }
   function closeSidebar() {
     root.classList.remove('wb-sidebar-open');
@@ -300,6 +407,7 @@
     $('#wbScroll').scrollTop = scrollByChat.get(chat.id) || 0;
   }
   function selectChat(id) {
+    cancelRecording();
     if (!state.chats.some(chat => chat.id === id)) return;
     if (state.view === 'chat') scrollByChat.set(state.selectedId, $('#wbScroll').scrollTop);
     state.selectedId = id;
@@ -317,12 +425,13 @@
   }
   function sendMessage(event) {
     event.preventDefault();
+    if (recording) return;
     const text = $('#wbInput').value.trim();
     const files = pendingFiles();
     if (!text && !files.length) return;
     const chat = currentChat();
     const isFirstMessage = !chat.messages.length;
-    chat.messages.push({ role: 'user', text: text || '查看附件', files: files.map(file => ({ name: file.name })), settings: { model: 'gpt-6.1-sol', thinkingLevel: state.thinkingLevel } });
+    chat.messages.push({ role: 'user', text: text || '查看附件', files: files.map(file => ({ name: file.name, audioId: file.audioId })), settings: { model: state.modelId, thinkingLevel: state.thinkingLevel } });
     // No request is sent to a provider in the frontend preview.
     chat.messages.push({ role: 'assistant', paragraphs: ['消息已记录。当前为工作台预览，暂未接入模型服务。'], time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) });
     if (isFirstMessage) chat.title = Array.from(text || files[0].name).slice(0, 24).join('');
@@ -445,18 +554,45 @@
     const button = event.target.closest('[data-wb-remove-file]');
     if (!button) return;
     const files = [...pendingFiles()];
-    files.splice(Number(button.dataset.wbRemoveFile), 1);
+    const [removed] = files.splice(Number(button.dataset.wbRemoveFile), 1);
+    if (removed?.audioId) { URL.revokeObjectURL(audioUrls.get(removed.audioId)); audioUrls.delete(removed.audioId); }
     filesByChat.set(state.selectedId, files);
     syncComposer();
   });
-  $('.wb-thinking-options').addEventListener('change', event => {
-    const value = event.target.value;
+  function setThinkingLevel(value) {
     if (!Object.hasOwn(thinkingLevels, value)) return;
     state.thinkingLevel = value;
     persist();
-    syncComposer();
-    $('#wbModelMenu').open = false;
-    $('.wb-model-summary').focus();
+    syncSettings();
+  }
+  $('#wbThinkingRange').addEventListener('input', event => setThinkingLevel(Object.keys(thinkingLevels)[Number(event.target.value)]));
+  $('#wbThinkingFast').addEventListener('click', () => setThinkingLevel('low'));
+  $('#wbThinkingReset').addEventListener('click', () => setThinkingLevel('high'));
+  $('#wbModelPicker').addEventListener('click', () => {
+    const expanded = $('#wbModelOptions').hidden;
+    $('#wbModelOptions').hidden = !expanded;
+    $('#wbModelPicker').setAttribute('aria-expanded', String(expanded));
+  });
+  $('#wbModelOptions').addEventListener('click', event => {
+    const button = event.target.closest('[data-wb-model]');
+    if (!button || !workbenchModels.some(model => model.id === button.dataset.wbModel)) return;
+    state.modelId = button.dataset.wbModel;
+    persist();
+    syncSettings();
+    $('#wbModelOptions').hidden = true;
+    $('#wbModelPicker').setAttribute('aria-expanded', 'false');
+    $('#wbModelPicker').focus();
+  });
+  $('#wbModelMenu').addEventListener('toggle', () => {
+    if (!$('#wbModelMenu').open) { $('#wbModelOptions').hidden = true; $('#wbModelPicker').setAttribute('aria-expanded', 'false'); }
+  });
+  $('#wbMic').addEventListener('click', () => recording ? stopRecording() : startRecording());
+  $('#wbCancelRecording').addEventListener('click', cancelRecording);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) cancelRecording(); });
+  window.addEventListener('pagehide', () => {
+    cancelRecording();
+    audioUrls.forEach(url => URL.revokeObjectURL(url));
+    audioUrls.clear();
   });
   document.addEventListener('pointerdown', event => {
     if (!$('#wbModelMenu').contains(event.target)) $('#wbModelMenu').open = false;
@@ -479,6 +615,10 @@
   window.addEventListener('resize', resizeInput);
   new MutationObserver(() => {
     if (root.classList.contains('active')) requestAnimationFrame(resizeInput);
+    else cancelRecording();
   }).observe(root, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(() => {
+    if (!root.getClientRects().length) cancelRecording();
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   renderChat();
 })();

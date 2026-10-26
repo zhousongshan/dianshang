@@ -8989,7 +8989,7 @@
     }
   </style>
   <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
-  <link rel="stylesheet" href="./workbench.css?v=066cfd662f41" />
+  <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=c40072ca5743" />
 </head>
 <body>
@@ -9272,17 +9272,21 @@
             <div class="wb-composer-dock">
               <form class="wb-composer" id="wbComposer">
                 <div class="wb-attachments" id="wbAttachments" hidden></div>
+                <div class="wb-recording" id="wbRecording" hidden><span class="wb-recording-dot"></span><span id="wbRecordingStatus">正在录音</span><time id="wbRecordingTime">00:00</time><button id="wbCancelRecording" type="button">取消</button></div>
                 <textarea id="wbInput" rows="2" placeholder="随心输入" aria-label="输入消息"></textarea>
                 <div class="wb-composer-footer">
                   <button class="wb-icon-btn wb-attach-button" id="wbAttach" type="button" title="添加附件" aria-label="添加附件"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg></button>
                   <div class="wb-composer-tools">
                     <details class="wb-model-menu" id="wbModelMenu">
-                      <summary class="wb-model-summary" aria-label="模型与思考强度"><span>GPT-6.1 Sol</span><span class="wb-thinking-label" id="wbThinkingLabel">高</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
+                      <summary class="wb-model-summary" aria-label="模型与思考强度"><span id="wbModelLabel">GPT-6.1 Sol</span><span class="wb-thinking-label" id="wbThinkingLabel">高</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
                       <div class="wb-model-popover">
-                        <div class="wb-model-section"><span class="wb-model-section-label">模型</span><div class="wb-model-current"><span>GPT-6.1 Sol</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></div></div>
-                        <fieldset class="wb-thinking-options"><legend>思考强度</legend><label><input type="radio" name="wb-thinking" value="low" /><span>低</span></label><label><input type="radio" name="wb-thinking" value="medium" /><span>中</span></label><label><input type="radio" name="wb-thinking" value="high" checked /><span>高</span></label></fieldset>
+                        <div class="wb-strength-heading"><button class="wb-icon-btn" id="wbThinkingFast" type="button" title="低强度" aria-label="设为低思考强度"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z"/></svg></button><output id="wbStrengthValue" for="wbThinkingRange">高</output><button class="wb-icon-btn" id="wbThinkingReset" type="button" title="恢复默认强度" aria-label="恢复默认思考强度"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></svg></button></div>
+                        <button class="wb-model-picker" id="wbModelPicker" type="button" aria-expanded="false" aria-controls="wbModelOptions"><span id="wbSelectedModel">GPT-6.1 Sol</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+                        <div class="wb-strength-slider"><div class="wb-strength-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><input id="wbThinkingRange" type="range" min="0" max="4" step="1" value="2" aria-label="思考强度" aria-valuetext="高" /></div>
+                        <div class="wb-model-options" id="wbModelOptions" aria-label="选择模型" hidden></div>
                       </div>
                     </details>
+                    <button class="wb-icon-btn wb-mic-button" id="wbMic" type="button" title="开始录音" aria-label="开始录音" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></button>
                     <button class="wb-send" id="wbSend" type="submit" title="发送" aria-label="发送消息" disabled hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
                   </div>
                 </div>
@@ -19612,7 +19616,7 @@
   <script src="./creator-analysis.js?v=4744366dc8fa"></script>
   <script src="./creator-import-history.js?v=c1a272c5b9a0"></script>
   <script src="./platform-preview.js?v=a3bfe3d7987c"></script>
-  <script src="./workbench.js?v=618c1321f72b"></script>
+  <script src="./workbench.js?v=3afa87163cbe"></script>
   <script src="./qianchuan-review.js?v=eb2a0d6bac76"></script>
 </body>
 </html>
