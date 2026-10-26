@@ -1,0 +1,248 @@
+/* NODE_PATH=/path/to/node_modules node scripts/test-workbench.cjs [base URL]
+   Runs in isolated browser data; no model calls or uploads are made. */
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+const { pathToFileURL } = require('node:url');
+const path = require('node:path');
+const base = process.argv[2] || pathToFileURL(path.resolve(__dirname, '../index.html')).href;
+
+(async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+  try {
+    const page = await browser.newPage({ viewport: { width: 2560, height: 1352 } });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => { document.querySelector('[data-platform="creation"]').click(); showPage('home'); });
+    const navOrder = await page.locator('.nav-btn[data-page]').evaluateAll(nodes => nodes.map(node => node.dataset.page));
+    assert.equal(navOrder[navOrder.indexOf('ai-apps') + 1], 'workbench');
+    await page.locator('[data-page="workbench"]').click();
+    await page.locator('#wbInput').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#wbTitle').innerText(), '制作PPT协助');
+    assert.equal(await page.locator('.wb-conversation').count(), 6);
+    assert.equal(await page.locator('.wb-message').count(), 5);
+    assert.equal(await page.locator('#wbSend').isDisabled(), true);
+    assert.equal(await page.locator('.wb-sidebar').evaluate(node => node.getBoundingClientRect().width), 296);
+    assert.equal(await page.locator('.topbar').isVisible(), true);
+    assert.equal(await page.locator('.console-notice').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(239, 240, 255)');
+    assert.equal(await page.locator('.sidebar').isVisible(), true);
+    assert.equal(await page.locator('[data-page="workbench"]').isVisible(), true);
+    assert.match(await page.locator('[data-page="workbench"]').getAttribute('class'), /active/);
+    const globalSidebar = await page.locator('.sidebar').boundingBox();
+    const workbench = await page.locator('#page-workbench').boundingBox();
+    assert.ok(workbench.x >= globalSidebar.x + globalSidebar.width);
+    assert.ok(workbench.y >= 56);
+    await page.mouse.move(2500, 50);
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-desktop.png' });
+
+    // Task collapse is persistent and does not remove task records.
+    assert.equal(await page.locator('#wbTaskToggle').innerText(), '任务');
+    await page.locator('#wbTaskToggle').click();
+    assert.equal(await page.locator('#wbConversations').isVisible(), false);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#wbTaskToggle').getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('.wb-conversation').count(), 6);
+    await page.locator('#wbTaskToggle').click();
+    assert.equal(await page.locator('#wbConversations').isVisible(), true);
+
+    // Drafts belong to each conversation and survive a reload.
+    await page.locator('#wbInput').fill('待补充的需求');
+    await page.locator('[data-wb-chat="sample-new-22"]').click();
+    assert.equal(await page.locator('#wbInput').inputValue(), '');
+    await page.locator('[data-wb-chat="sample-ppt"]').click();
+    assert.equal(await page.locator('#wbInput').inputValue(), '待补充的需求');
+
+    // Resource navigation keeps the current task's draft, and tab state survives reload.
+    const taskCountBeforeCatalog = await page.locator('.wb-conversation').count();
+    await page.locator('#wbCapabilities').click();
+    assert.equal(await page.locator('.wb-conversation').count(), taskCountBeforeCatalog);
+    assert.equal(await page.locator('.wb-sidebar-actions .is-active').count(), 1);
+    assert.equal(await page.locator('#wbNewChat').getAttribute('aria-current'), null);
+    assert.equal(await page.locator('#wbCapabilities').getAttribute('aria-current'), 'page');
+    assert.notEqual(await page.locator('#wbNewChat').evaluate(node => getComputedStyle(node).backgroundColor), await page.locator('#wbCapabilities').evaluate(node => getComputedStyle(node).backgroundColor));
+    assert.equal(await page.locator('#wbCatalog').isVisible(), true);
+    assert.equal(await page.locator('#wbComposer').isVisible(), false);
+    assert.equal(await page.locator('#wbTitle').innerText(), '专家·技能·连接器');
+    assert.equal(await page.locator('.wb-resource-card').count(), 6);
+    assert.equal(await page.locator('.wb-catalog-heading').count(), 0);
+    assert.equal(await page.locator('.wb-featured-card').count(), 3);
+    assert.equal(await page.locator('#wbResourceGrid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length), 2);
+
+    // Recommended categories, type switching, sorting and saved resources are independent of tasks.
+    await page.locator('#wbFeaturedGrid [data-wb-category="电商运营"]').click();
+    assert.equal(await page.locator('.wb-resource-card').count(), 3);
+    await page.locator('#wbCatalogCategories [data-wb-category="技术工程"]').click();
+    assert.equal(await page.locator('.wb-resource-card').count(), 1);
+    assert.equal(await page.locator('.wb-resource-card').first().getAttribute('data-resource-id'), 'expert-code');
+    await page.locator('#wbCatalogCategories [data-wb-category="全部"]').click();
+    await page.locator('[data-wb-sort="popular"]').click();
+    assert.equal(await page.locator('.wb-resource-card').first().getAttribute('data-resource-id'), 'expert-video');
+    await page.locator('[data-wb-sort="latest"]').click();
+    assert.equal(await page.locator('.wb-resource-card').first().getAttribute('data-resource-id'), 'expert-data');
+    await page.locator('[data-wb-sort="recommended"]').click();
+    assert.equal(await page.locator('.wb-resource-card').first().getAttribute('data-resource-id'), 'expert-visual');
+    await page.locator('[data-wb-save="expert-visual"]').click();
+    await page.locator('#wbCatalogMine').click();
+    assert.equal(await page.locator('.wb-resource-card').count(), 1);
+    assert.equal(await page.locator('#wbFeaturedGrid').isVisible(), false);
+    await page.locator('[data-wb-save="expert-visual"]').click();
+    assert.equal(await page.locator('.wb-resource-empty').isVisible(), true);
+    await page.locator('[data-wb-clear-filters]').click();
+    await page.locator('[data-wb-save="expert-visual"]').click();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('[data-wb-save="expert-visual"]').getAttribute('aria-pressed'), 'true');
+    await page.locator('#wbCatalogMine').click();
+    assert.equal(await page.locator('.wb-resource-card').count(), 1);
+    await page.locator('#wbCatalogMine').click();
+    await page.locator('[data-wb-expert-mode="teams"]').click();
+    assert.equal(await page.locator('.wb-resource-card').count(), 3);
+    await page.locator('[data-wb-resource="team-product"]').click();
+    assert.equal(await page.locator('#wbResourceDetailTitle').innerText(), '产品设计专家团');
+    await page.locator('#wbResourceDetailCancel').click();
+    await page.locator('[data-wb-expert-mode="experts"]').click();
+    await page.locator('[data-wb-featured="skill-image-prompt"]').click();
+    assert.equal(await page.locator('#wbTab-skills').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('#wbResourceDetailTitle').innerText(), '图片提示词优化');
+    await page.locator('#wbResourceDetailCancel').click();
+    await page.locator('#wbTab-experts').click();
+    assert.equal(await page.locator('.wb-conversation').count(), taskCountBeforeCatalog);
+    await page.locator('#wbCatalogSearch').fill('不存在的资源');
+    assert.equal(await page.locator('.wb-resource-empty').isVisible(), true);
+    await page.locator('#wbCatalogSearch').fill('视觉');
+    assert.equal(await page.locator('.wb-resource-card').count(), 1);
+    await page.locator('[data-wb-resource="expert-visual"]').click();
+    assert.equal(await page.locator('#wbResourceDetailTitle').innerText(), '电商视觉专家');
+    await page.locator('#wbResourceDetailCancel').click();
+    await page.locator('#wbTab-skills').click();
+    assert.equal(await page.locator('#wbCatalogSearch').inputValue(), '');
+    assert.equal(await page.locator('.wb-resource-card').count(), 4);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#wbCatalog').isVisible(), true);
+    assert.equal(await page.locator('#wbTab-skills').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('.wb-sidebar-actions .is-active').count(), 1);
+    assert.equal(await page.locator('#wbNewChat').getAttribute('aria-current'), null);
+    await page.locator('#wbTab-skills').focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#wbTab-connectors').getAttribute('aria-selected'), 'true');
+    await page.keyboard.press('Home');
+    assert.equal(await page.locator('#wbTab-experts').getAttribute('aria-selected'), 'true');
+    await page.keyboard.press('End');
+    assert.equal(await page.locator('.wb-connector-card').count(), 1);
+    assert.equal(await page.locator('.wb-connector-copy h3').innerText(), '飞书');
+    assert.equal(await page.locator('#wbCatalogMine').isVisible(), false);
+    assert.equal(await page.locator('#wbCatalogCategories').isVisible(), false);
+    assert.equal(await page.locator('.wb-connector-add').getAttribute('aria-label'), '添加飞书连接');
+    await page.locator('#wbCatalogSearch').fill('企业微信');
+    assert.equal(await page.locator('.wb-resource-empty').isVisible(), true);
+    await page.locator('#wbCatalogSearch').fill('飞书');
+    await page.locator('[data-wb-resource="connector-feishu"]').click();
+    assert.equal(await page.locator('#wbResourceDetailUse').isVisible(), false);
+    assert.match(await page.locator('#wbResourceDetailFields').innerText(), /未连接/);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#wbResourceDetail').isVisible(), false);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#wbTab-connectors').getAttribute('aria-selected'), 'true');
+    await page.locator('#wbTab-experts').click();
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-experts.png' });
+    await page.locator('#wbTab-skills').click();
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-skills.png' });
+    await page.locator('[data-wb-resource="skill-weekly-report"]').click();
+    await page.locator('#wbResourceDetailUse').click();
+    assert.equal(await page.locator('#wbCatalog').isVisible(), false);
+    assert.match(await page.locator('#wbInput').inputValue(), /整理本周周报/);
+    await page.locator('[data-wb-chat="sample-ppt"]').click();
+    assert.equal(await page.locator('#wbInput').inputValue(), '待补充的需求');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.locator('#wbInput').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#wbInput').inputValue(), '待补充的需求');
+
+    // Shift+Enter preserves a newline; Enter submits and creates a safe title.
+    await page.locator('#wbCapabilities').click();
+    const taskCountBeforeCreate = await page.locator('.wb-conversation').count();
+    await page.locator('#wbNewChat').click();
+    assert.equal(await page.locator('.wb-conversation').count(), taskCountBeforeCreate + 1);
+    assert.equal(await page.locator('#wbCatalog').isVisible(), false);
+    assert.equal(await page.locator('#wbInput').inputValue(), '');
+    assert.equal(await page.locator('.wb-sidebar-actions .is-active').count(), 1);
+    assert.equal(await page.locator('#wbNewChat').getAttribute('aria-current'), 'page');
+    assert.equal(await page.locator('#wbCapabilities').getAttribute('aria-current'), null);
+    const newChatId = await page.locator('.wb-conversation.is-active').getAttribute('data-wb-chat');
+    await page.locator('#wbInput').fill('设计一个活动方案');
+    await page.locator('#wbInput').press('Shift+Enter');
+    await page.locator('#wbInput').pressSequentially('第二行');
+    assert.equal(await page.locator('#wbInput').inputValue(), '设计一个活动方案\n第二行');
+    await page.locator('#wbInput').press('Enter');
+    assert.equal(await page.locator('.wb-message-user').last().innerText(), '设计一个活动方案\n第二行');
+    assert.match(await page.locator('.wb-message-assistant').last().innerText(), /暂未接入模型服务/);
+    assert.equal(await page.locator('#wbSend').isDisabled(), true);
+    await page.locator('#wbInput').fill('<img src=x onerror=alert(1)>');
+    await page.locator('#wbSend').click();
+    assert.equal(await page.locator('#wbTranscript img').count(), 0);
+    assert.match(await page.locator('.wb-message-user').last().innerText(), /<img src=x/);
+
+    // Attach/remove/reselect a file, then send attachment metadata in the preview.
+    const file = { name: '方案.txt', mimeType: 'text/plain', buffer: Buffer.from('demo') };
+    await page.locator('#wbFileInput').setInputFiles(file);
+    assert.equal(await page.locator('#wbAttachments .wb-attachment').count(), 1);
+    assert.equal(await page.locator('#wbSend').isDisabled(), false);
+    await page.locator('[data-wb-remove-file]').click();
+    assert.equal(await page.locator('#wbSend').isDisabled(), true);
+    await page.locator('#wbFileInput').setInputFiles(file);
+    await page.locator('#wbSend').click();
+    assert.match(await page.locator('.wb-message-user').last().innerText(), /方案.txt/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('.wb-conversation.is-active').getAttribute('data-wb-chat'), newChatId);
+    assert.equal(await page.locator('.wb-message-user').count(), 3);
+    await page.locator('[data-page="home"]').click();
+    assert.equal(await page.locator('body').evaluate(node => node.classList.contains('workbench-open')), false);
+    await page.locator('[data-page="workbench"]').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('[data-page="workbench"]').isVisible(), true);
+    await page.locator('[data-page="workbench"]').click();
+
+    // Other modules and both platform tabs remain usable without a return step.
+    await page.locator('[data-page="assets"]').click();
+    assert.equal(await page.locator('#page-assets').isVisible(), true);
+    assert.equal(await page.locator('#page-workbench').isVisible(), false);
+    await page.locator('[data-page="workbench"]').click();
+    assert.equal(await page.locator('#wbTitle').isVisible(), true);
+    await page.locator('[data-platform="crm"]').click();
+    assert.equal(await page.locator('#crm-preview').isVisible(), true);
+    assert.equal(await page.locator('#page-workbench').isVisible(), false);
+    await page.locator('[data-platform="creation"]').click();
+    assert.equal(await page.locator('#page-workbench').isVisible(), true);
+    // Collapsing the original navigation gives that space back to the chat.
+    const expandedX = (await page.locator('#page-workbench').boundingBox()).x;
+    await page.locator('.console-menu-toggle').click();
+    assert.ok((await page.locator('#page-workbench').boundingBox()).x < expandedX);
+    await page.locator('.console-menu-toggle').click();
+
+    // Narrow screens use a drawer and keep the composer inside the viewport.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('[data-page="workbench"]').click();
+    await page.locator('#wbSidebarToggle').click();
+    await page.locator('[data-wb-chat="sample-ppt"]').click();
+    await page.locator('#wbInput').fill('');
+    assert.equal(await page.locator('#wbSidebarToggle').getAttribute('aria-expanded'), 'false');
+    await page.waitForFunction(() => document.querySelector('.wb-sidebar').getBoundingClientRect().right <= 1);
+    assert.equal(await page.locator('#wbTitle').innerText(), '制作PPT协助');
+    const composer = await page.locator('#wbComposer').boundingBox();
+    assert.ok(composer.x >= 0 && composer.x + composer.width <= 390);
+    assert.ok(composer.y + composer.height <= 844);
+    assert.equal(await page.locator('.wb-main').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-mobile.png' });
+    await page.locator('#wbSidebarToggle').click();
+    await page.locator('#wbCapabilities').click();
+    await page.waitForFunction(() => document.querySelector('.wb-sidebar').getBoundingClientRect().right <= 1);
+    assert.equal(await page.locator('#wbCatalog').isVisible(), true);
+    await page.locator('#wbTab-experts').click();
+    assert.equal(await page.locator('.wb-main').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+    assert.equal(await page.locator('.wb-resource-card').first().evaluate(node => node.getBoundingClientRect().width <= 390), true);
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-marketplace-mobile.png' });
+    await page.locator('#wbTab-connectors').click();
+    assert.equal(await page.locator('.wb-connector-card').count(), 1);
+    assert.equal(await page.locator('.wb-main').evaluate(node => node.scrollWidth <= node.clientWidth), true);
+    await page.screenshot({ path: '/tmp/chaoren-public-assets-check/workbench-connectors-mobile.png' });
+    assert.deepEqual(errors, []);
+    console.log('Workbench passed: marketplace recommendations/categories/sorting/collections/teams, resource tabs/details, task collapse and templates, draft persistence, mutually exclusive navigation and mobile layouts.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

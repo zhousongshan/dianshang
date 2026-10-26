@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>超韧AI - 静态前端演示</title>
   <link rel="stylesheet" href="./video-tools.css?v=ceed74cc23bd" />
-  <link rel="stylesheet" href="./platform-preview.css?v=ab596306327c" />
+  <link rel="stylesheet" href="./platform-preview.css?v=b4634ddb8f99" />
   <style>
     /* =========================
        超韧AI Demo 样式总览
@@ -8988,6 +8988,9 @@
       .review-page.manager-view .review-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     }
   </style>
+  <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
+  <link rel="stylesheet" href="./workbench.css?v=806ecd7aaa69" />
+  <link rel="stylesheet" href="./qianchuan-review.css?v=c40072ca5743" />
 </head>
 <body>
   <div class="app-shell">
@@ -9015,6 +9018,12 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/><path d="M17.5 14v7M14 17.5h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
           <span>AI应用</span>
+        </button>
+        <button class="nav-btn" type="button" data-page="workbench" title="工作台">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8m-4-4v4M7 8h4m-4 4h4m4-4h2m-2 4h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span>工作台</span>
         </button>
         <button class="nav-btn" data-page="review" title="审核中心">
           <span class="nav-icon" aria-hidden="true">
@@ -9074,7 +9083,8 @@
                 <span>演示身份</span>
                 <div class="demo-identity-options">
                   <button class="demo-identity-option active" type="button" data-demo-identity="employee">普通员工</button>
-                  <button class="demo-identity-option" type="button" data-demo-identity="supervisor">主管</button>
+                  <button class="demo-identity-option" type="button" data-demo-identity="supervisor">运营/主管</button>
+                  <button class="demo-identity-option" type="button" data-demo-identity="administrator">管理员</button>
                 </div>
               </div>
               <div class="user-menu-divider"></div>
@@ -9221,6 +9231,69 @@
               </div>
             </section>
           </div>
+        </section>
+
+        <section id="page-workbench" class="page" aria-label="工作台">
+          <aside class="wb-sidebar" aria-label="工作台任务">
+            <nav class="wb-sidebar-actions" aria-label="工作台功能">
+              <button class="wb-sidebar-action" id="wbNewChat" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H7a5 5 0 0 1-5-5v-6a7 7 0 0 1 7-7h6a7 7 0 0 1 7 7v3a7 7 0 0 1-7 7h-2l-4 3v-2Z"/><path d="M12 7v8M8 11h8"/></svg><span>新建任务</span></button>
+              <button class="wb-sidebar-action" id="wbCapabilities" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 3h10a7 7 0 0 1 7 7v5a7 7 0 0 1-12 5l-3-3M4 3a3 3 0 0 0 0 6h5"/><path d="M4 12a2.5 2.5 0 1 0 0 5h2l3-3-3-2H4Z"/><circle cx="13" cy="13" r="2.5"/></svg><span>专家·技能·连接器</span></button>
+            </nav>
+            <button class="wb-list-label wb-task-toggle" id="wbTaskToggle" type="button" aria-expanded="true" aria-controls="wbConversations"><span>任务</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <nav class="wb-conversations" id="wbConversations" aria-label="历史任务"></nav>
+          </aside>
+          <div class="wb-main">
+            <header class="wb-header"><button class="wb-sidebar-toggle" id="wbSidebarToggle" type="button" aria-label="展开工作台菜单" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><svg class="wb-document-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5Z M14 3v5h5M8 12h8M8 16h8M8 8h2"/></svg><h1 id="wbTitle">制作PPT协助</h1></header>
+            <section class="wb-catalog" id="wbCatalog" aria-label="工作台资源" hidden>
+              <div class="wb-catalog-inner">
+                <div class="wb-catalog-topbar">
+                  <div class="wb-catalog-tabs" role="tablist" aria-label="资源类型">
+                    <button id="wbTab-experts" type="button" role="tab" data-wb-tab="experts" aria-selected="true" aria-controls="wbCatalogPanel"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 3h10a7 7 0 0 1 7 7v5a7 7 0 0 1-12 5l-3-3M4 3a3 3 0 0 0 0 6h5M4 12a2.5 2.5 0 1 0 0 5h2l3-3-3-2H4Z"/><circle cx="13" cy="13" r="2.5"/></svg>专家</button>
+                    <button id="wbTab-skills" type="button" role="tab" data-wb-tab="skills" aria-selected="false" aria-controls="wbCatalogPanel" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 3 6 6-4 4-3-3L5 21l-3-3L13 8l-3-3 5-2ZM16 17v5M13.5 19.5h5"/></svg>技能</button>
+                    <button id="wbTab-connectors" type="button" role="tab" data-wb-tab="connectors" aria-selected="false" aria-controls="wbCatalogPanel" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"/></svg>连接器</button>
+                  </div>
+                  <div class="wb-catalog-tools">
+                    <label class="wb-catalog-search"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="wbCatalogSearch" type="search" placeholder="搜索专家" aria-label="搜索专家" /></label>
+                    <button class="wb-mine-button" id="wbCatalogMine" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3h12v19l-6-4-6 4V3Z"/></svg><span>我的专家</span></button>
+                  </div>
+                </div>
+                <div id="wbCatalogPanel" role="tabpanel" aria-labelledby="wbTab-experts">
+                  <section class="wb-featured-grid" id="wbFeaturedGrid" aria-label="分类推荐"></section>
+                  <div class="wb-resource-list-toolbar">
+                    <div class="wb-resource-list-heading"><div class="wb-expert-modes" id="wbExpertModes" role="group" aria-label="专家类型"><button type="button" data-wb-expert-mode="experts" aria-pressed="true">专家</button><button type="button" data-wb-expert-mode="teams" aria-pressed="false">专家团</button></div><h2 id="wbCatalogListTitle" hidden>技能</h2><span class="wb-resource-count" id="wbResourceCount" role="status"></span></div>
+                    <div class="wb-catalog-sort" role="group" aria-label="资源排序"><button type="button" data-wb-sort="recommended" aria-pressed="true">综合</button><button type="button" data-wb-sort="popular" aria-pressed="false">最热</button><button type="button" data-wb-sort="latest" aria-pressed="false">最新</button></div>
+                  </div>
+                  <div class="wb-catalog-categories" id="wbCatalogCategories" role="group" aria-label="资源分类"></div>
+                  <div class="wb-resource-grid" id="wbResourceGrid"></div>
+                </div>
+              </div>
+            </section>
+            <div class="wb-scroll" id="wbScroll"><div class="wb-transcript" id="wbTranscript" role="log" aria-label="对话内容" aria-live="polite"></div></div>
+            <div class="wb-composer-dock">
+              <form class="wb-composer" id="wbComposer">
+                <div class="wb-attachments" id="wbAttachments" hidden></div>
+                <textarea id="wbInput" rows="2" placeholder="随心输入" aria-label="输入消息"></textarea>
+                <div class="wb-composer-footer">
+                  <span class="wb-agent" title="工作台界面预览"><i></i>crwork Agent</span>
+                  <div class="wb-composer-tools">
+                    <button class="wb-icon-btn" id="wbAttach" type="button" title="添加附件" aria-label="添加附件"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m20 11-8 8a5 5 0 0 1-7-7L15 2a3.5 3.5 0 0 1 5 5L9 18a2 2 0 0 1-3-3L16 5"/></svg></button>
+                    <span class="wb-model">gpt-6.1-sol<span class="wb-keyboard-hint"> · Enter 发送 · Shift/Alt+Enter 换行</span></span>
+                    <button class="wb-icon-btn" id="wbMicrophone" type="button" title="语音输入" aria-label="语音输入"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></button>
+                    <button class="wb-send" id="wbSend" type="submit" title="发送" aria-label="发送消息" disabled><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+                  </div>
+                </div>
+                <input id="wbFileInput" type="file" multiple hidden />
+              </form>
+            </div>
+          </div>
+          <div class="wb-sidebar-backdrop" id="wbSidebarBackdrop"></div>
+          <div class="wb-status" id="wbStatus" role="status"></div>
+          <dialog class="wb-resource-dialog" id="wbResourceDetail" aria-labelledby="wbResourceDetailTitle">
+            <div class="wb-resource-detail-head"><span id="wbResourceDetailType"></span><button class="wb-icon-btn" id="wbResourceDetailClose" type="button" aria-label="关闭详情"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+            <h2 id="wbResourceDetailTitle"></h2><p class="wb-resource-detail-description" id="wbResourceDetailDescription"></p>
+            <dl class="wb-resource-detail-fields" id="wbResourceDetailFields"></dl>
+            <div class="wb-resource-detail-footer"><button class="wb-resource-secondary" id="wbResourceDetailCancel" type="button">关闭</button><button class="wb-resource-primary" id="wbResourceDetailUse" type="button">新建任务</button></div>
+          </dialog>
         </section>
 
         <!-- 生图 Agent 配置页：用于配置商品图、提示词、智能模式与图片生成设置 -->
@@ -9657,7 +9730,7 @@
                   <div class="video-chat-welcome">
                     <span class="video-chat-welcome-icon">AI</span>
                     <h2>开始创作</h2>
-                    <p>直接描述创意，或通过 @ 选择商品主体和参考视频开始创作。</p>
+                    <p>描述创意，输入 @ 引用图片、视频、音频或公共素材。</p>
                   </div>
                 </div>
 
@@ -9665,12 +9738,13 @@
                   <div class="video-chat-composer">
                     <input type="file" id="videoStartImageInput" accept="image/*" hidden />
                     <input type="file" id="videoReferenceInput" accept="video/*" hidden />
+                    <input type="file" id="videoAudioReferenceInput" accept="audio/*" hidden />
                     <input type="file" id="videoSubjectViewInput" accept="image/*" multiple hidden />
                     <div class="video-composer-images" id="videoComposerImages"></div>
                     <div class="video-composer-input-row">
                       <button class="video-add-image-btn" type="button" data-open-image-source="videoStart" aria-label="上传图片" title="上传图片">＋</button>
                       <div class="video-chat-textarea-wrap">
-                        <textarea id="videoMotionPrompt" rows="1" maxlength="500" placeholder="描述你的创意、画面或视频需求……"></textarea>
+                        <textarea id="videoMotionPrompt" rows="1" maxlength="500" placeholder="描述你的创意，输入 @ 引用图片、视频、音频或公共素材，支持按69码搜索"></textarea>
                         <span><span id="videoMotionCount">0</span>/500</span>
                       </div>
                     </div>
@@ -9767,7 +9841,6 @@
                           <input id="videoDurationInput" type="number" min="0" max="15" step="1" placeholder="自动" aria-label="视频时长，0到15秒" disabled />
                           <span id="videoDurationSuffix"></span>
                         </label>
-                        <button class="video-mention-button" id="videoMentionButton" type="button" aria-label="选择商品主体或参考视频" title="选择商品主体或参考视频" aria-expanded="false">@</button>
                       </div>
                       <button class="video-send-btn" id="videoGenerateBtn" type="button" aria-label="立即生成" title="立即生成">立即生成</button>
                     </div>
@@ -9910,11 +9983,13 @@
           </div>
 
           <div class="asset-scope-tabs" role="tablist" aria-label="资产范围">
-            <button class="asset-scope-tab active" data-asset-scope="generated" role="tab">全部素材</button>
+            <button class="asset-scope-tab active" data-asset-scope="generated" role="tab">我的素材</button>
             <button class="asset-scope-tab" data-asset-scope="favorites" role="tab">我的收藏</button>
+            <button class="asset-scope-tab" data-asset-scope="public" role="tab">公共素材</button>
             <select id="assetScopeSelect" hidden aria-hidden="true">
-              <option value="generated">全部素材</option>
+              <option value="generated">我的素材</option>
               <option value="favorites">我的收藏</option>
+              <option value="public">公共素材</option>
             </select>
           </div>
 
@@ -10480,7 +10555,7 @@
   <!-- 新建 Agent 弹窗 -->
   <div class="image-source-menu" id="imageSourceMenu" hidden>
     <button type="button" data-image-source="local"><span class="image-source-icon">↥</span><span><b>本地上传</b><small>从电脑中选择一张或多张图片</small></span></button>
-    <button type="button" data-image-source="asset"><span class="image-source-icon">▱</span><span><b>从资产库选择</b><small>从全部素材或我的收藏中选择</small></span></button>
+    <button type="button" data-image-source="asset"><span class="image-source-icon">▱</span><span><b>从资产库选择</b><small>从我的素材、我的收藏或公共素材中选择</small></span></button>
   </div>
 
   <div class="image-source-menu video-mention-menu" id="videoMentionMenu" hidden>
@@ -10516,8 +10591,9 @@
         <button class="close-btn" type="button" data-close-asset-selector aria-label="关闭">×</button>
       </div>
       <div class="asset-selector-tabs" role="tablist" aria-label="资产范围">
-        <button class="asset-selector-tab active" type="button" data-selector-scope="generated" role="tab">全部素材</button>
+        <button class="asset-selector-tab active" type="button" data-selector-scope="generated" role="tab">我的素材</button>
         <button class="asset-selector-tab" type="button" data-selector-scope="favorites" role="tab">我的收藏</button>
+        <button class="asset-selector-tab" type="button" data-selector-scope="public" role="tab">公共素材</button>
       </div>
       <div class="asset-selector-toolbar">
         <div class="asset-selector-filters" id="assetSelectorFilters">
@@ -11287,15 +11363,16 @@
     let activeRoleEditorMode = "create";
     let activeRoleDetailMode = "view";
     const NAVIGATION_STATE_KEY = "superai-navigation-state";
-    const RESTORABLE_PAGES = new Set(["home", "workflows", "ai-apps", "config", "session", "video-config", "review", "assets", "settings"]);
+    const RESTORABLE_PAGES = new Set(["home", "workflows", "ai-apps", "workbench", "config", "session", "video-config", "review", "assets", "settings"]);
     const RESTORABLE_SETTINGS_VIEWS = new Set(["users", "roles", "quota", "models", "logs"]);
     const REVIEW_DEMO_STATE_KEY = "chaoren-review-demo-state-v7";
     const REVIEW_IDENTITIES = {
       employee: { id: "user-3", label: "普通员工" },
-      supervisor: { id: "user-2", label: "审核主管" }
+      supervisor: { id: "user-2", label: "审核主管" },
+      administrator: { id: "user-1", label: "管理员" }
     };
     let reviewDemoState = loadReviewDemoState();
-    let activeReviewTab = reviewDemoState.identity === "supervisor" ? "inbox" : "mine";
+    let activeReviewTab = reviewDemoState.identity !== "employee" ? "inbox" : "mine";
     let reviewSelectedIds = new Set();
     let generatedReviewSelection = new Set();
     let assetReviewSelection = new Set();
@@ -11322,6 +11399,9 @@
     let mainImages = [];
     let sessionImages = [];
     let videoStartImages = [];
+    let videoReferenceImages = [];
+    let videoReferenceAudios = [];
+    const VIDEO_MENTION_HINT = "描述你的创意，输入 @ 引用图片、视频、音频或公共素材，支持按69码搜索";
     let videoReferenceVideos = [];
     let videoSubjectProducts = [];
     let videoSubjectViews = [];
@@ -11343,6 +11423,8 @@
       scope: "generated",
       type: "all",
       source: "all",
+      reviewStatus: "all",
+      date: "",
       folderId: ROOT_FOLDER_ID,
       keyword: "",
       pageByView: new Map(),
@@ -11628,6 +11710,7 @@
         setSettingsNavExpanded(false, false);
       }
       $(".content")?.classList.toggle("ai-apps-content", pageName === "ai-apps");
+      document.body.classList.toggle("workbench-open", pageName === "workbench");
       saveNavigationState({ page: pageName });
       if (pageName === "review") renderReviewCenter();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -13611,17 +13694,28 @@
       const reference = videoReferenceVideos[0];
       const keyframe = pendingVideoKeyframeEditTarget;
       list.innerHTML = `${image ? `
-        <span class="video-composer-image" title="${escapeHtml(image.name || "已选择图片")}">
+        <span class="video-composer-image" title="商品主体：${escapeHtml(image.name || "已选择图片")}" data-public-asset-id="${escapeHtml(image.publicAssetId || "")}">
           ${renderSelectedImageArt(image)}
+          <small class="video-media-usage">商品主体</small>
           <button class="selected-image-remove" type="button" data-remove-selected-image="${escapeHtml(image.id)}" data-image-target="videoStart" aria-label="移除${escapeHtml(image.name || "图片")}">×</button>
         </span>
-      ` : ""}${reference ? `
+      ` : ""}${videoReferenceImages.map(item => `
+        <span class="video-composer-image video-reference-image" title="参考图：${escapeHtml(item.name || "已选择图片")}" data-public-asset-id="${escapeHtml(item.publicAssetId || "")}">
+          ${renderSelectedImageArt(item)}
+          <small class="video-media-usage">参考图</small>
+          <button class="selected-image-remove" type="button" data-remove-selected-image="${escapeHtml(item.id)}" data-image-target="videoReference" aria-label="移除参考图${escapeHtml(item.name || "图片")}">×</button>
+        </span>`).join("")}${reference ? `
         <span class="video-composer-reference" title="${escapeHtml(reference.name)}">
           <span class="video-composer-reference-icon">▶</span>
           <span class="video-composer-reference-text"><b>${escapeHtml(reference.name)}</b><small>参考视频</small></span>
           <button class="selected-image-remove" type="button" data-remove-video-reference="${escapeHtml(reference.id)}" aria-label="移除参考视频${escapeHtml(reference.name)}">×</button>
         </span>
-      ` : ""}${keyframe ? `
+      ` : ""}${videoReferenceAudios.map(audio => `
+        <span class="video-composer-reference" title="参考音频：${escapeHtml(audio.name)}">
+          <span class="video-composer-reference-icon">♫</span>
+          <span class="video-composer-reference-text"><b>${escapeHtml(audio.name)}</b><small>参考音频</small></span>
+          <button class="selected-image-remove" type="button" data-remove-video-audio="${escapeHtml(audio.id)}" aria-label="移除参考音频${escapeHtml(audio.name)}">×</button>
+        </span>`).join("")}${keyframe ? `
         <span class="video-composer-reference" title="正在编辑${escapeHtml(keyframe.label)}">
           <span class="video-composer-reference-icon">帧</span>
           <span class="video-composer-reference-text"><b>${escapeHtml(keyframe.label)}</b><small>编辑关键帧</small></span>
@@ -13640,6 +13734,8 @@
       restoreVideoSettings(source);
       saveNavigationState({ page: "video-config", videoAgentName: source.name, videoSettingsAgentKey: activeVideoSettingsKey });
       videoStartImages = [];
+      videoReferenceImages = [];
+      videoReferenceAudios = [];
       videoReferenceVideos = [];
       videoRoundSequence = 0;
       videoPrimaryFlow = null;
@@ -13661,7 +13757,7 @@
         <div class="video-chat-welcome">
           <span class="video-chat-welcome-icon">AI</span>
           <h2>开始创作</h2>
-          <p>${escapeHtml(source.desc || "直接描述创意，或通过 @ 选择商品主体和参考视频开始创作。")}</p>
+          <p>${escapeHtml(source.desc || "描述创意，输入 @ 引用图片、视频、音频或公共素材。")}</p>
         </div>
       `;
       resetVideoArtifacts();
@@ -13690,9 +13786,7 @@
 
     function syncVideoCreationModeFromModel() {
       videoCreationMode = $("#videoModelSelect").value.startsWith("image:") ? "image" : "video";
-      $("#videoMotionPrompt").placeholder = videoCreationMode === "image"
-        ? "描述想要生成的商品画面……"
-        : "描述你的创意、画面或视频需求……";
+      $("#videoMotionPrompt").placeholder = VIDEO_MENTION_HINT;
       $("#videoGenerateBtn").setAttribute("aria-label", videoCreationMode === "image" ? "生成图片" : "生成视频");
       $("#videoGenerateBtn").title = videoCreationMode === "image" ? "生成图片" : "生成视频";
       $("#videoGenerateBtn").textContent = "立即生成";
@@ -15049,8 +15143,8 @@
     function startVideoGeneration() {
       const prompt = $("#videoMotionPrompt").value.trim();
       const keyframeTarget = pendingVideoKeyframeEditTarget ? { ...pendingVideoKeyframeEditTarget } : null;
-      if (!prompt && !videoStartImages.length && !videoReferenceVideos.length && !keyframeTarget) {
-        showToast("请先描述需求，或通过 @ 选择商品主体和参考视频。");
+      if (!prompt && !videoStartImages.length && !videoReferenceImages.length && !videoReferenceVideos.length && !videoReferenceAudios.length && !keyframeTarget) {
+        showToast("请先描述需求，或通过 @ 引用图片、视频、音频或公共素材。");
         return;
       }
       if (/^[一二三123]$/.test(prompt) && !videoCreativeChoiceState && !videoStartImages.length) {
@@ -15072,6 +15166,8 @@
         intent,
         prompt,
         image,
+        referenceImages: videoReferenceImages.map(item => ({ ...item, usage: "reference" })),
+        referenceAudios: videoReferenceAudios.map(item => ({ ...item, usage: "audio" })),
         reference,
         keyframeTarget,
         settings: getVideoSettings(),
@@ -15095,8 +15191,10 @@
       thread.insertAdjacentHTML("beforeend", `
         <div class="video-chat-message user" data-video-naming-category="${escapeHtml(round.settings.namingCategory)}" data-video-viral-remake="${round.settings.viralRemake}">
           <div class="video-user-bubble">
-            ${videoRoundImageMarkup(image)}
+            ${image ? `<div class="video-attachment" data-video-usage="subject" data-public-asset-id="${escapeHtml(image.publicAssetId || "")}"><small>商品主体</small>${videoRoundImageMarkup(image)}</div>` : ""}
+            ${round.referenceImages.map(item => `<div class="video-attachment" data-video-usage="reference" data-public-asset-id="${escapeHtml(item.publicAssetId || "")}"><small>参考图</small>${videoRoundImageMarkup(item)}</div>`).join("")}
             ${videoRoundReferenceMarkup(reference)}
+            ${round.referenceAudios.map(audio => `<span class="video-user-reference" data-video-usage="audio"><span aria-hidden="true">♫</span><b>${escapeHtml(audio.name)}</b><span>参考音频</span></span>`).join("")}
             ${videoRoundKeyframeMarkup(keyframeTarget)}
             <p>${escapeHtml(prompt || (round.mode === "image" ? "根据参考图生成商品画面" : "根据首帧生成商品视频"))}</p>
           </div>
@@ -15114,7 +15212,7 @@
       $("#videoMotionPrompt").value = "";
       $("#videoMotionCount").textContent = "0";
       pendingVideoKeyframeEditTarget = null;
-      $("#videoMotionPrompt").placeholder = "描述你的创意、画面或视频需求……";
+      $("#videoMotionPrompt").placeholder = VIDEO_MENTION_HINT;
       renderVideoStartFrame();
       resizeComposerTextarea($("#videoMotionPrompt"));
       thread.scrollTop = thread.scrollHeight;
@@ -15271,11 +15369,13 @@
     function getTargetImages(target = activeImagePickerTarget) {
       if (target === "session") return sessionImages;
       if (target === "videoStart") return videoStartImages;
+      if (target === "videoReference") return videoReferenceImages;
       return mainImages;
     }
 
     function setTargetImages(target, images) {
       if (target === "session") sessionImages = [...images];
+      else if (target === "videoReference") videoReferenceImages = [...new Map(images.map(image => [image.id, { ...image, usage: "reference" }])).values()].slice(0, MAX_COMPOSER_IMAGES);
       else if (target === "videoStart") {
         videoStartImages = [...images].slice(0, 1);
         renderVideoSubjectArtifact(videoStartImages[0] || null);
@@ -15292,9 +15392,9 @@
     }
 
     function renderImagePicker(target) {
-      if (target === "videoStart") {
+      if (target === "videoStart" || target === "videoReference") {
         renderVideoStartFrame();
-        resetVideoWorkspace();
+        if (target === "videoStart") resetVideoWorkspace();
         return;
       }
       const images = getTargetImages(target);
@@ -15544,6 +15644,7 @@
     }
 
     function getSelectorViewKey() {
+      if (assetSelectorState.scope === "public") return `public:${assetSelectorState.folderId}`;
       return assetSelectorState.scope === "generated"
         ? "generated"
         : `favorites:${assetSelectorState.folderId || ROOT_FOLDER_ID}`;
@@ -15601,6 +15702,7 @@
     }
 
     function renderAssetSelector() {
+      if (window.PublicAssets?.renderSelector()) return;
       const content = $("#assetSelectorContent");
       const path = $("#assetSelectorPath");
       const filters = $("#assetSelectorFilters");
@@ -15689,6 +15791,8 @@
       assetSelectorState.scope = "generated";
       assetSelectorState.type = "all";
       assetSelectorState.source = "all";
+      assetSelectorState.reviewStatus = "all";
+      assetSelectorState.date = "";
       assetSelectorState.folderId = ROOT_FOLDER_ID;
       assetSelectorState.keyword = "";
       assetSelectorState.pageByView.clear();
@@ -15704,17 +15808,19 @@
     }
 
     function closeAssetSelector() {
+      window.PublicAssets?.closeSelector();
       $("#assetSelectorModal").classList.remove("show");
       document.body.style.overflow = "";
     }
 
     function confirmAssetSelection() {
+      window.PublicAssets?.confirmMention();
       if (activeImagePickerTarget === "videoStart") {
         const selected = [...assetSelectorState.draftSelected.values()][0];
         if (selected) setTargetImages("videoStart", [selected]);
         const count = selected ? 1 : 0;
         closeAssetSelector();
-        if (count) showToast("已从资产库选择视频首帧。");
+        if (count) showToast("已选择商品主体。");
         return;
       }
       const localImages = getTargetImages(activeImagePickerTarget).filter(image => image.source === "local");
@@ -16354,8 +16460,9 @@
       $("#assetPagination").hidden = totalItems === 0;
     }
 
-    // 渲染资产库：全部素材与收藏文件夹共享同一套操作能力
+    // 渲染资产库：我的素材与收藏文件夹共享同一套操作能力
     function renderAssets() {
+      if (window.PublicAssets?.renderLibrary()) return;
       const keyword = ($("#assetSearch")?.value || "").trim().toLowerCase();
       const grid = $("#assetGrid");
       const isFavoriteScope = activeAssetScope === "favorites";
@@ -16478,7 +16585,7 @@
       const available = availableAssetReviewIndexes();
       assetReviewSelection = new Set([...assetReviewSelection].filter(index => available.includes(index)));
       const selectedCount = assetReviewSelection.size;
-      toggle.hidden = !available.length;
+      toggle.hidden = true;
       toggle.textContent = selectedCount === available.length && selectedCount ? "取消全选" : "全选";
       submitButton.disabled = selectedCount === 0;
     }
@@ -16656,7 +16763,7 @@
 
       openConfirmModal({
         title: `删除「${item.name}」？`,
-        desc: "删除后，该素材将从全部素材和我的收藏中移除，此操作无法撤销。",
+        desc: "删除后，该素材将从我的素材和我的收藏中移除，此操作无法撤销。",
         confirmText: "确认删除",
         onConfirm: () => {
           item.deleted = true;
@@ -17385,7 +17492,7 @@
 
       if (event.target.closest("[data-remove-video-keyframe-edit]")) {
         pendingVideoKeyframeEditTarget = null;
-        $("#videoMotionPrompt").placeholder = "描述你的创意、画面或视频需求……";
+        $("#videoMotionPrompt").placeholder = VIDEO_MENTION_HINT;
         renderVideoStartFrame();
         return;
       }
@@ -18901,7 +19008,7 @@
         const stored = JSON.parse(localStorage.getItem(REVIEW_DEMO_STATE_KEY) || "null");
         if (!stored || !Array.isArray(stored.records)) return fallback;
         return {
-          identity: stored.identity === "supervisor" ? "supervisor" : "employee",
+          identity: Object.hasOwn(REVIEW_IDENTITIES, stored.identity) ? stored.identity : "employee",
           defaultReviewerId: reviewSupervisorOptions().some(item => item.id === stored.defaultReviewerId) ? stored.defaultReviewerId : reviewSupervisorOptions()[0]?.id || "",
           records: stored.records
         };
@@ -18915,7 +19022,7 @@
     }
 
     function isReviewSupervisor(user) {
-      return Boolean(user && user.status === "enabled" && user.role === "admin");
+      return Boolean(user && user.status === "enabled" && ["admin", "superadmin"].includes(user.role));
     }
 
     function reviewSupervisorOptions(excludedId = "") {
@@ -18985,6 +19092,7 @@
       $("#defaultReviewerSelect").innerHTML = reviewReviewerOptions(reviewDemoState.defaultReviewerId, identity.id);
       $("#defaultReviewerSelect").disabled = !defaultReviewers.length;
       renderReviewNavigationCount();
+      window.PublicAssets?.identityChanged();
     }
 
     function switchReviewIdentity(identityName) {
@@ -18993,7 +19101,7 @@
         return;
       }
       reviewDemoState.identity = identityName;
-      activeReviewTab = identityName === "supervisor" ? "inbox" : "mine";
+      activeReviewTab = identityName !== "employee" ? "inbox" : "mine";
       reviewSelectedIds.clear();
       generatedReviewSelection.clear();
       saveReviewDemoState();
@@ -19001,7 +19109,7 @@
       renderAllGeneratedReviewCards();
       renderReviewCenter();
       closeUserDropdown();
-      showToast(identityName === "supervisor" ? "已切换为主管身份。" : "已切换为普通员工身份。");
+      showToast(`已切换为${REVIEW_IDENTITIES[identityName].label}身份。`);
     }
 
     function renderReviewNavigationCount() {
@@ -19490,6 +19598,7 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
+  <script src="./public-assets.js?v=8f074959a84b"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
   <script src="./china-address-data.js?v=e5828afb7de8"></script>
@@ -19499,5 +19608,7 @@
   <script src="./creator-analysis.js?v=4744366dc8fa"></script>
   <script src="./creator-import-history.js?v=c1a272c5b9a0"></script>
   <script src="./platform-preview.js?v=a3bfe3d7987c"></script>
+  <script src="./workbench.js?v=9614c7d20d2b"></script>
+  <script src="./qianchuan-review.js?v=eb2a0d6bac76"></script>
 </body>
 </html>

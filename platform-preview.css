@@ -308,11 +308,11 @@ body.console-shell { --crm-ai-panel-width: clamp(420px,25vw,620px); }
 }
 
 /* 通栏控制台导航：顶部切换平台，侧栏显示当前平台的功能。 */
-body.console-shell { --console-header: 56px; --topbar: var(--console-header); --sidebar: 240px; }
+body.console-shell { --console-header: 56px; --topbar: var(--console-header); --sidebar: 240px; --console-notice-background: #eff0ff; }
 .console-shell .app-shell { grid-template-columns: var(--sidebar) minmax(0,1fr); grid-template-rows: var(--console-header) minmax(0,1fr); align-items: start; }
 .console-shell .topbar { grid-column: 1 / -1; grid-row: 1; height: var(--console-header); min-height: var(--console-header); padding: 0 24px 0 16px; gap: 24px; flex-wrap: nowrap; background: #fff; border: 0; z-index: 40; }
-.console-notice { position: relative; display: flex; align-items: center; min-width: 0; min-height: 28px; margin: 4px 30px 0; padding: 2px 30px; color: #667085; background: transparent; }
-.platform-crm .console-notice { margin-right: 32px; margin-left: 32px; }
+.console-notice { position: relative; display: flex; align-items: center; min-width: 0; min-height: 32px; margin: 0; padding: 2px 30px; color: #667085; background: var(--console-notice-background); }
+.platform-crm .console-notice { margin-right: 0; margin-left: 0; }
 .console-notice[hidden] { display: none; }
 .console-notice-inner { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-width: 0; font-size: 13px; }
 .console-notice-label { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; color: #7866cd; font-size: 13px; font-weight: 600; }
@@ -367,7 +367,7 @@ body.console-shell.console-nav-collapsed { --sidebar: 0px; }
 }
 @media (max-width: 640px) {
   body.console-shell { --sidebar: 0px; }
-  .console-notice,.platform-crm .console-notice { margin: 4px 12px 0; padding: 2px 26px; }
+  .console-notice,.platform-crm .console-notice { margin: 0; padding: 4px 12px; }
   .console-notice-inner { flex-wrap: wrap; gap: 6px; font-size: 12px; }
   .console-notice-label { font-size: 12px; }
   .console-notice-inner p { order: 3; flex-basis: 100%; text-align: center; }
