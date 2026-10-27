@@ -1,10 +1,5 @@
-/* Keep the original layout. Only the upload menu and alternate list view are added. */
-.asset-upload-dropdown { position:relative;display:inline-flex; }
-.asset-upload-dropdown[hidden],.asset-upload-options[hidden],.asset-list-heading[hidden] { display:none!important; }
-.asset-upload-dropdown [data-asset-upload-menu] { display:inline-flex;align-items:center;justify-content:center;gap:7px; }
-.asset-upload-options { position:absolute;z-index:30;right:0;top:calc(100% + 8px);min-width:150px;padding:7px;border:1px solid #e7e1f4;border-radius:12px;background:white;box-shadow:0 10px 30px #4e3c6e1a; }
-.asset-upload-options button { display:block;width:100%;padding:10px 11px;text-align:left;border:0;border-radius:7px;background:transparent;color:#756589;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer; }
-.asset-upload-options button:hover,.asset-upload-options button:focus-visible { background:#f1ecff;color:#8064e7; }
+/* Alternate list view for the original asset layout. */
+.asset-list-heading[hidden] { display:none!important; }
 .asset-result-toolbar { display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px; }
 .asset-result-toolbar .asset-result-summary { margin:0; }
 .asset-view-tools { display:flex;align-items:center;gap:2px;padding:3px;background:#f0ecf8;border:1px solid #e5ddf5;border-radius:9px; }
