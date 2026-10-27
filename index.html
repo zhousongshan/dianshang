@@ -8989,6 +8989,7 @@
     }
   </style>
   <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
+  <link rel="stylesheet" href="./asset-file-tools.css?v=e3ce014e1af5" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=c40072ca5743" />
 </head>
@@ -9984,7 +9985,7 @@
             </div>
             <div class="asset-utility-actions">
               <button class="btn btn-primary asset-upload-primary" id="assetNewFolderBtn" data-create-folder hidden>＋ 新建文件夹</button>
-              <button class="btn btn-primary asset-upload-primary" id="assetUploadBtn" data-upload-local>↥ 上传素材</button>
+              <div class="asset-upload-dropdown" id="assetUploadDropdown"><button class="btn btn-primary asset-upload-primary" id="assetUploadBtn" type="button" data-asset-upload-menu aria-expanded="false">↥ 上传文件 <span aria-hidden="true">⌄</span></button><div class="asset-upload-options" hidden><button type="button" data-upload-local>上传文件</button><button type="button" data-upload-local-directory>上传文件夹</button></div></div>
               <button class="btn btn-primary review-submit-btn" id="submitAssetReviewSelection" type="button" disabled>批量推送审核</button>
               <input id="assetUploadFile" type="file" accept="image/*,video/*" multiple hidden />
             </div>
@@ -16381,8 +16382,8 @@
       const assetCount = folder.displayCount ?? countAssetsInFolder(folder.id);
       const updatedAt = folder.updatedAt || "2026-07-13";
       return `
-        <article class="asset-folder-card" data-open-folder="${folder.id}" aria-label="${folder.name}">
-          <button class="folder-more-btn ${isMenuOpen ? "active" : ""}" data-folder-menu="${folder.id}" aria-label="${folder.name}的更多操作" title="更多操作" aria-expanded="${isMenuOpen}">···</button>
+        <article class="asset-folder-card" data-open-folder="${folder.id}" aria-label="${escapeHtml(folder.name)}">
+          <button class="folder-more-btn ${isMenuOpen ? "active" : ""}" data-folder-menu="${folder.id}" aria-label="${escapeHtml(folder.name)}的更多操作" title="更多操作" aria-expanded="${isMenuOpen}">···</button>
           ${isMenuOpen ? `
             <div class="folder-menu" role="menu">
               <button data-rename-folder data-folder-id="${folder.id}" role="menuitem">重命名</button>
@@ -16470,6 +16471,7 @@
 
     // 渲染资产库：我的素材与收藏文件夹共享同一套操作能力
     function renderAssets() {
+      window.AssetFileTools?.beforeRender();
       if (window.PublicAssets?.renderLibrary()) return;
       const keyword = ($("#assetSearch")?.value || "").trim().toLowerCase();
       const grid = $("#assetGrid");
@@ -16660,7 +16662,7 @@
       const canSubmitReview = !isFavoriteScope && canPushAssetReview(kind, index);
       const displayDate = item.assetDate || (String(item.time).includes("-") ? item.time : kind === "video" ? "2026-07-08" : `2026-07-${String(Math.max(1, 10 - (index % 5))).padStart(2, "0")}`);
       return `
-        <article class="asset-card-lite" aria-label="${item.name}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
+        <article class="asset-card-lite" aria-label="${escapeHtml(item.name)}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
           ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive", canSubmitReview)}
           <div class="asset-card-info">
             <h3 class="asset-card-title">${escapeHtml(item.name)}</h3>
@@ -19606,7 +19608,8 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
-  <script src="./public-assets.js?v=8f074959a84b"></script>
+  <script src="./public-assets.js?v=8703251adeac"></script>
+  <script src="./asset-file-tools.js?v=2b6a503cb5df"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
   <script src="./china-address-data.js?v=e5828afb7de8"></script>

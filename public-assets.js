@@ -57,6 +57,12 @@
     });
   }
   function hydrate() {
+    library.images.filter(item => ['personal','team'].includes(item.space) && !item.archived && !item.legacyKey).forEach(item => {
+      const kind = item.kind || 'image';
+      if (!['image','video'].includes(kind)) return;
+      const list = kind === 'video' ? mockVideos : mockAssets;
+      if (!list.some(file => file.recoveredAssetId === item.id)) list.push({name:item.name,category:'图片素材',type:'product',source:item.source||'local',model:'本地文件',tags:'本地上传',favorite:true,folderId:DEFAULT_FOLDER_ID,createdAt:item.createdAt||item.updatedAt,previewUrl:item.blob ? (urls.get(item.id)||URL.createObjectURL(item.blob)) : item.url,recoveredAssetId:item.id});
+    });
     library.images.forEach(image => {
       if (!image.createdAt) image.createdAt = image.updatedAt;
       if (image.blob && !urls.has(image.id)) urls.set(image.id, URL.createObjectURL(image.blob));
@@ -92,8 +98,8 @@
     // 69码可写在文件名或商品文件夹名中；原始上传文件名在重命名后仍可检索。
     const imageSearchText = item => [item.name, item.blob?.name, item.barcode, item.productCode, ...pathOf(item.folderId).map(parent => parent.name)].filter(Boolean).join(' ').normalize('NFKC').toLowerCase();
     return [
-      ...library.folders.filter(item => term ? item.name.normalize('NFKC').toLowerCase().includes(term) : item.parentId === id).map(item => ({ kind: 'folder', item })),
-      ...library.images.filter(item => !item.archived).filter(item => term ? imageSearchText(item).includes(term) : item.folderId === id).map(item => ({ kind: 'image', item }))
+      ...library.folders.filter(item => !item.archived && (!item.space || item.space === 'public')).filter(item => term ? item.name.normalize('NFKC').toLowerCase().includes(term) : item.parentId === id).map(item => ({ kind: 'folder', item })),
+      ...library.images.filter(item => !item.archived && (!item.space || item.space === 'public') && (!item.kind || item.kind === 'image')).filter(item => term ? imageSearchText(item).includes(term) : item.folderId === id).map(item => ({ kind: 'image', item }))
     ];
   }
   function imageMatches(item, filters) {
@@ -106,7 +112,7 @@
       && (!filters.date || filters.date === date);
   }
   function matchingImages(id, keyword, filters) {
-    const images = keyword.trim() ? contents(ROOT, keyword).filter(entry => entry.kind === 'image').map(entry => entry.item) : library.images.filter(item => !item.archived);
+    const images = keyword.trim() ? contents(ROOT, keyword).filter(entry => entry.kind === 'image').map(entry => entry.item) : library.images.filter(item => !item.archived && (!item.space || item.space === 'public') && (!item.kind || item.kind === 'image'));
     return images.filter(item => imageMatches(item, filters)
         && (id === ROOT || pathOf(item.folderId).some(parent => parent.id === id)));
   }
@@ -168,7 +174,7 @@
   }
   const actions = document.createElement('div');
   actions.className = 'public-library-actions'; actions.hidden = true;
-  actions.innerHTML = '<button class="btn btn-primary" type="button" data-public-create>＋ 新建文件夹</button><button class="btn btn-primary" type="button" data-public-upload>↥ 上传素材</button><button class="btn" type="button" data-public-download-selected hidden>下载选中</button><input id="publicUpload" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden />';
+  actions.innerHTML = '<button class="btn btn-primary" type="button" data-public-create>＋ 新建文件夹</button><div class="asset-upload-dropdown"><button class="btn btn-primary" type="button" data-asset-upload-menu aria-expanded="false">↥ 上传文件 <span aria-hidden="true">⌄</span></button><div class="asset-upload-options" hidden><button type="button" data-public-upload>上传文件</button><button type="button" data-public-upload-directory>上传文件夹</button></div></div><button class="btn" type="button" data-public-download-selected hidden>下载选中</button><input id="publicUpload" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden />';
   q('.asset-utility-actions').append(actions);
   q('#assetSelectorType').insertAdjacentHTML('beforeend', '<option value="video" data-public-selector-filter hidden>视频</option>');
   q('#assetSelectorFilters').insertAdjacentHTML('beforeend', '<label data-public-selector-filter hidden><span>审核状态</span><select id="publicSelectorReviewStatus" aria-label="审核状态"><option value="all">全部状态</option><option value="unreviewed">未审核</option><option value="reviewed">已审核</option><option value="rejected">驳回</option></select></label><label data-public-selector-filter hidden><span>日期</span><input id="publicSelectorDate" type="date" aria-label="按生成或上传日期筛选" /></label>');
@@ -284,6 +290,43 @@
     if (saved) { folderId = destination; currentAssetPage = 1; q('#assetSearch').value = ''; redraw(); }
     return saved;
   }
+  async function uploadDirectory(fileList) {
+    if (!canCreate() || busy || !loaded || loadError) { showToast('当前无法上传，请稍后重试'); return; }
+    const all = Array.from(fileList);
+    if (!all.length) return;
+    if (all.length > 50) { showToast('单次最多上传 50 个文件，请分批上传'); return; }
+    const destination = canEdit(folder(folderId)) ? folderId : ROOT;
+    const accepted = [], rejected = [];
+    busy = true; redraw();
+    try {
+      for (const file of all) {
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type) || !file.size || file.size > 10*1024*1024) { rejected.push(file.name); continue; }
+        try { const bitmap = await createImageBitmap(file); bitmap.close(); accepted.push(file); } catch { rejected.push(file.name); }
+      }
+    } finally { busy = false; }
+    if (!accepted.length) { redraw(); showToast('请选择有效的 JPG、PNG、WebP 图片，每张不超过 10 MB'); return; }
+    let firstRoot = null;
+    const saved = await commit(next => {
+      if (!canCreate() || destination !== ROOT && !canEdit(folder(destination))) throw new Error('当前账号没有维护权限');
+      const mapping = new Map();
+      for (const file of accepted) {
+        const segments = (file.webkitRelativePath || `上传文件夹/${file.name}`).split('/').slice(0,-1).filter(name => name && name !== '.' && name !== '..');
+        let parentId = destination, key = '';
+        for (const part of segments) {
+          key += `/${part}`;
+          if (!mapping.has(key)) {
+            let name = part, count = 1;
+            while (next.folders.some(item => !item.archived && item.parentId === parentId && item.name === name)) name = `${part} (${count++})`;
+            const id = uid('public-folder');
+            next.folders.push({id,parentId,name,ownerId:identity().id,ownerName:identity().name,updatedAt:today()}); mapping.set(key,id); firstRoot ||= id;
+          }
+          parentId = mapping.get(key);
+        }
+        next.images.push({id:uid('public-image'),folderId:parentId,name:file.name,blob:file,updatedAt:today()});
+      }
+    }, `已上传 ${accepted.length} 张图片，保留文件夹结构${rejected.length ? `，跳过 ${rejected.length} 个无效或超限文件` : ''}`);
+    if (saved) { folderId = firstRoot || destination; currentAssetPage = 1; q('#assetSearch').value = ''; redraw(); }
+  }
   function descendants(id) {
     const ids = new Set([id]);
     let previous = 0;
@@ -301,7 +344,7 @@
   function chooseUploadFolder(files) {
     if (!canCreate() || busy) return;
     pendingUploads = files;
-    const candidates = library.folders.filter(canEdit);
+    const candidates = library.folders.filter(item => !item.archived && (!item.space || item.space === 'public') && canEdit(item));
     q('#publicUploadDestination').innerHTML = candidates.map(item => `<option value="${item.id}">${esc(folderPath(item.id))}</option>`).join('') + '<option value="new">＋ 新建文件夹</option>';
     q('#publicUploadSummary').textContent = `已选择 ${files.length} 个文件，请选择保存位置。`;
     q('#publicUploadFolderName').value = ''; syncUploadDestination(); uploadMask.classList.add('show');
@@ -589,7 +632,7 @@
   window.addEventListener('resize', () => { if (mention) drawMention(); });
   window.addEventListener('scroll', event => { if (mention && !mentionMenu.contains(event.target)) drawMention(); }, true);
   window.PublicAssets = {
-    renderLibrary, renderSelector,
+    renderLibrary, renderSelector, uploadDirectory,
     confirmMention() { if (pendingMention && assetSelectorState.draftSelected.size) { const context = pendingMention; pendingMention = null; clearMention(context); } },
     closeSelector() { const input = pendingMention?.input; pendingMention = null; hideMention(); if (input) input.focus(); },
     identityChanged() { menuId = ''; uploadMask.classList.remove('show'); pendingUploads = []; moveMask.classList.remove('show'); redraw(); }
