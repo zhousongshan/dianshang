@@ -14,7 +14,7 @@
   controls.innerHTML = `<button type="button" data-asset-view="grid" title="缩略图视图" aria-label="缩略图视图">${gridIcon}</button><button type="button" data-asset-view="list" title="列表视图" aria-label="列表视图">${listIcon}</button>`;
   toolbar.append(controls);
   const grid = page.querySelector('#assetGrid'), listHeader = document.createElement('div'); listHeader.className = 'asset-list-heading';
-  listHeader.innerHTML = '<span>名称</span><span>类型 / 内容</span><span>更新时间</span><span>操作</span>'; grid.before(listHeader);
+  listHeader.innerHTML = '<span>名称</span><span>类型</span><span>更新时间</span><span>操作</span>'; grid.before(listHeader);
   const input = document.createElement('input'); input.type='file'; input.multiple=true; input.hidden=true; input.webkitdirectory=true; input.id='assetUploadDirectoryFile'; page.append(input);
   function closeMenus() {
     page.querySelectorAll('.asset-upload-dropdown').forEach(menu => { menu.querySelector('.asset-upload-options').hidden=true; menu.querySelector('[data-asset-upload-menu]')?.setAttribute('aria-expanded','false'); });
@@ -58,7 +58,7 @@
   document.addEventListener('click',event=>{
     const button=event.target.closest('[data-asset-upload-menu],[data-upload-local-directory],[data-public-upload-directory],[data-asset-view]');
     if (!button) {if(!event.target.closest('.asset-upload-dropdown'))closeMenus();return;}
-    if(button.dataset.assetView) {view=button.dataset.assetView;try{localStorage.setItem('chaoren-asset-view',view);}catch{}syncView();return;}
+    if(button.dataset.assetView) {view=button.dataset.assetView;try{localStorage.setItem('chaoren-asset-view',view);}catch{}syncView();renderAssets();return;}
     event.preventDefault();event.stopPropagation();
     if(button.hasAttribute('data-asset-upload-menu')) {
       const menu=button.closest('.asset-upload-dropdown'),options=menu.querySelector('.asset-upload-options'),open=options.hidden;closeMenus();options.hidden=!open;button.setAttribute('aria-expanded',String(open));return;
@@ -76,5 +76,5 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenus();});
   new MutationObserver(syncView).observe(grid,{childList:true});
   window.AssetFileTools={beforeRender(){closeMenus();page.querySelector('#assetUploadDropdown').hidden=activeAssetScope!=='generated';}};
-  window.AssetFileTools.beforeRender();syncView();
+  window.AssetFileTools.beforeRender();syncView();renderAssets();
 })();

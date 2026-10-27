@@ -148,7 +148,8 @@
     if (selector) return `<button class="asset-selector-folder" type="button" data-public-selector-folder="${item.id}"><span class="asset-folder-icon" aria-hidden="true"></span><span><b>${esc(item.name)}</b><small>${count} 张图片 · ${esc(ownerName(item))}</small></span><span>›</span></button>`;
     return `<article class="asset-folder-card public-folder-card" aria-label="${esc(item.name)}">
       <button class="public-folder-open" type="button" data-public-folder="${item.id}" aria-label="打开${esc(item.name)}"><span class="asset-folder-main-row"><span class="asset-folder-icon" aria-hidden="true"></span><span class="public-folder-title">${esc(item.name)}</span></span><span class="asset-folder-meta"><span>${count} 张图片</span><span>·</span><span>${esc(item.updatedAt)} 更新</span></span></button>
-      ${canEdit(item) ? `<button class="folder-more-btn" type="button" data-public-menu="${item.id}" aria-label="${esc(item.name)}的更多操作" aria-expanded="${menuId === item.id}">···</button>${menuId === item.id ? `<div class="folder-menu" role="menu"><button type="button" data-public-rename-folder="${item.id}" role="menuitem">重命名</button><button class="danger" type="button" data-public-delete-folder="${item.id}" role="menuitem">删除文件夹</button></div>` : ''}` : ''}
+      ${canEdit(item) && q('#page-assets').classList.contains('asset-list-view') ? `<div class="asset-folder-actions"><button type="button" data-public-rename-folder="${item.id}">重命名</button><button class="danger" type="button" data-public-delete-folder="${item.id}">删除</button></div>` : `      ${canEdit(item) ? `<button class="folder-more-btn" type="button" data-public-menu="${item.id}" aria-label="${esc(item.name)}的更多操作" aria-expanded="${menuId === item.id}">···</button>${menuId === item.id ? `<div class="folder-menu" role="menu"><button type="button" data-public-rename-folder="${item.id}" role="menuitem">重命名</button><button class="danger" type="button" data-public-delete-folder="${item.id}" role="menuitem">删除文件夹</button></div>` : ''}` : ''}`}
+
     </article>`;
   }
   function imageCard(item, selector = false) {
@@ -166,8 +167,10 @@
           <button class="link-btn" type="button" data-public-rename-image="${item.id}" ${canCreate() ? '' : 'disabled'}>✎ 重命名</button>
           ${canEdit(folder(item.folderId)) ? `<button class="asset-move-btn" type="button" data-public-move="${item.id}" title="移动到其他文件夹">↗ 移动</button>` : ''}
           <button class="link-btn" type="button" data-public-download="${item.id}">⇩ 下载</button>
+          ${q('#page-assets').classList.contains('asset-list-view') ? `<button class="link-btn asset-delete-direct" type="button" data-public-remove="${item.id}" ${canCreate() ? '' : 'disabled'}>删除</button>` : `
           <button class="link-btn asset-card-more ${isMenuOpen ? 'active' : ''}" type="button" data-public-menu="${item.id}" aria-label="更多操作" aria-expanded="${isMenuOpen}" ${canCreate() ? '' : 'disabled'}>···</button>
-          ${isMenuOpen && canCreate() ? `<div class="asset-card-menu" role="menu"><button type="button" data-public-remove="${item.id}" role="menuitem">删除素材</button></div>` : ''}
+          ${isMenuOpen && canCreate() ? `<div class="asset-card-menu" role="menu"><button type="button" data-public-remove="${item.id}" role="menuitem">删除</button></div>` : ''}`}
+
         </div>
       </div>
     </article>`;
@@ -202,7 +205,7 @@
     const filters = libraryFilters(), entries = filteredContents(folderId, q('#assetSearch').value, filters);
     const available = matchingImages(folderId, q('#assetSearch').value, filters), availableIds = new Set(available.map(item => item.id));
     librarySelection = new Set([...librarySelection].filter(id => availableIds.has(id)));
-    const toggle = q('#toggleAssetReviewSelection'); toggle.hidden = false; toggle.disabled = !available.length;
+    const toggle = q('#toggleAssetReviewSelection'); toggle.hidden = true; toggle.disabled = !available.length;
     toggle.textContent = available.length && librarySelection.size === available.length ? '取消全选' : '全选';
     const downloadSelected = actions.querySelector('[data-public-download-selected]');
     downloadSelected.hidden = !librarySelection.size; downloadSelected.textContent = `下载选中（${librarySelection.size}）`;

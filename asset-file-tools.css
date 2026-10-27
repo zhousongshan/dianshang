@@ -14,7 +14,7 @@
 .asset-view-tools button:focus-visible { outline:2px solid #b3a0ee;outline-offset:3px; }
 #page-assets.asset-list-view #assetGrid { display:flex;flex-direction:column;gap:0; }
 .asset-list-heading { text-align:left;display:grid;grid-template-columns:minmax(180px,1fr) 100px 110px 240px;gap:15px;padding:12px 18px 12px 76px;color:#a59ab9;font-size:12px;background:#f1edf9;border:1px solid #eae4f3;border-radius:9px 9px 0 0; }
-.asset-list-heading span:last-child { text-align:right; }
+.asset-list-heading span:last-child { text-align:center; }
 #page-assets.asset-list-view #assetGrid>.asset-card-lite,#page-assets.asset-list-view #assetGrid>.asset-folder-card { display:grid;grid-template-columns:44px minmax(150px,1fr) 100px 110px 240px;grid-template-rows:auto;align-items:center;justify-items:stretch;text-align:left;gap:15px;min-height:76px;transform:none;transition:background-color .12s ease,border-color .12s ease;width:100%;max-width:none;padding:12px 17px;border:1px solid #e9e4f1;border-top:0;border-radius:0;box-shadow:none;background:#ffffffb8; }
 #page-assets.asset-list-view #assetGrid>article:last-child { border-radius:0 0 9px 9px; }
 #page-assets.asset-list-view .asset-card-lite:hover,#page-assets.asset-list-view .asset-folder-card:hover { background:#f8f5ff; }
@@ -29,7 +29,7 @@
 #page-assets.asset-list-view .asset-state-row { display:contents; }
 #page-assets.asset-list-view .asset-status-pill { grid-column:3;grid-row:1;justify-self:start;font-size:11px; }
 #page-assets.asset-list-view .asset-card-date { grid-column:4;grid-row:1;color:#a398b4;font-size:11px; }
-#page-assets.asset-list-view .asset-card-actions { grid-column:5;grid-row:1;display:flex;justify-content:flex-end;align-items:center;gap:0;min-width:0;padding:0;margin:0;border:0;position:relative; }
+#page-assets.asset-list-view .asset-card-actions { grid-column:5;grid-row:1;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0;min-width:0;padding:0;margin:0;border:0;position:relative; }
 #page-assets.asset-list-view .asset-card-actions>button { min-height:30px;border:0;border-radius:4px;flex:0 1 auto;padding:5px 8px;font-size:11px;background:transparent; }
 #page-assets.asset-list-view .asset-card-actions>button:hover { background:#f0eaff; }
 #page-assets.asset-list-view .asset-card-actions>.asset-card-more { width:28px;flex-shrink:0;padding:2px; }
@@ -56,3 +56,10 @@
 @media(max-width:1250px){#page-assets.asset-list-view .public-folder-open{gap:10px;}}
 @media(max-width:900px){#page-assets.asset-list-view .public-folder-open{grid-column:1/4;}}
 @media(max-width:640px){#page-assets.asset-list-view .public-folder-open{grid-column:1/3;grid-row:1/3;grid-template-columns:subgrid;grid-template-rows:auto auto;gap:9px 12px;} }
+
+#page-assets.asset-list-view .asset-folder-actions { grid-column:5;grid-row:1;display:flex;align-items:center;justify-content:center;gap:8px; }
+#page-assets.asset-list-view .asset-folder-actions button { padding:7px 8px;border:0;border-radius:4px;background:transparent;color:#475467;font:inherit;font-size:11px;cursor:pointer; }
+#page-assets.asset-list-view .asset-folder-actions button:hover { background:#f0eaff; }
+#page-assets.asset-list-view .asset-folder-actions .danger,#page-assets.asset-list-view .asset-card-actions .asset-delete-direct { color:#d92d20; }
+@media(max-width:900px){#page-assets.asset-list-view .asset-folder-actions{grid-column:4;}}
+@media(max-width:640px){#page-assets.asset-list-view .asset-folder-actions{grid-column:1/-1;grid-row:3;border-top:1px solid #f0ebf6;padding-top:6px;}#page-assets.asset-list-view .asset-card-actions{justify-content:center;}}

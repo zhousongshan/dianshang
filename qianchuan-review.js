@@ -3,7 +3,7 @@
   'use strict';
   const q = s => document.querySelector(s), esc = escapeHtml;
   const active = () => activeAiApplicationId === 'qianchuan-video-review';
-  const state = { video: null, cover: null, title: '', topics: '', category: '', phase: 'idle', step: 0, scenario: 'fail', report: null, reports: [], stale: false, error: '', loading: false, coverLoading: false, revision: 0, run: 0 };
+  const state = { video: null, cover: null, title: '', topics: '', description: '', phase: 'idle', step: 0, scenario: 'fail', report: null, reports: [], stale: false, error: '', loading: false, coverLoading: false, revision: 0, run: 0 };
   let loadId = 0, coverId = 0;
   const scenarios = { pass: '审核通过', fail: '审核没有通过', uncertain: '不确定', mixed: '未通过＋不确定', error: '处理失败' };
   const time = seconds => { const s = Math.max(0, Math.floor(seconds)); return `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`; };
@@ -26,8 +26,8 @@
       ${v ? `<video id="qcVideo" class="qc-player" src="${esc(v.url)}" controls playsinline preload="auto"></video><div class="qc-caption"><span title="${esc(v.name)}">${esc(v.name)} · ${time(v.duration)}</span><button class="qc-link" type="button" data-qc="video">更换</button><button class="qc-link" type="button" data-qc="remove-video">移除</button></div>` : `<button class="ai-app-upload qc-upload" type="button" data-qc="video" data-qc-drop="video">${aiApplicationIcon('video')}<strong>${state.loading ? '正在读取视频…' : '点击上传或拖入视频'}</strong><small>MP4、MOV、WebM · 50MB 以内</small></button>`}</div>
       <div><label class="qc-field-label" for="qcCoverFile">视频封面 <small>选填</small></label><input id="qcCoverFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><div class="qc-cover-row"><button class="qc-cover-upload" type="button" data-qc="cover" data-qc-drop="cover" aria-label="${cover ? '更换封面' : '上传封面'}">${cover ? `<img src="${esc(cover.url)}" alt="所选视频封面">` : aiApplicationIcon('image')}</button><div class="qc-cover-options"><button class="qc-link" type="button" data-qc="cover">${cover ? '更换图片' : '上传图片'}</button><button class="qc-link" type="button" data-qc="capture" ${v ? '' : 'disabled'}>截取视频当前画面</button>${cover ? '<button class="qc-link" type="button" data-qc="remove-cover">移除封面</button>' : '<small>JPG、PNG、WebP</small>'}</div></div></div>
       <div><label class="qc-field-label" for="qcTitle">标题 <small>选填</small></label><textarea class="qc-input" id="qcTitle" data-qc-field="title" maxlength="2000" placeholder="填写准备发布的视频标题">${esc(state.title)}</textarea></div>
+      <div><label class="qc-field-label" for="qcDescription">作品描述 <small>选填</small></label><textarea class="qc-input" id="qcDescription" data-qc-field="description" maxlength="2000" placeholder="填写作品内容或补充说明">${esc(state.description)}</textarea></div>
       <div><label class="qc-field-label" for="qcTopics">话题 <small>选填</small></label><input class="qc-input" id="qcTopics" data-qc-field="topics" maxlength="2000" value="${esc(state.topics)}" placeholder="#话题一 #话题二"></div>
-      <div><label class="qc-field-label" for="qcCategory">商品类目 <small>选填</small></label><div class="qc-category"><input class="qc-input" id="qcCategory" data-qc-field="category" list="qcCategories" maxlength="100" value="${esc(state.category)}" placeholder="选择或输入商品类目" autocomplete="off"><button type="button" data-qc="clear-category" aria-label="清空商品类目" ${state.category ? '' : 'hidden'}>×</button></div><datalist id="qcCategories">${['美妆护肤','食品饮料','服饰内衣','个护家清','母婴用品','家居日用','数码家电','运动户外','其他'].map(c => `<option value="${c}"></option>`).join('')}</datalist></div>
       </fieldset><div id="qcInputError" class="qc-error" role="alert" ${state.error ? '' : 'hidden'}>${esc(state.error)}</div><div><button id="qcSubmit" class="ai-app-generate qc-submit" type="submit" ${!v || state.loading || state.coverLoading || busy() ? 'disabled' : ''}>${busy() ? '审核中…' : state.stale ? '重新提交审核' : '提交审核'}</button><p class="qc-submit-note">前端交互演示，暂未接入审核服务。<br>仅上传视频即可体验，素材不会上传。</p></div></form>`;
     if (existingVideo && v && existingVideo.getAttribute('src') === v.url) q('#qcVideo')?.replaceWith(existingVideo);
   }
@@ -174,7 +174,6 @@
     if (!active() || busy() || !event.target.matches('[data-qc-field]')) return;
     state[event.target.dataset.qcField] = event.target.value;
     invalidate(); syncSubmit();
-    if (event.target.id === 'qcCategory') q('[data-qc="clear-category"]').hidden = !state.category;
   });
   document.addEventListener('change', event => {
     if (!active() || busy()) return;
@@ -201,7 +200,6 @@
     if (action === 'video') q('#qcVideoFile').click();
     if (action === 'cover') q('#qcCoverFile').click();
     if (action === 'capture') captureCover();
-    if (action === 'clear-category') { state.category = ''; q('#qcCategory').value = ''; button.hidden = true; invalidate(); syncSubmit(); q('#qcCategory').focus(); }
     if (action === 'retry') submit(true);
     if (action === 'remove-video' || action === 'remove-cover') {
       const kind = action === 'remove-video' ? 'video' : 'cover';

@@ -8989,7 +8989,7 @@
     }
   </style>
   <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
-  <link rel="stylesheet" href="./asset-file-tools.css?v=29b44e0ff5b2" />
+  <link rel="stylesheet" href="./asset-file-tools.css?v=b564f9aabb7b" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=c40072ca5743" />
 </head>
@@ -16379,10 +16379,12 @@
 
     function renderFolderCard(folder) {
       const isMenuOpen = openFolderMenuId === folder.id;
+      const listView = document.querySelector("#page-assets").classList.contains("asset-list-view");
       const assetCount = folder.displayCount ?? countAssetsInFolder(folder.id);
       const updatedAt = folder.updatedAt || "2026-07-13";
       return `
         <article class="asset-folder-card" data-open-folder="${folder.id}" aria-label="${escapeHtml(folder.name)}">
+          ${listView ? `<div class="asset-folder-actions"><button type="button" data-rename-folder data-folder-id="${folder.id}">重命名</button>${folder.system ? "" : `<button class="danger" type="button" data-delete-folder data-folder-id="${folder.id}">删除</button>`}</div>` : `
           <button class="folder-more-btn ${isMenuOpen ? "active" : ""}" data-folder-menu="${folder.id}" aria-label="${escapeHtml(folder.name)}的更多操作" title="更多操作" aria-expanded="${isMenuOpen}">···</button>
           ${isMenuOpen ? `
             <div class="folder-menu" role="menu">
@@ -16390,6 +16392,7 @@
               ${folder.system ? "" : `<button class="danger" data-delete-folder data-folder-id="${folder.id}" role="menuitem">删除文件夹</button>`}
             </div>
           ` : ""}
+          `}
           <div class="asset-folder-main-row">
             <div class="asset-folder-icon" aria-hidden="true"></div>
             <h3>${escapeHtml(folder.name)}</h3>
@@ -16675,8 +16678,10 @@
               ${isFavoriteScope ? `<button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>` : ""}
               ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>取消收藏</button>` : ""}
               <button class="link-btn" data-download-asset data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>⇩ 下载</button>
+              ${document.querySelector('#page-assets').classList.contains('asset-list-view') ? `<button class="link-btn asset-delete-direct" type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}">删除</button>` : `
               <button class="link-btn asset-card-more ${isMenuOpen ? "active" : ""}" data-asset-menu="${menuKey}" aria-label="更多操作" aria-expanded="${isMenuOpen}">···</button>
-              ${isMenuOpen ? `<div class="asset-card-menu" role="menu"><button type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}" role="menuitem">删除素材</button></div>` : ""}
+              ${isMenuOpen ? `<div class="asset-card-menu" role="menu"><button type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}" role="menuitem">删除</button></div>` : ""}`}
+
             </div>
           </div>
         </article>
@@ -19608,8 +19613,8 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
-  <script src="./public-assets.js?v=8703251adeac"></script>
-  <script src="./asset-file-tools.js?v=2b6a503cb5df"></script>
+  <script src="./public-assets.js?v=c44660d8e782"></script>
+  <script src="./asset-file-tools.js?v=db6d05e87b27"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
   <script src="./china-address-data.js?v=e5828afb7de8"></script>
@@ -19620,6 +19625,6 @@
   <script src="./creator-import-history.js?v=c1a272c5b9a0"></script>
   <script src="./platform-preview.js?v=a3bfe3d7987c"></script>
   <script src="./workbench.js?v=e9aa16b1cb5a"></script>
-  <script src="./qianchuan-review.js?v=eb2a0d6bac76"></script>
+  <script src="./qianchuan-review.js?v=bd6941fc9975"></script>
 </body>
 </html>
