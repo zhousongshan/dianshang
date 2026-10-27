@@ -8989,9 +8989,10 @@
     }
   </style>
   <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
+  <link rel="stylesheet" href="./asset-notes.css?v=01ae3b68b4fb">
   <link rel="stylesheet" href="./asset-file-tools.css?v=8fe9fc0b6853" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
-  <link rel="stylesheet" href="./qianchuan-review.css?v=c40072ca5743" />
+  <link rel="stylesheet" href="./qianchuan-review.css?v=d5526bd3d90d" />
 </head>
 <body>
   <div class="app-shell">
@@ -16667,12 +16668,13 @@
         <article class="asset-card-lite" aria-label="${escapeHtml(item.name)}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
           ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive", canSubmitReview)}
           <div class="asset-card-info">
-            <h3 class="asset-card-title">${escapeHtml(item.name)}</h3>
+            <h3 class="asset-card-title">${escapeHtml(item.name)}${window.AssetNotes?.summary(item, kind) || ""}</h3>
             <div class="asset-state-row">
               <span class="asset-status-pill ${isLocal ? "warn" : ""}">${isLocal ? "本地上传" : "AI生成"}</span>
               <span class="asset-card-date">${displayDate}</span>
             </div>
             <div class="asset-card-actions">
+              ${window.AssetNotes?.action(item, kind) || ""}
               <button class="link-btn" data-rename-asset data-asset-kind="${kind}" data-asset-index="${index}">✎ 重命名</button>
               ${isFavoriteScope ? `<button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>` : ""}
               ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>取消收藏</button>` : ""}
@@ -19612,7 +19614,8 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
-  <script src="./public-assets.js?v=0e4b90d6d2a9"></script>
+  <script src="./asset-notes.js?v=d97ebc99ccc6"></script>
+  <script src="./public-assets.js?v=1779d287c74d"></script>
   <script src="./asset-file-tools.js?v=9d0fff117b7c"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
@@ -19624,6 +19627,6 @@
   <script src="./creator-import-history.js?v=c1a272c5b9a0"></script>
   <script src="./platform-preview.js?v=a3bfe3d7987c"></script>
   <script src="./workbench.js?v=e9aa16b1cb5a"></script>
-  <script src="./qianchuan-review.js?v=bd6941fc9975"></script>
+  <script src="./qianchuan-review.js?v=f1838c893f9a"></script>
 </body>
 </html>

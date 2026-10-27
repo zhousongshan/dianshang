@@ -94,3 +94,18 @@ textarea.qc-input { min-height: 76px; resize: vertical; line-height: 1.6; }
 @media (max-width: 640px) { .qc-workspace { display: block; } .qc-workspace .ai-app-directory { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); } .qc-workspace .ai-app-directory-search,.qc-workspace .ai-app-group h2 { display:none; } .qc-workspace #aiAppDirectory { display:flex; overflow:auto; gap:6px; } .qc-workspace .ai-app-group,.qc-workspace .ai-app-group + .ai-app-group { display:flex; margin:0; gap:6px; } .qc-workspace .ai-app-item { width:auto; white-space:nowrap; } .qc-video-card { max-width:none; } .qc-demo { align-items:stretch; } .qc-demo span { flex-basis:100%; } .qc-steps { gap:12px; } }
 
 @media (max-width: 640px) { .qc-workspace .ai-app-results { padding: 20px 12px; } .qc-results-grid { gap: 16px; } .qc-result-media { height: 190px; } .qc-result-content { padding: 16px; } .qc-video-info { padding: 14px 16px; } }
+
+.qc-media-tabs { display:flex;gap:4px;background:#f1edfc;border-radius:9px;padding:4px;margin-bottom:20px; }
+.qc-media-tabs button { flex:1;border:0;border-radius:6px;background:transparent;color:#8b83a3;padding:9px;cursor:pointer;font:inherit;font-size:13px; }
+.qc-media-tabs button[aria-selected="true"] { background:white;color:#7257e8;box-shadow:0 2px 6px #4838790a; }
+.qc-media-tabs button:disabled { cursor:default;opacity:.6; }
+.qc-image-toolbar { display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#98a2b3;margin:14px 0 10px; }
+.qc-image-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-height:340px;overflow:auto;padding:4px; }
+.qc-image-tile { position:relative;min-width:0; }
+.qc-image-preview { display:block;position:relative;width:100%;height:80px;padding:0;border:1px solid #e5def3;border-radius:7px;overflow:hidden;background:#faf8ff;cursor:pointer; }
+.qc-image-preview img { width:100%;height:100%;object-fit:contain; }
+.qc-image-preview span { position:absolute;bottom:0;left:0;padding:2px 6px;background:#ffffffec;color:#8272ae;font-size:10px; }
+.qc-image-remove { position:absolute;right:-4px;top:-4px;border:1px solid #e3ddf1;border-radius:50%;width:21px;height:21px;padding:0;background:white;color:#8a7f9c;cursor:pointer; }
+.qc-image-tile small { display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#98a2b3;margin-top:5px; }
+.qc-result-media img { display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in; }
+.qc-image-location { font-size:11px;color:#8e7bb2; }

@@ -1,0 +1,20 @@
+.asset-note-summary { display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#98a2b3;font-size:11px;font-weight:400;line-height:1.7;margin-top:4px; }
+.asset-note-drawer { box-sizing:border-box;position:fixed;inset:0 0 0 auto;margin:0;width:min(460px,100vw);max-width:100vw;max-height:100dvh;height:100dvh;border:0;border-left:1px solid #e8e2f7;background:white;color:#344054;padding:0;box-shadow:-10px 0 50px #34245d20; }
+.asset-note-drawer::backdrop { background:#18223040; }
+.asset-note-drawer form { min-height:100%;display:flex;flex-direction:column; }
+.asset-note-drawer header { display:flex;align-items:center;justify-content:space-between;padding:22px 24px;border-bottom:1px solid #eee9f7;background:#f9f7ff; }
+.asset-note-drawer h2 { margin:0;font-size:18px; }
+.asset-note-drawer header button { border:0;background:transparent;font-size:26px;color:#98a2b3;cursor:pointer; }
+.asset-note-body { padding:24px;flex:1; }
+#assetNotePreview { background:#f6f4fb;border-radius:12px;overflow:hidden; }
+#assetNotePreview img,#assetNotePreview video { display:block;width:100%;height:230px;object-fit:contain; }
+.asset-note-placeholder { display:grid;place-items:center;height:180px;color:#9486be; }
+.asset-note-body h3 { margin:18px 0 26px;font-size:15px;overflow-wrap:anywhere; }
+.asset-note-body label { display:block;font-weight:600;font-size:14px;margin-bottom:10px; }
+.asset-note-body label span { font-size:12px;color:#98a2b3;font-weight:400;margin-left:6px; }
+#assetNoteText { box-sizing:border-box;width:100%;min-height:180px;resize:vertical;padding:12px;border:1px solid #e1dbef;border-radius:9px;font:inherit;font-size:14px;line-height:1.8;color:#344054; }
+#assetNoteText:focus { outline:3px solid #f1ecff;border-color:#a394ed; }
+#assetNoteText::placeholder { color:#a6adbc; }
+.asset-note-meta { display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#98a2b3; }
+#assetNoteError { color:#c65c65;font-size:12px; }
+.asset-note-drawer footer { position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:12px;padding:18px 24px;background:white;border-top:1px solid #eee9f7; }

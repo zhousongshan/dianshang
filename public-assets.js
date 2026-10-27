@@ -161,9 +161,10 @@
     const isMenuOpen = menuId === item.id;
     return `<article class="asset-card-lite public-image-card" aria-label="${name}">
       <div class="simple-poster-preview public-preview" data-public-preview="${item.id}" role="button" tabindex="0" aria-label="预览${name}"><img class="asset-real-preview" src="${url}" alt="${name}" /><button class="asset-kind-badge asset-review-badge public-library-check" type="button" data-public-library-select="${item.id}" aria-label="选择${name}" aria-pressed="${librarySelection.has(item.id)}">${librarySelection.has(item.id) ? '✓' : '□'}</button></div>
-      <div class="asset-card-info"><h3 class="asset-card-title">${name}</h3>
+      <div class="asset-card-info"><h3 class="asset-card-title">${name}${window.AssetNotes?.summary(item, "image", "public") || ""}</h3>
         <div class="asset-state-row"><span class="asset-status-pill">公共素材</span><span class="asset-card-date">${esc(item.updatedAt)}</span></div>
         <div class="asset-card-actions">
+          ${window.AssetNotes?.action(item, "image", "public", imageUrl(item), canCreate()) || ""}
           <button class="link-btn" type="button" data-public-rename-image="${item.id}" ${canCreate() ? '' : 'disabled'}>✎ 重命名</button>
           ${canEdit(folder(item.folderId)) ? `<button class="asset-move-btn" type="button" data-public-move="${item.id}" title="移动到其他文件夹">↗ 移动</button>` : ''}
           <button class="link-btn" type="button" data-public-download="${item.id}">⇩ 下载</button>
