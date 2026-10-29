@@ -1,0 +1,30 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});try{
+ const p=await browser.newPage({viewport:{width:1600,height:1050}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('file://'+path.resolve(__dirname,'../index.html'));
+ await p.evaluate(()=>{document.querySelector('[data-platform="creation"]').click();showPage('assets');switchReviewIdentity('supervisor');});
+ await p.locator('[data-asset-scope="public"]').click();await p.locator('[data-public-folder="public-product"]').first().waitFor();
+ await p.evaluate(async()=>{const db=await new Promise(r=>{const q=indexedDB.open('chaoren-public-assets-v1',1);q.onsuccess=()=>r(q.result)});await new Promise(r=>{const tx=db.transaction('library','readwrite'),store=tx.objectStore('library'),q=store.get('state');q.onsuccess=()=>{const state=q.result;state.folders.push(...[
+ {id:'child-a',parentId:'public-product',name:'秋季新品',ownerId:'user-2'},
+ {id:'deep-a',parentId:'child-a',name:'主图与视频',ownerId:'user-2'},
+ {id:'child-b',parentId:'public-brand',name:'秋季新品',ownerId:'user-2'},
+ {id:'child-private-parent',parentId:'public-scene',name:'我负责的子目录',ownerId:'user-2'},
+ {id:'archived',parentId:'public-product',name:'已删除目录',ownerId:'user-2',archived:true},
+ {id:'in-archived',parentId:'archived',name:'不可选择',ownerId:'user-2'}]);store.put(state,'state')};tx.oncomplete=r})});
+ await p.reload();await p.evaluate(()=>showPage('assets'));await p.locator('[data-asset-scope="public"]').click();await p.locator('[data-public-folder="public-product"]').first().click();
+ await p.locator('.public-library-actions [data-public-upload]').click();assert.equal(await p.locator('#publicUploadFolderName,#publicUploadNewFolder').count(),0);assert.equal(await p.locator('#publicUploadDestination').inputValue(),'public-product');
+ await p.locator('#publicUploadFolderButton').click();assert.equal(await p.locator('[data-upload-folder-select="public-scene"]').isDisabled(),true);await p.locator('.public-picker-enter[data-upload-folder-browse="public-scene"]').click();assert(await p.locator('[data-upload-folder-select="child-private-parent"]').isVisible());
+ await p.locator('[data-upload-folder-browse="public-root"]').click();await p.locator('.public-picker-enter[data-upload-folder-browse="public-product"]').click();assert.equal(await p.locator('[data-upload-folder-select="archived"]').count(),0);assert.equal(await p.locator('#publicUploadDestination').inputValue(),'public-product');
+ await p.locator('.public-picker-enter[data-upload-folder-browse="child-a"]').click();assert.match(await p.locator('#publicUploadFolderBreadcrumb').innerText(),/商品实拍.*秋季新品/s);
+ await p.screenshot({animations:'disabled',path:'/tmp/chaoren-public-assets-check/upload-folder-hierarchy.png'});
+ await p.locator('[data-upload-folder-select="deep-a"]').click();assert.equal(await p.locator('#publicUploadFolderValue').innerText(),'公共素材 / 商品实拍 / 秋季新品 / 主图与视频');assert(!await p.locator('#publicUploadFolderPanel').isVisible());
+ await p.locator('#publicUploadFolderButton').click();await p.locator('[data-upload-folder-browse="public-root"]').click();await p.keyboard.press('Escape');assert(await p.locator('#publicUploadModal').isVisible());assert(!await p.locator('#publicUploadFolderPanel').isVisible());assert.equal(await p.locator('#publicUploadDestination').inputValue(),'deep-a');
+ await p.locator('#publicUploadFolderButton').click();await p.locator('#publicUploadTitle').click();assert(!await p.locator('#publicUploadFolderPanel').isVisible());
+ await p.locator('#publicUpload').setInputFiles({name:'层级上传.png',mimeType:'image/png',buffer:fs.readFileSync(path.resolve(__dirname,'../watch-product.png'))});await p.waitForFunction(()=>!document.querySelector('#publicUploadConfirm').disabled);
+ await p.setViewportSize({width:390,height:844});await p.locator('#publicUploadFolderButton').click();assert(await p.locator('.public-upload-panel').evaluate(n=>n.scrollWidth<=n.clientWidth));const box=await p.locator('#publicUploadFolderPanel').boundingBox();assert(box.x>=0&&box.x+box.width<=390);await p.screenshot({animations:'disabled',path:'/tmp/chaoren-public-assets-check/upload-folder-mobile.png'});await p.keyboard.press('Escape');
+ await p.locator('#publicUploadConfirm').click();await p.waitForFunction(()=>!document.querySelector('#publicUploadModal').classList.contains('show'));const record=await p.evaluate(()=>PublicAssets.reviewRecords().find(r=>r.title==='层级上传.png'));assert.equal(record.destination,'公共素材 / 商品实拍 / 秋季新品 / 主图与视频');assert.equal(record.status,'pending');
+ await p.reload();await p.evaluate(()=>showPage('assets'));await p.locator('[data-asset-scope="public"]').click();await p.evaluate(()=>switchReviewIdentity('supervisor'));await p.waitForFunction(()=>PublicAssets.reviewRecords().some(r=>r.title==='层级上传.png'));assert.equal(await p.evaluate(()=>PublicAssets.reviewRecords().find(r=>r.title==='层级上传.png').destination),record.destination);
+ await p.evaluate(()=>switchReviewIdentity('employee'));await p.locator('.public-library-actions [data-public-upload]').click();await p.locator('#publicUploadFolderButton').click();assert.match(await p.locator('#publicUploadFolderList').innerText(),/暂无可选文件夹/);assert.equal(await p.locator('#publicUploadDestination').inputValue(),'');await p.keyboard.press('Escape');
+ await p.locator('#publicUpload').setInputFiles({name:'无目录.png',mimeType:'image/png',buffer:fs.readFileSync(path.resolve(__dirname,'../watch-product.png'))});await p.waitForFunction(()=>document.querySelector('.public-upload-progress.ready'));assert(await p.locator('#publicUploadConfirm').isDisabled());
+ assert.deepEqual(errors,[]);console.log('PASS: existing folders only; nested navigation, breadcrumbs, selected full path, permissions, archived ancestors, Escape/outside dismissal, mobile bounds, persisted pending destination, empty folder state.');
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

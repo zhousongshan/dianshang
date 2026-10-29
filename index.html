@@ -8988,8 +8988,9 @@
       .review-page.manager-view .review-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     }
   </style>
-  <link rel="stylesheet" href="./public-assets.css?v=d2fa8d27da2b" />
-  <link rel="stylesheet" href="./asset-notes.css?v=8604cd50d353">
+  <link rel="stylesheet" href="./review-center.css?v=bc72aa0aa11e" />
+  <link rel="stylesheet" href="./public-assets.css?v=461ddab59f45" />
+  <link rel="stylesheet" href="./asset-tags.css?v=14fec4646376">
   <link rel="stylesheet" href="./asset-file-tools.css?v=8fe9fc0b6853" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=d5526bd3d90d" />
@@ -9034,11 +9035,11 @@
           <span>审核中心</span>
           <span class="nav-count" id="reviewNavCount">0</span>
         </button>
-        <button class="nav-btn" data-page="assets" title="资产库">
+        <button class="nav-btn" data-page="assets" title="素材库">
           <span class="nav-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m4 8 8-4 8 4-8 4-8-4Z" stroke="currentColor" stroke-width="2"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
-          <span>资产库</span>
+          <span>素材库</span>
         </button>
         <div class="nav-group settings-nav-group" data-settings-nav-group>
           <button class="nav-btn" data-page="settings" data-system-nav-toggle title="系统设置" aria-expanded="false">
@@ -9922,58 +9923,29 @@
         </section>
 
         <!-- 审核中心 -->
-        <section id="page-review" class="page review-page">
+        <section id="page-review" class="page review-page review-v2">
           <div class="review-page-shell">
-            <div class="review-page-header">
-              <div class="review-page-heading">
-                <h1>审核记录</h1>
-                <p id="reviewPageDescription">处理员工提交的图片</p>
+            <div class="review-page-header"><div class="review-page-heading"><h1>审核记录</h1><p id="reviewPageDescription">处理员工提交的图片和视频，支持单个和批量审核</p></div></div>
+            <div class="rc-navigation">
+              <div class="rc-type-tabs" role="tablist" aria-label="审核类型">
+                <button type="button" role="tab" data-review-type="ai" aria-controls="reviewList">AI 生成审核 <span data-review-type-count="ai"></span></button>
+                <button type="button" role="tab" data-review-type="public" aria-controls="reviewList">公共素材上传审核 <span data-review-type-count="public"></span></button>
               </div>
             </div>
-
-            <section class="review-workspace">
-              <div class="review-filter-row">
-                <div class="employee-review-tabs" role="tablist" aria-label="审核状态">
-                  <button class="employee-review-tab active" type="button" role="tab" data-employee-review-status="all">全部</button>
-                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="pending">未审核</button>
-                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="approved">已通过</button>
-                  <button class="employee-review-tab" type="button" role="tab" data-employee-review-status="rejected">驳回</button>
-                </div>
-                <label class="review-filter-control review-date-filter employee-review-date">首次提交时间
-                  <input type="date" data-review-date="start" aria-label="首次提交开始日期" />
-                  <span>至</span>
-                  <input type="date" data-review-date="end" aria-label="首次提交结束日期" />
-                </label>
-              </div>
-              <div class="review-toolbar">
-                <div class="review-search-stack">
-                  <label class="review-search"><input id="reviewSearchInput" type="search" placeholder="搜索提交人账号" autocomplete="off" /></label>
-                  <button class="review-select-all-btn" id="toggleReviewSelection" type="button">一键全选</button>
-                </div>
-                <button class="review-mini-btn" id="reviewSearchButton" type="button">搜索</button>
-                <label class="review-filter-control">审核状态
-                  <select id="reviewStatusFilter" aria-label="审核状态筛选">
-                    <option value="all">全部</option>
-                    <option value="pending">未审核</option>
-                    <option value="approved">已审核</option>
-                    <option value="rejected">驳回</option>
-                  </select>
-                </label>
-                <label class="review-filter-control review-date-filter manager-review-date">首次提交时间
-                  <input type="date" data-review-date="start" aria-label="首次提交开始日期" />
-                  <span>至</span>
-                  <input type="date" data-review-date="end" aria-label="首次提交结束日期" />
-                </label>
-                <div class="review-batch-actions" id="reviewBatchActions">
-                  <button class="review-mini-btn approve" id="batchApproveReview" type="button">批量通过</button>
-                  <button class="review-mini-btn reject" id="batchRejectReview" type="button">批量驳回</button>
-                </div>
-              </div>
-              <div class="review-list-head" id="reviewListHead">
-                <span>选择</span><span>图片</span><span>提交人</span><span>提交时间</span><span>状态</span>
-              </div>
-              <div class="review-list" id="reviewList"></div>
-            </section>
+            <div class="rc-media-tabs" role="group" aria-label="素材类型">
+              <button type="button" data-review-media="all" class="active" aria-pressed="true">全部</button>
+              <button type="button" data-review-media="image" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="6" cy="6" r="1"/><path d="m3 12 4-4 2 2 2-3 3 4"/></svg>图片</button>
+              <button type="button" data-review-media="video" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="9" height="8" rx="1"/><path d="m10 7 4-2v6l-4-2"/></svg>视频</button>
+            </div>
+            <div class="rc-filters">
+              <label class="rc-search"><span aria-hidden="true">⌕</span><input id="reviewSearchInput" type="search" placeholder="搜索提交人" aria-label="搜索提交人" autocomplete="off" /></label>
+              <button class="btn" id="reviewSearchButton" type="button">搜索</button>
+              <label class="rc-status-select">审核状态<select id="reviewStatusFilter" aria-label="审核状态筛选"><option value="all">全部状态</option><option value="pending">未审核</option><option value="approved">已通过</option><option value="rejected">已驳回</option></select></label>
+              <label class="rc-dates">首次提交时间 <input type="date" data-review-date="start" aria-label="首次提交开始日期" /><span>至</span><input type="date" data-review-date="end" aria-label="首次提交结束日期" /></label>
+              <div class="rc-batch" id="reviewBatchActions"><span id="reviewSelectedCount">已选择 0 个素材</span><button class="review-mini-btn approve" id="batchApproveReview" type="button">批量通过</button><button class="review-mini-btn reject" id="batchRejectReview" type="button">批量驳回</button></div>
+            </div>
+            <div class="rc-result-bar"><button class="rc-select-all" id="toggleReviewSelection" type="button">一键全选</button><span id="reviewResultCount" aria-live="polite"></span></div>
+            <div id="reviewList" class="rc-grid" role="tabpanel" aria-label="审核素材"></div>
           </div>
         </section>
 
@@ -9981,7 +9953,7 @@
         <section id="page-assets" class="page asset-simple-page">
           <div class="asset-page-header">
             <div>
-              <h1>资产库</h1>
+              <h1>素材库</h1>
               <p>统一管理 AI 生成与本地上传素材，支持搜索、筛选与快速复用。</p>
             </div>
             <div class="asset-utility-actions">
@@ -9996,10 +9968,12 @@
             <button class="asset-scope-tab active" data-asset-scope="generated" role="tab">我的素材</button>
             <button class="asset-scope-tab" data-asset-scope="favorites" role="tab">我的收藏</button>
             <button class="asset-scope-tab" data-asset-scope="public" role="tab">公共素材</button>
+            <button class="asset-scope-tab" data-asset-scope="tags" role="tab">标签管理</button>
             <select id="assetScopeSelect" hidden aria-hidden="true">
               <option value="generated">我的素材</option>
               <option value="favorites">我的收藏</option>
               <option value="public">公共素材</option>
+              <option value="tags">标签管理</option>
             </select>
           </div>
 
@@ -10037,8 +10011,8 @@
                   <option value="rejected">驳回</option>
                 </select>
               </label>
-              <label><span>日期</span>
-                <input class="asset-control-select" id="assetDateFilter" type="date" aria-label="按生成或上传日期筛选" />
+              <label><span>创建日期</span>
+                <input class="asset-control-select" id="assetDateFilter" type="date" aria-label="按创建日期筛选" />
               </label>
             </div>
           </div>
@@ -10565,7 +10539,7 @@
   <!-- 新建 Agent 弹窗 -->
   <div class="image-source-menu" id="imageSourceMenu" hidden>
     <button type="button" data-image-source="local"><span class="image-source-icon">↥</span><span><b>本地上传</b><small>从电脑中选择一张或多张图片</small></span></button>
-    <button type="button" data-image-source="asset"><span class="image-source-icon">▱</span><span><b>从资产库选择</b><small>从我的素材、我的收藏或公共素材中选择</small></span></button>
+    <button type="button" data-image-source="asset"><span class="image-source-icon">▱</span><span><b>从素材库选择</b><small>从我的素材、我的收藏或公共素材中选择</small></span></button>
   </div>
 
   <div class="image-source-menu video-mention-menu" id="videoMentionMenu" hidden>
@@ -10596,7 +10570,7 @@
     <div class="asset-selector-dialog">
       <div class="asset-selector-head">
         <div>
-          <h2 id="assetSelectorTitle">从资产库选择</h2>
+          <h2 id="assetSelectorTitle">从素材库选择</h2>
         </div>
         <button class="close-btn" type="button" data-close-asset-selector aria-label="关闭">×</button>
       </div>
@@ -10941,9 +10915,9 @@
   </div>
 
   <!-- 审核图片预览 -->
-  <div class="modal-mask" id="reviewDetailModal" role="dialog" aria-modal="true" aria-label="审核图片预览">
+  <div class="modal-mask" id="reviewDetailModal" role="dialog" aria-modal="true" aria-label="审核素材预览">
     <div class="modal review-detail-dialog">
-      <button class="close-btn review-preview-close" type="button" data-close-review-detail aria-label="关闭图片预览">×</button>
+      <button class="close-btn review-preview-close" type="button" data-close-review-detail aria-label="关闭素材预览">×</button>
       <div class="modal-body" id="reviewDetailBody"></div>
       <div class="modal-actions" id="reviewDetailActions"></div>
     </div>
@@ -11383,6 +11357,7 @@
     };
     let reviewDemoState = loadReviewDemoState();
     let activeReviewTab = reviewDemoState.identity !== "employee" ? "inbox" : "mine";
+    let activeReviewType = "ai", activeReviewMedia = "all", reviewDecisionBusy = false;
     let reviewSelectedIds = new Set();
     let generatedReviewSelection = new Set();
     let assetReviewSelection = new Set();
@@ -15837,7 +15812,7 @@
       setTargetImages(activeImagePickerTarget, [...localImages, ...assetSelectorState.draftSelected.values()]);
       const count = assetSelectorState.draftSelected.size;
       closeAssetSelector();
-      showToast(`已从资产库添加 ${count} 张图片。`);
+      showToast(`已从素材库添加 ${count} 张图片。`);
     }
 
     function getGeneratedResult(roundId, resultId) {
@@ -16382,7 +16357,7 @@
       const isMenuOpen = openFolderMenuId === folder.id;
       const listView = document.querySelector("#page-assets").classList.contains("asset-list-view");
       const assetCount = folder.displayCount ?? countAssetsInFolder(folder.id);
-      const updatedAt = folder.updatedAt || "2026-07-13";
+      const createdAt = folder.createdAt || folder.updatedAt || "2026-07-13";
       return `
         <article class="asset-folder-card" data-open-folder="${folder.id}" aria-label="${escapeHtml(folder.name)}">
           ${listView ? `<div class="asset-folder-actions"><button type="button" data-rename-folder data-folder-id="${folder.id}">重命名</button>${folder.system ? "" : `<button class="danger" type="button" data-delete-folder data-folder-id="${folder.id}">删除</button>`}</div>` : `
@@ -16399,7 +16374,7 @@
             <h3>${escapeHtml(folder.name)}</h3>
           </div>
           <span class="folder-drop-hint">移动到这里</span>
-          <div class="asset-folder-meta"><span>${assetCount} 个素材</span><span>·</span><span>${updatedAt} 更新</span></div>
+          <div class="asset-folder-meta"><span>${assetCount} 个素材</span><span>·</span><span>${createdAt}</span></div>
         </article>
       `;
     }
@@ -16475,6 +16450,7 @@
 
     // 渲染资产库：我的素材与收藏文件夹共享同一套操作能力
     function renderAssets() {
+      if (window.AssetTags?.renderScope()) return;
       if (window.PublicAssets?.renderLibrary()) return;
       const keyword = ($("#assetSearch")?.value || "").trim().toLowerCase();
       const grid = $("#assetGrid");
@@ -16497,6 +16473,7 @@
       $("#assetSearch").placeholder = isFavoriteScope ? "搜索文件夹名称" : "搜索素材名称、关键词";
       $("#assetScopeSelect").value = activeAssetScope;
       $("#assetTypeSelect").value = activeAssetType;
+      $("#assetSourceFilter").closest("label").hidden = false;
       $("#assetSourceFilter").value = activeAssetSource;
       $("#assetReviewStatusFilter").value = activeAssetReviewStatus;
       $(".asset-review-status-control").hidden = isFavoriteScope;
@@ -16663,18 +16640,18 @@
       const menuKey = `${kind}-${index}`;
       const isMenuOpen = openAssetMenuKey === menuKey;
       const canSubmitReview = !isFavoriteScope && canPushAssetReview(kind, index);
-      const displayDate = item.assetDate || (String(item.time).includes("-") ? item.time : kind === "video" ? "2026-07-08" : `2026-07-${String(Math.max(1, 10 - (index % 5))).padStart(2, "0")}`);
+      const displayDate = getAssetRecordDate(item, index, kind);
       return `
         <article class="asset-card-lite" aria-label="${escapeHtml(item.name)}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
           ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive", canSubmitReview)}
           <div class="asset-card-info">
-            <h3 class="asset-card-title">${escapeHtml(item.name)}${window.AssetNotes?.summary(item, kind) || ""}</h3>
+            <h3 class="asset-card-title">${escapeHtml(item.name)}${window.AssetTags?.summary(item, kind) || ""}</h3>
             <div class="asset-state-row">
               <span class="asset-status-pill ${isLocal ? "warn" : ""}">${isLocal ? "本地上传" : "AI生成"}</span>
               <span class="asset-card-date">${displayDate}</span>
             </div>
             <div class="asset-card-actions">
-              ${window.AssetNotes?.action(item, kind) || ""}
+              ${window.AssetTags?.action(item, kind) || ""}
               <button class="link-btn" data-rename-asset data-asset-kind="${kind}" data-asset-index="${index}">✎ 重命名</button>
               ${isFavoriteScope ? `<button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>` : ""}
               ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>取消收藏</button>` : ""}
@@ -19101,7 +19078,7 @@
       $("#dropdownUserName").textContent = identity.name;
       $("#topUserAvatar").textContent = identity.avatar;
       $$("[data-demo-identity]").forEach(button => button.classList.toggle("active", button.dataset.demoIdentity === reviewDemoState.identity));
-      $("#reviewPageDescription").textContent = identity.canReview ? "处理员工提交的图片，支持单张和批量审核" : "";
+      $("#reviewPageDescription").textContent = identity.canReview ? "处理员工提交的图片和视频，支持单个和批量审核" : "查看提交的图片和视频审核进度";
       if (identity.canReview) $("#reviewStatusFilter").value = "pending";
       else $("#reviewStatusFilter").value = "all";
       const defaultReviewers = reviewSupervisorOptions(identity.id);
@@ -19116,6 +19093,7 @@
         closeUserDropdown();
         return;
       }
+      closeReviewDetail();
       reviewDemoState.identity = identityName;
       activeReviewTab = identityName !== "employee" ? "inbox" : "mine";
       reviewSelectedIds.clear();
@@ -19128,101 +19106,129 @@
       showToast(`已切换为${REVIEW_IDENTITIES[identityName].label}身份。`);
     }
 
+    document.querySelectorAll('[data-review-type]').forEach(button => button.addEventListener('click', () => {
+      activeReviewType = button.dataset.reviewType;
+      reviewSelectedIds.clear(); closeReviewDetail();
+      $('#reviewSearchInput').value = ''; document.querySelectorAll('[data-review-date]').forEach(input => { input.value = ''; });
+      renderReviewCenter();
+    }));
+    document.querySelectorAll('[data-review-media]').forEach(button => button.addEventListener('click', () => {
+      activeReviewMedia = button.dataset.reviewMedia;
+      reviewSelectedIds.clear(); closeReviewDetail(); renderReviewCenter();
+    }));
+
+    function allReviewRecords() {
+      return [...reviewDemoState.records, ...(window.PublicAssets?.reviewRecords() || [])];
+    }
+
+    function reviewMediaMarkup(record, controls = false) {
+      return record.kind === "video"
+        ? `<video src="${escapeHtml(record.image)}${controls ? "" : "#t=0.1"}" ${controls ? "controls" : "muted"} playsinline preload="metadata" aria-label="${escapeHtml(record.title)}"></video>`
+        : `<img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" />`;
+    }
+
     function renderReviewNavigationCount() {
       const identity = currentReviewIdentity();
       const count = identity.canReview
-        ? reviewDemoState.records.filter(item => item.reviewerId === identity.id && item.status === "pending").length
+        ? allReviewRecords().filter(item => item.reviewerId === identity.id && item.status === "pending").length
         : 0;
       $("#reviewNavCount").textContent = String(count);
       $("#reviewNavCount").classList.toggle("show", count > 0);
     }
 
-    function recordsForReviewTab() {
+    function reviewScopeRecords() {
       const identity = currentReviewIdentity();
-      const status = $("#reviewStatusFilter")?.value || "all";
-      const keyword = identity.canReview ? ($("#reviewSearchInput")?.value || "").trim().toLowerCase() : "";
-      const reviewPage = document.querySelector(".review-page");
-      const dateFilterScope = reviewPage?.classList.contains("employee-view") ? ".employee-review-date" : ".manager-review-date";
-      const startDate = document.querySelector(`${dateFilterScope} [data-review-date="start"]`)?.value || "";
-      const endDate = document.querySelector(`${dateFilterScope} [data-review-date="end"]`)?.value || "";
-      return reviewDemoState.records
-        .filter(item => activeReviewTab === "mine" ? item.submitterId === identity.id : item.reviewerId === identity.id)
-        .filter(item => status === "all" || item.status === status)
-        .filter(item => !keyword || item.submitterName.toLowerCase().includes(keyword))
-        .filter(item => {
-          const firstSubmittedDate = String(item.firstSubmittedAt || item.submittedAt || "").slice(0, 10);
-          return (!startDate || firstSubmittedDate >= startDate) && (!endDate || firstSubmittedDate <= endDate);
-        })
-        .sort((a, b) => String(b.latestSubmittedAt || b.submittedAt).localeCompare(String(a.latestSubmittedAt || a.submittedAt)));
+      return allReviewRecords().filter(item => activeReviewTab === 'mine' ? item.submitterId === identity.id : item.reviewerId === identity.id);
     }
-
+    function recordsForReviewTab(ignoreStatus = false) {
+      const status = $('#reviewStatusFilter').value;
+      const keyword = $('#reviewSearchInput').value.trim().toLowerCase();
+      const startDate = document.querySelector('[data-review-date="start"]').value;
+      const endDate = document.querySelector('[data-review-date="end"]').value;
+      return reviewScopeRecords()
+        .filter(item => activeReviewType === 'public' ? Boolean(item.publicAssetId) : !item.publicAssetId)
+        .filter(item => activeReviewMedia === 'all' || (item.kind || 'image') === activeReviewMedia)
+        .filter(item => ignoreStatus || status === 'all' || item.status === status)
+        .filter(item => !keyword || String(item.submitterName || '').toLowerCase().includes(keyword))
+        .filter(item => {
+          const date = String(item.firstSubmittedAt || item.submittedAt || '').slice(0, 10);
+          return (!startDate || date >= startDate) && (!endDate || date <= endDate);
+        })
+        .sort((a,b) => String(b.latestSubmittedAt || b.submittedAt).localeCompare(String(a.latestSubmittedAt || a.submittedAt)));
+    }
+    function reviewStateLabel(record) {
+      return ({pending:'未审核', approved:record.publicAssetId ? '已入库' : '已通过', rejected:'已驳回'})[record.status] || '待审核';
+    }
+    function reviewDurationLabel(duration) {
+      return Number.isFinite(duration) && duration > 0 ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2,'0')}` : '';
+    }
+    document.addEventListener('loadedmetadata', event => {
+      if (!event.target.matches('.rc-preview video')) return;
+      const badge = event.target.closest('.rc-cover').querySelector('.rc-duration');
+      if (badge) { badge.textContent = reviewDurationLabel(event.target.duration); badge.hidden = !badge.textContent; }
+    }, true);
+    function reviewTagMarkup(record, compact = false) {
+      const tags = record.tags || [];
+      if (!tags.length) return '<span class="rc-tags-empty">未添加标签</span>';
+      const visible = compact ? tags.slice(0, 2) : tags;
+      return `<span class="rc-tag-list">${visible.map(name => `<span class="rc-tag" title="${escapeHtml(name)}">${escapeHtml(name)}</span>`).join('')}${compact && tags.length > 2 ? `<button type="button" class="rc-tag-more" data-review-preview="${escapeHtml(record.id)}" aria-label="查看全部 ${tags.length} 个标签">+${tags.length - 2}</button>` : ''}</span>`;
+    }
     function renderReviewRow(record) {
       const identity = currentReviewIdentity();
-      const canDecide = identity.canReview && record.reviewerId === identity.id && record.status === "pending";
-      const status = reviewStatusMeta(record.status);
-      const latestSubmittedAt = record.latestSubmittedAt || record.submittedAt;
-      return `
-        <article class="review-row" data-review-row="${record.id}">
-          <label class="review-check">${canDecide ? `<input type="checkbox" data-review-select="${record.id}" ${reviewSelectedIds.has(record.id) ? "checked" : ""} aria-label="选择${escapeHtml(record.title)}" />` : ""}</label>
-          <div class="review-item-main">
-            <button class="review-thumb" type="button" data-review-preview="${record.id}" aria-label="放大查看图片"><img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" /></button>
-          </div>
-          <div class="review-card-info">
-            <strong>提交人：${escapeHtml(record.submitterName)}</strong>
-            <small>审核人：${escapeHtml(record.reviewerName || "—")}</small>
-            <small>提交时间：${escapeHtml(latestSubmittedAt)}</small>
-            <small>审核时间：${escapeHtml(record.reviewedAt || "—")}</small>
-            <span class="review-status ${record.status}">${status.label}</span>
-            ${canDecide ? `<div class="review-card-actions"><button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="review-mini-btn approve" type="button" data-review-approve="${record.id}">通过</button></div>` : ""}
-          </div>
-        </article>`;
-    }
-
-    function renderEmployeeReviewCard(record) {
-      const submittedAt = record.latestSubmittedAt || record.submittedAt;
-      return `
-        <article class="employee-review-card">
-          <button class="employee-review-image" type="button" data-review-preview="${record.id}" aria-label="放大查看${escapeHtml(record.title)}">
-            <img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" />
-          </button>
-          <div class="employee-review-meta">
-            <span>审核人：${escapeHtml(record.reviewerName || "—")}</span>
-            <time datetime="${escapeHtml(submittedAt)}">提交时间：${escapeHtml(submittedAt)}</time>
-            <span>审核时间：${escapeHtml(record.reviewedAt || "—")}</span>
-          </div>
-        </article>`;
+      const canDecide = identity.canReview && record.reviewerId === identity.id && record.status === 'pending';
+      const selected = canDecide && reviewSelectedIds.has(record.id);
+      const time = record.latestSubmittedAt || record.submittedAt || '—';
+      const submitter = record.legacyReview && !record.submitterId ? '历史上传 · 未记录' : record.submitterName;
+      return `<article class="rc-card ${selected ? 'is-selected' : ''}" data-review-row="${record.id}">
+        <div class="rc-cover">
+          <button class="rc-preview" type="button" data-review-preview="${record.id}" aria-label="预览${escapeHtml(record.title)}">${reviewMediaMarkup(record)}${record.kind === 'video' ? '<span class="rc-play" aria-hidden="true">▷</span>' : '<span class="rc-preview-hover">查看大图</span>'}</button>
+          ${canDecide ? `<label class="rc-check"><input type="checkbox" data-review-select="${record.id}" ${selected ? 'checked' : ''} ${reviewDecisionBusy ? 'disabled' : ''} aria-label="选择${escapeHtml(record.title)}"></label>` : ''}
+          ${record.kind === 'video' ? `<span class="rc-media-badge">▱ 视频</span><span class="rc-duration" ${reviewDurationLabel(record.duration) ? '' : 'hidden'}>${reviewDurationLabel(record.duration)}</span>` : ''}
+        </div>
+        <div class="rc-card-body">
+          <strong class="rc-submitter" title="提交人：${escapeHtml(submitter)}">提交人：${escapeHtml(submitter)}</strong>
+          <div class="rc-card-meta"><span>审核人：${escapeHtml(record.reviewerName || '—')}</span><time>提交时间：${escapeHtml(time)}</time><time>审核时间：${escapeHtml(record.reviewedAt || '—')}</time></div>
+          ${record.publicAssetId ? `<dl class="rc-asset-fields"><div><dt>存放位置：</dt><dd class="rc-location" title="${escapeHtml(record.destination || '未记录')}">${escapeHtml(record.destination || '未记录')}</dd></div><div><dt>标签：</dt><dd>${reviewTagMarkup(record, true)}</dd></div></dl>` : ''}
+        </div>
+        <footer class="rc-card-footer"><span class="review-status ${record.status}">${reviewStateLabel(record)}</span>${canDecide ? `<div><button class="review-mini-btn reject" type="button" data-review-reject="${record.id}" ${reviewDecisionBusy ? 'disabled' : ''}>驳回</button><button class="review-mini-btn approve" type="button" data-review-approve="${record.id}" ${reviewDecisionBusy ? 'disabled' : ''}>通过</button></div>` : `<button type="button" class="rc-text-button" data-review-preview="${record.id}">查看详情</button>`}</footer>
+      </article>`;
     }
 
     function renderReviewCenter() {
       const identity = currentReviewIdentity();
-      const reviewPage = $("#page-review");
-      reviewPage.classList.toggle("employee-view", !identity.canReview);
-      reviewPage.classList.toggle("manager-view", identity.canReview);
-      if (activeReviewTab === "inbox" && !identity.canReview) activeReviewTab = "mine";
-      if (identity.canReview) activeReviewTab = "inbox";
-      const status = $("#reviewStatusFilter").value;
-      $$("[data-employee-review-status]").forEach(button => button.classList.toggle("active", button.dataset.employeeReviewStatus === status));
+      const reviewPage = $('#page-review');
+      reviewPage.classList.toggle('employee-view', !identity.canReview);
+      reviewPage.classList.toggle('manager-view', identity.canReview);
+      if (activeReviewTab === 'inbox' && !identity.canReview) activeReviewTab = 'mine';
+      const scope = reviewScopeRecords();
+      $$('[data-review-type]').forEach(button => {
+        const type = button.dataset.reviewType, active = type === activeReviewType;
+        button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active));
+        const count = scope.filter(item => (type === 'public' ? Boolean(item.publicAssetId) : !item.publicAssetId) && item.status === 'pending').length;
+        button.querySelector('span').textContent = count ? `${count} 待审` : ''; button.querySelector('span').hidden = !count;
+      });
+      $$('[data-review-media]').forEach(button => { const active = button.dataset.reviewMedia === activeReviewMedia; button.classList.toggle('active',active); button.setAttribute('aria-pressed',String(active)); });
+      const status = $('#reviewStatusFilter').value;
       const records = recordsForReviewTab();
-      $("#reviewList").innerHTML = records.length
-        ? records.map(identity.canReview ? renderReviewRow : renderEmployeeReviewCard).join("")
-        : `<div class="review-empty"><div><strong>${activeReviewTab === "mine" ? "还没有提交记录" : "当前没有待处理的图片"}</strong><p>${activeReviewTab === "mine" ? "在生图结果中选择满意的图片并提交审核，记录会显示在这里。" : "员工提交图片后，你可以在这里进行单张或批量审核。"}</p></div></div>`;
-      $("#reviewListHead").children[0].textContent = identity.canReview ? "选择" : "";
-      updateReviewBatchActions();
-      renderReviewNavigationCount();
+      $('#reviewResultCount').textContent = `共 ${records.length} 个素材`;
+      $('#reviewList').innerHTML = records.length ? records.map(renderReviewRow).join('') : `<div class="rc-empty"><span aria-hidden="true">▧</span><h3>暂无${status === 'pending' ? '待审核' : '符合条件的'}${activeReviewType === 'public' ? '公共素材' : 'AI 生成内容'}</h3><p>${$('#reviewSearchInput').value || document.querySelector('[data-review-date="start"]').value || document.querySelector('[data-review-date="end"]').value ? '试试其他关键词或调整筛选条件' : activeReviewTab === 'mine' ? '提交审核后，可在这里查看处理进度' : '新的审核申请会显示在这里'}</p></div>`;
+      updateReviewBatchActions(); renderReviewNavigationCount();
     }
-
     function updateReviewBatchActions() {
-      const available = new Set(recordsForReviewTab().filter(item => item.status === "pending").map(item => item.id));
+      const available = new Set(recordsForReviewTab().filter(item => item.status === 'pending' && item.reviewerId === currentReviewIdentity().id).map(item => item.id));
       reviewSelectedIds = new Set([...reviewSelectedIds].filter(id => available.has(id)));
-      $("#reviewBatchActions").hidden = !currentReviewIdentity().canReview;
-      const toggle = $("#toggleReviewSelection");
-      const canSelect = currentReviewIdentity().canReview && available.size > 0;
-      toggle.hidden = !canSelect;
-      toggle.textContent = available.size > 0 && reviewSelectedIds.size === available.size ? "一键取消" : "一键全选";
+      const canReview = currentReviewIdentity().canReview && activeReviewTab === 'inbox';
+      $('#reviewBatchActions').hidden = !canReview;
+      $('#batchApproveReview').disabled = $('#batchRejectReview').disabled = !reviewSelectedIds.size || reviewDecisionBusy;
+      $$('#reviewDetailActions [data-review-approve], #reviewDetailActions [data-review-reject]').forEach(button => { button.disabled = reviewDecisionBusy; });
+      const toggle = $('#toggleReviewSelection'); toggle.hidden = !canReview || !available.size; toggle.disabled = reviewDecisionBusy;
+      toggle.textContent = available.size && reviewSelectedIds.size === available.size ? '取消全选' : '一键全选';
+      $('#reviewSelectedCount').textContent = `已选择 ${reviewSelectedIds.size} 个素材`;
+      $$('[data-review-row]').forEach(card => card.classList.toggle('is-selected', reviewSelectedIds.has(card.dataset.reviewRow)));
     }
 
     function toggleReviewSelection() {
-      const available = recordsForReviewTab().filter(item => item.status === "pending").map(item => item.id);
+      const available = recordsForReviewTab().filter(item => item.status === "pending" && item.reviewerId === currentReviewIdentity().id).map(item => item.id);
       if (!available.length) return;
       const allSelected = available.every(id => reviewSelectedIds.has(id));
       reviewSelectedIds = allSelected ? new Set() : new Set(available);
@@ -19231,7 +19237,7 @@
 
     function requireReviewSelection() {
       if (reviewSelectedIds.size) return true;
-      showToast("请先勾选需要审核的图片。");
+      showToast("请先勾选需要审核的素材。");
       return false;
     }
 
@@ -19357,10 +19363,13 @@
       showToast(`已推送 ${count} 张图片给${reviewer.name}审核。`);
     }
 
-    function applyReviewDecision(ids, status, reason = "") {
+    async function applyReviewDecision(ids, status, reason = "") {
       const identity = currentReviewIdentity();
-      if (!identity.canReview) return;
-      let changed = 0;
+      if (!identity.canReview || reviewDecisionBusy || !["approved", "rejected"].includes(status)) return;
+      reviewDecisionBusy = true; renderReviewCenter();
+      try {
+      let changed = await window.PublicAssets?.applyReviewDecision(ids, status, reason) || 0;
+      if (currentReviewIdentity().id !== identity.id || !currentReviewIdentity().canReview) return;
       reviewDemoState.records.forEach(record => {
         if (!ids.includes(record.id) || record.reviewerId !== identity.id || record.status !== "pending") return;
         record.status = status;
@@ -19373,17 +19382,19 @@
         }
         changed += 1;
       });
+      if (!changed) return;
       reviewSelectedIds.clear();
       saveReviewDemoState();
       renderAllGeneratedReviewCards();
       renderReviewCenter();
       if (activeReviewDetailId && ids.includes(activeReviewDetailId)) closeReviewDetail();
-      showToast(status === "approved" ? `已审核 ${changed} 张图片。` : `已驳回 ${changed} 张图片。`);
+      showToast(status === "approved" ? `已审核 ${changed} 个素材。` : `已驳回 ${changed} 个素材。`);
+      } finally { reviewDecisionBusy = false; renderReviewCenter(); }
     }
 
     function openReviewReject(ids) {
       pendingReviewRejectIds = ids;
-      $("#reviewRejectDescription").textContent = ids.length > 1 ? `将驳回选中的 ${ids.length} 张图片` : "可以填写需要修改的内容";
+      $("#reviewRejectDescription").textContent = ids.length > 1 ? `将驳回选中的 ${ids.length} 个素材` : "可以填写需要修改的内容";
       $("#reviewRejectReason").value = "";
       $("#reviewRejectModal").classList.add("show");
       document.body.style.overflow = "hidden";
@@ -19404,26 +19415,23 @@
     }
 
     function openReviewDetail(recordId) {
-      const record = reviewDemoState.records.find(item => item.id === recordId);
+      const record = allReviewRecords().find(item => item.id === recordId);
       if (!record) return;
-      const previewRecords = recordsForReviewTab();
-      const currentIndex = previewRecords.findIndex(item => item.id === recordId);
-      const previousRecord = previewRecords[currentIndex - 1];
-      const nextRecord = previewRecords[currentIndex + 1];
+      const records = recordsForReviewTab(), index = records.findIndex(item => item.id === recordId);
+      if (index < 0) return;
       activeReviewDetailId = recordId;
-      $("#reviewDetailBody").innerHTML = `
-        <div class="review-preview-stage">
-          <button class="review-preview-switch" type="button" data-review-preview-previous="${previousRecord?.id || ""}" aria-label="上一张" ${previousRecord ? "" : "disabled"}>‹</button>
-          <div class="review-preview-art"><img src="${escapeHtml(record.image)}" alt="${escapeHtml(record.title)}" /></div>
-          <button class="review-preview-switch" type="button" data-review-preview-next="${nextRecord?.id || ""}" aria-label="下一张" ${nextRecord ? "" : "disabled"}>›</button>
-        </div>`;
-      const canDecide = currentReviewIdentity().canReview && record.reviewerId === currentReviewIdentity().id && record.status === "pending";
-      $("#reviewDetailBody").insertAdjacentHTML("beforeend", `<div class="review-preview-meta"><span>提交人：<strong>${escapeHtml(record.submitterName)}</strong></span><span>提交时间：<strong>${escapeHtml(record.submittedAt)}</strong></span></div>`);
-      $("#reviewDetailActions").innerHTML = canDecide
-        ? `<button class="review-mini-btn reject" type="button" data-review-reject="${record.id}">驳回</button><button class="btn btn-primary" type="button" data-review-approve="${record.id}">通过</button>`
-        : "";
-      $("#reviewDetailModal").classList.add("show");
-      document.body.style.overflow = "hidden";
+      const field = (label,value) => `<div><dt>${label}</dt><dd>${escapeHtml(value || '—')}</dd></div>`;
+      $('#reviewDetailBody').innerHTML = `<header class="rc-detail-heading"><span>${record.publicAssetId ? '公共素材上传审核' : 'AI 生成审核'}</span></header>
+        <div class="rc-detail-grid"><div class="rc-detail-media">${reviewMediaMarkup(record,true)}</div><aside class="rc-detail-info">
+          <span class="review-status ${record.status}">${reviewStateLabel(record)}</span>
+          <dl>${field('提交人',record.submitterName)}${field('审核人',record.reviewerName)}${field('提交时间',record.latestSubmittedAt || record.submittedAt)}${record.status !== 'pending' ? field('审核时间',record.reviewedAt) : ''}${record.publicAssetId ? `${field('存放位置',record.destination)}<div class="rc-detail-tags"><dt>标签</dt><dd>${reviewTagMarkup(record)}</dd></div>` : ''}</dl>
+          ${record.publicAssetId ? `<p class="rc-detail-note">${record.legacyReview ? '历史文件缺少审核记录，本次补审通过后入库。' : record.status === 'approved' ? '审核已通过，可在公共素材库中使用。' : '审核通过后进入公共素材库，供团队使用。'}</p>` : ''}
+          ${record.status === 'rejected' ? `<div class="rc-detail-rejection"><h3>驳回原因</h3><p>${escapeHtml(record.reason || '未填写原因')}</p></div>` : ''}
+        </aside></div>`;
+      const canDecide = currentReviewIdentity().canReview && record.reviewerId === currentReviewIdentity().id && record.status === 'pending';
+      $('#reviewDetailActions').innerHTML = `<div class="rc-detail-nav"><button class="btn" type="button" data-review-preview-previous="${records[index-1]?.id || ''}" ${index > 0 ? '' : 'disabled'}>← 上一个</button><span>${index+1} / ${records.length}</span><button class="btn" type="button" data-review-preview-next="${records[index+1]?.id || ''}" ${index+1 < records.length ? '' : 'disabled'}>下一个 →</button></div><div class="rc-detail-decisions">${canDecide ? `<button class="btn" type="button" data-review-reject="${record.id}">驳回</button><button class="btn btn-primary" type="button" data-review-approve="${record.id}">通过审核</button>` : '<button class="btn" type="button" data-close-review-detail>关闭</button>'}</div>`;
+      $('#reviewDetailModal').classList.add('show'); document.body.style.overflow = 'hidden';
+      $('#reviewDetailModal [data-close-review-detail]').focus();
     }
 
     function renderReviewImagePreviewDetails(record) {
@@ -19436,21 +19444,11 @@
     }
 
     function openReviewImagePreview(recordId) {
-      const record = reviewDemoState.records.find(item => item.id === recordId);
-      if (!record) return;
-      const previewRecords = recordsForReviewTab();
-      const currentIndex = previewRecords.findIndex(item => item.id === recordId);
-      const previousRecord = previewRecords[currentIndex - 1];
-      const nextRecord = previewRecords[currentIndex + 1];
-      activeReviewDetailId = recordId;
-      $("#imagePreviewPrevious").dataset.reviewPreviewPrevious = previousRecord?.id || "";
-      $("#imagePreviewNext").dataset.reviewPreviewNext = nextRecord?.id || "";
-      $("#imagePreviewPrevious").hidden = !previousRecord;
-      $("#imagePreviewNext").hidden = !nextRecord;
-      openImagePreview(record.image, record.title, null, record);
+      closeReviewDetail(); openReviewDetail(recordId);
     }
 
     function closeReviewDetail() {
+      $("#reviewDetailModal").querySelectorAll("video").forEach(video => { video.pause(); video.removeAttribute("src"); video.load(); });
       $("#reviewDetailModal").classList.remove("show");
       if ($("#imagePreviewModal").classList.contains("review-mode")) closeImagePreview();
       activeReviewDetailId = null;
@@ -19485,13 +19483,6 @@
     });
 
     document.addEventListener("click", event => {
-      const employeeStatusTab = event.target.closest("[data-employee-review-status]");
-      if (employeeStatusTab) {
-        reviewSelectedIds.clear();
-        $("#reviewStatusFilter").value = employeeStatusTab.dataset.employeeReviewStatus;
-        renderReviewCenter();
-        return;
-      }
       const submitOne = event.target.closest("[data-submit-generated-review]");
       if (submitOne) {
         const item = getGeneratedResult(submitOne.dataset.roundId, submitOne.dataset.resultId);
@@ -19614,9 +19605,9 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
-  <script src="./asset-notes.js?v=d97ebc99ccc6"></script>
-  <script src="./public-assets.js?v=1779d287c74d"></script>
-  <script src="./asset-file-tools.js?v=9d0fff117b7c"></script>
+  <script src="./asset-tags.js?v=7db27a323c59"></script>
+  <script src="./public-assets.js?v=086c027f9fd8"></script>
+  <script src="./asset-file-tools.js?v=fc4b61f06ee5"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
   <script src="./china-address-data.js?v=e5828afb7de8"></script>

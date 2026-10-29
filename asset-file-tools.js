@@ -14,7 +14,7 @@
   controls.innerHTML = `<button type="button" data-asset-view="grid" title="缩略图视图" aria-label="缩略图视图">${gridIcon}</button><button type="button" data-asset-view="list" title="列表视图" aria-label="列表视图">${listIcon}</button>`;
   toolbar.append(controls);
   const grid = page.querySelector('#assetGrid'), listHeader = document.createElement('div'); listHeader.className = 'asset-list-heading';
-  listHeader.innerHTML = '<span>名称</span><span>类型</span><span>更新时间</span><span>操作</span>'; grid.before(listHeader);
+  listHeader.innerHTML = '<span>名称</span><span>类型</span><span>创建日期</span><span>操作</span>'; grid.before(listHeader);
   function syncView() {
     page.classList.toggle('asset-list-view',view==='list');
     controls.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.assetView===view)));
