@@ -131,6 +131,14 @@
     } catch { return seed(); }
   }
   const state = readState();
+  // Explicit example task; never attach spend to arbitrary newly generated results.
+  if (!state.chats.some(chat => chat.id === 'sample-material-performance')) state.chats.push({
+    id: 'sample-material-performance', title: '商品素材投放示例', date: '演示', draft: '', messages: [
+      {role: 'assistant', paragraphs: ['示例结果：同一素材在工作台和素材库中展示相同的投放表现。以下为演示数据，未接入千川。'], materialResults: [
+        {name: '可爱小猪玩偶主图', kind: 'image'}, {name: '玩偶分享活动短视频', kind: 'video'}
+      ]}
+    ]
+  });
   const filesByChat = new Map();
   const scrollByChat = new Map();
   const audioUrls = new Map();
@@ -279,7 +287,7 @@
   function renderMessage(message, index) {
     if (message.role === 'user') return `<article class="wb-message wb-message-user" aria-label="我的消息"><div class="wb-user-bubble">${escapeHtml(message.text)}</div>${message.files?.length ? `<div class="wb-message-files">${attachmentMarkup(message.files)}</div>` : ''}</article>`;
     const paragraphs = (Array.isArray(message.paragraphs) ? message.paragraphs : []).map(text => `<p>${escapeHtml(text)}</p>`).join('');
-    return `<article class="wb-message wb-message-assistant" aria-label="助手消息">${message.thought ? `<details class="wb-thinking"><summary>思考用时 ${escapeHtml(message.thought)}</summary><div class="wb-thinking-record">示例会话 · 已完成 · 耗时 ${escapeHtml(message.thought)}</div></details>` : ''}${paragraphs}${message.sampleImage ? '<p class="wb-picture-label">1. 校园 · 清新阳光</p><figure class="wb-sample-figure" aria-label="校园人物示例图片"><div class="wb-sample-portrait" role="img" aria-label="示例图：穿浅蓝衬衫的男子在校园树荫下手持书本"></div></figure>' : ''}${message.time ? `<div class="wb-message-meta"><time>${escapeHtml(message.time)}</time><button class="wb-copy" type="button" data-wb-copy="${index}" aria-label="复制回复" title="复制回复">${copyIcon}</button></div>` : ''}</article>`;
+    return `<article class="wb-message wb-message-assistant" aria-label="助手消息">${message.thought ? `<details class="wb-thinking"><summary>思考用时 ${escapeHtml(message.thought)}</summary><div class="wb-thinking-record">示例会话 · 已完成 · 耗时 ${escapeHtml(message.thought)}</div></details>` : ''}${paragraphs}${message.sampleImage ? '<p class="wb-picture-label">1. 校园 · 清新阳光</p><figure class="wb-sample-figure" aria-label="校园人物示例图片"><div class="wb-sample-portrait" role="img" aria-label="示例图：穿浅蓝衬衫的男子在校园树荫下手持书本"></div></figure>' : ''}${window.MaterialPerformance?.workbench(message.materialResults || []) || ''}${message.time ? `<div class="wb-message-meta"><time>${escapeHtml(message.time)}</time><button class="wb-copy" type="button" data-wb-copy="${index}" aria-label="复制回复" title="复制回复">${copyIcon}</button></div>` : ''}</article>`;
   }
   function resizeInput() {
     const input = $('#wbInput');

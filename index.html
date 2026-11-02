@@ -8994,6 +8994,7 @@
   <link rel="stylesheet" href="./asset-file-tools.css?v=8fe9fc0b6853" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=d5526bd3d90d" />
+  <link rel="stylesheet" href="./material-performance.css?v=c364d4cf8b8e" />
 </head>
 <body>
   <div class="app-shell">
@@ -9100,7 +9101,9 @@
       <div class="content">
         <!-- 灵感：按品类浏览用户生成作品 -->
         <section id="page-home" class="page active">
-          <div class="inspiration-page">
+          <div class="perf-home-tabs" role="tablist" aria-label="灵感库内容"><button id="perfDiscoverTab" class="active" type="button" role="tab" aria-selected="true" aria-controls="inspirationDiscover" data-perf-home="discover">热门资产</button><button id="perfAnalysisTab" type="button" role="tab" aria-selected="false" aria-controls="performanceAnalysis" data-perf-home="analysis">榜单</button></div>
+          <section id="performanceAnalysis" role="tabpanel" aria-labelledby="perfAnalysisTab" hidden></section>
+          <div class="inspiration-page" id="inspirationDiscover" role="tabpanel" aria-labelledby="perfDiscoverTab">
             <div class="inspiration-toolbar">
               <button class="inspiration-filter-tab inspiration-dropdown-trigger inspiration-category-trigger" id="inspirationCategoryTrigger" type="button" aria-expanded="false" aria-controls="inspirationCategoryPanel"><span id="inspirationCategoryLabel">全部</span></button>
               <div class="inspiration-media-switch" id="inspirationMediaSwitch" data-kind="image" role="tablist" aria-label="筛选媒体类型">
@@ -15875,6 +15878,7 @@
             ${currentReviewIdentity().canReview && reviewStatus === "approved" && canSubmitReview ? `<small>主管生成，无需审核；也可主动推送复核</small>` : ""}
             ${reviewStatus === "rejected" && (result.reviewReason || latestReview?.reason) ? `<small title="${escapeHtml(result.reviewReason || latestReview.reason)}">${escapeHtml(result.reviewReason || latestReview.reason)}</small>` : ""}
           </div>
+         ${window.MaterialPerformance?.inline(resultAsset, "image") || ""}
          <div class="generated-actions">
             ${canSubmitReview ? `<button class="btn review-submit-btn" data-submit-generated-review data-round-id="${round.id}" data-result-id="${result.id}">${pushLabel}</button>` : ""}
             ${canUseImage ? `<button class="btn" data-download-generated data-round-id="${round.id}" data-result-id="${result.id}">⇩ 下载</button>` : ""}
@@ -16450,6 +16454,7 @@
 
     // 渲染资产库：我的素材与收藏文件夹共享同一套操作能力
     function renderAssets() {
+      window.MaterialPerformance?.syncScope(activeAssetScope);
       if (window.AssetTags?.renderScope()) return;
       if (window.PublicAssets?.renderLibrary()) return;
       const keyword = ($("#assetSearch")?.value || "").trim().toLowerCase();
@@ -16650,6 +16655,7 @@
               <span class="asset-status-pill ${isLocal ? "warn" : ""}">${isLocal ? "本地上传" : "AI生成"}</span>
               <span class="asset-card-date">${displayDate}</span>
             </div>
+            ${window.MaterialPerformance?.inline(item, kind) || ""}
             <div class="asset-card-actions">
               ${window.AssetTags?.action(item, kind) || ""}
               <button class="link-btn" data-rename-asset data-asset-kind="${kind}" data-asset-index="${index}">✎ 重命名</button>
@@ -19617,7 +19623,10 @@
   <script src="./creator-analysis.js?v=4744366dc8fa"></script>
   <script src="./creator-import-history.js?v=c1a272c5b9a0"></script>
   <script src="./platform-preview.js?v=a3bfe3d7987c"></script>
-  <script src="./workbench.js?v=e9aa16b1cb5a"></script>
+  <script src="./performance-core.js?v=71c05aa3ae68"></script>
+  <script src="./performance-demo.js?v=b428bc987d38"></script>
+  <script src="./material-performance.js?v=853a06b76650"></script>
+  <script src="./workbench.js?v=3989a18900c0"></script>
   <script src="./qianchuan-review.js?v=f1838c893f9a"></script>
 </body>
 </html>
