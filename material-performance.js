@@ -5,7 +5,7 @@
   // Both deployments use the same published snapshot; never silently substitute demo rankings.
   let snapshot = null;
   try {
-    const response = await fetch('./data/performance-snapshots.json?v=64ca25bc7362', {cache:'no-store'});
+    const response = await fetch('./data/performance-snapshots.json?v=a60c322d9498', {cache:'no-store'});
     if (!response.ok) throw new Error(`Snapshot HTTP ${response.status}`);
     snapshot = await response.json();
   } catch (error) { console.warn('排行榜快照加载失败', error); }
@@ -40,7 +40,7 @@
   // Fixed synthetic daily snapshots. Duplicate and unknown names are deliberately excluded by the matching contract.
   const reports = demo.items.flatMap((item,i) => Array.from({length:30},(_,day) => ({name:`${item.name}.${item.kind==='image'?'png':'mp4'}`,kind:item.kind,account:'demo-shop',materialId:`demo-material-${i}`,channel:day%3===0?'旗舰店':'官旗店',date:dateOffset(demo.through,-day),spend:Math.round(item.spend*(1+(day%5)*.12))/100,sales:Math.round(item.sales*(1+(day%5)*.08))/100,impressions:Math.round(item.spend*(3+day%4))})));
   reports.push({name:'柠檬饮料场景图.png',kind:'image',account:'demo-shop',materialId:'conflict-a',channel:'官旗店',date:demo.through,spend:500,sales:1800,impressions:10000}, {name:'柠檬饮料场景图.png',kind:'image',account:'demo-shop',materialId:'conflict-b',channel:'官旗店',date:demo.through,spend:600,sales:2200,impressions:12000});
-  const state={range:'7',start:dateOffset(through,-6),end:through,channel:'all',category:'all',search:''};
+  const state={range:'7',start:dateOffset(through,-6),end:through,channel:'all',category:'all',source:'all',created:'all',page:0,search:''};
   const inlineFilter = {start:dateOffset(demo.through,-6),end:demo.through};
   const matchList = () => core.match(catalog(),reports).map(m=>({...m,filename:core.filenameMetadata(m.rows[0].name)}));
   const demoBoardMatches = () => core.match(demo.items.map((item,i)=>({id:'demo-board:'+i,name:item.name,kind:item.kind,item:{},category:item.category})),reports).map(m=>({...m,filename:core.filenameMetadata(m.rows[0].name)}));
@@ -77,7 +77,9 @@
   ];
   panel.innerHTML=`<div class="perf-filters">
     <label><span class="perf-sr-only">商品类目</span><select id="perfCategory" aria-label="商品类目"><option value="all">全部类目</option>${demo.categories.map(c=>`<option value="${esc(c)}">${esc(c.replace('国内-MINISO-','').replace('国内-',''))}</option>`).join('')}</select></label>
-    <label class="perf-date-filter"><span class="perf-sr-only">统计日期</span><select id="perfRange" aria-label="统计日期"><option value="7">近7天</option><option value="1">昨日</option><option value="30">近30天</option></select></label>
+    <label><span class="perf-sr-only">素材来源</span><select id="perfSource" aria-label="素材来源" title="按素材名称是否标注超韧AI区分"><option value="all">全部来源</option><option value="chaoren">超韧 AI</option><option value="other">非超韧 AI</option></select></label>
+    <label><span>创建时间</span><select id="perfCreated" aria-label="创建时间" title="按名称开头月日筛选；不代表首次投放时间"><option value="all">不限</option><option value="1">昨日</option><option value="7">近7天</option><option value="30">近30天</option></select></label>
+    <label class="perf-date-filter"><span>统计时间</span><select id="perfRange" aria-label="统计日期"><option value="7">近7天</option><option value="1">昨日</option><option value="30">近30天</option></select></label>
     <label class="perf-search"><span class="perf-sr-only">搜索素材标题</span><input id="perfSearch" type="search" placeholder="搜索素材标题" aria-label="搜索素材标题"></label>
     </div>
     <div id="perfBody" aria-live="polite"></div>
@@ -86,7 +88,7 @@
   let trigger=null;
   function visibleMatches(kind=null) {
     const source=snapshotMatches(state.range);
-    return source.filter(m=>(!kind||m.asset.kind===kind)&&(state.category==='all'||m.asset.category===state.category)&&m.asset.name.toLowerCase().includes(state.search.toLowerCase())&&m.n.count);
+    return source.filter(m=>(!kind||m.asset.kind===kind)&&(state.category==='all'||m.asset.category===state.category)&&(state.source==='all'||core.materialSource(m.asset.name)===state.source)&&core.createdInRange(m.asset.name,state.created,through)&&m.asset.name.toLowerCase().includes(state.search.toLowerCase())&&m.n.count);
   }
   function metrics(n) {return `<div class="perf-kpis"><div><span>总消耗</span><strong>¥${money(n.spend)}</strong></div><div><span>总成交</span><strong>¥${money(n.sales)}</strong></div><div><span>ROI</span><strong>${roi(n.roi)}</strong></div><div><span>总展现</span><strong>${n.impressions.toLocaleString('zh-CN')}</strong></div></div>`;}
   function ranking(board) {
@@ -98,12 +100,18 @@
     if(!ms.length)return `<div class="perf-board-empty"><span aria-hidden="true">⌕</span><strong>暂无有成交的素材</strong><p>可调整日期、类目或搜索词</p></div>`;
     return `<ol class="perf-ranking-list">${ms.map((m,i)=>`<li class="perf-ranking-item"><div class="perf-entry-main"><span class="perf-place place-${i+1}"><span>${i+1}</span></span><button class="perf-ranking-thumb" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}的投放表现">${preview(m.asset)}${board.kind==='video'&&m.asset.item.previewUrl?'<span class="perf-play" aria-hidden="true">▷</span>':''}</button><div class="perf-ranking-copy"><button class="perf-entry-title" type="button" data-perf-detail="${esc(m.asset.id)}">${esc(m.asset.name)}</button><span class="perf-owner">姓名：${esc(m.filename.person||'—')}</span><small class="perf-created">日期：${esc(m.filename.date||'—')}</small></div></div><div class="perf-entry-bottom"><dl class="perf-entry-metrics"><div><dt>${board.metric==='roi'?'ROI':'总消耗'}</dt><dd class="${board.metric==='roi'?'perf-roi-value':'perf-spend-value'}">${board.metric==='roi'?roi(m.n.roi):'¥'+money(m.n.spend)}</dd></div><div><dt>${board.metric==='roi'?'总消耗':'ROI'}</dt><dd>${board.metric==='roi'?'¥'+money(m.n.spend):roi(m.n.roi)}</dd></div><div><dt>总成交</dt><dd>¥${money(m.n.sales)}</dd></div></dl><button class="perf-detail-button" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}详情">详情 <span aria-hidden="true">↗</span></button></div></li>`).join('')}</ol>`;
   }
+  function createdMaterials() {
+    if (state.created === 'all') return '';
+    const items = visibleMatches().sort((a,b)=>b.n.spend-a.n.spend||a.asset.id.localeCompare(b.asset.id));
+    const size=20, pages=Math.max(1,Math.ceil(items.length/size)); state.page=Math.min(state.page,pages-1);
+    return `<section class="perf-created-materials"><header><div><h2>新建素材明细 <small>${items.length} 条 · 零消耗 ${items.filter(m=>m.n.spend===0).length} 条</small></h2><p>按名称月日筛选，包含零消耗与未成交素材；有报表记录不等于已确认投放。</p></div></header><div class="perf-table-wrap"><table class="perf-table"><thead><tr><th>素材标题</th><th>类型</th><th>创建日期</th><th>总消耗</th><th>总成交</th><th>ROI</th><th></th></tr></thead><tbody>${items.slice(state.page*size,(state.page+1)*size).map(m=>`<tr><td class="perf-material-name">${esc(m.asset.name)}</td><td>${m.asset.kind==='image'?'图片':'视频'}</td><td>${esc(m.filename.date)}</td><td>¥${money(m.n.spend)}</td><td>¥${money(m.n.sales)}</td><td>${roi(m.n.roi)}</td><td><button class="perf-detail-button" data-perf-detail="${esc(m.asset.id)}">详情 ↗</button></td></tr>`).join('')||'<tr><td colspan="7">暂无符合条件的素材</td></tr>'}</tbody></table></div><footer><button type="button" data-perf-page="-1" ${state.page===0?'disabled':''}>上一页</button><span>${state.page+1} / ${pages}</span><button type="button" data-perf-page="1" ${state.page===pages-1?'disabled':''}>下一页</button></footer></section>`;
+  }
   function render() {
     if (!snapshot) { q('#perfBody').innerHTML='<div class="perf-board-empty"><strong>榜单数据加载失败</strong><p>请刷新页面重试</p></div>'; return; }
     q('#perfBody').innerHTML=`<div class="perf-board-heading"><h1>素材排行榜</h1></div><div class="perf-boards">${boards.map(board=>{
       const ms=ranking(board);
       return `<section class="perf-board" aria-label="${board.title}"><header><div class="perf-board-title-copy">${rankTitle(board.title)}<small>${board.metric==='roi'?'按 ROI 从高到低':'按总消耗从高到低'} · TOP 10</small></div></header>${rankingRows(ms,board)}<footer><span>已展示 ${ms.length} 条${ms.length<10?' · 符合条件不足10条':''}</span></footer></section>`;
-    }).join('')}</div>`;
+    }).join('')}</div>${createdMaterials()}`;
   }
   function showDetail(id,context='analysis') {
     const m=(id.startsWith('snapshot:')?snapshotMatches(state.range):id.startsWith('demo-board:')?demoBoardMatches():matchList()).find(x=>x.asset.id===id);if(!m)return;
@@ -114,19 +122,22 @@
   }
   function closeDialog(d) {d.querySelectorAll('video').forEach(v=>v.pause());d.close();trigger?.focus();}
   document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-perf-home],[data-perf-detail],[data-perf-close]');
+    const b=e.target.closest('[data-perf-home],[data-perf-detail],[data-perf-close],[data-perf-page]');
     if(!b)return;e.stopPropagation();
-    if(b.dataset.perfHome){const analysis=b.dataset.perfHome==='analysis';q('#inspirationDiscover').hidden=analysis;panel.hidden=!analysis;document.querySelectorAll('[data-perf-home]').forEach(t=>{const on=t===b;t.classList.toggle('active',on);t.setAttribute('aria-selected',on);});if(analysis)render();}
+    if(b.hasAttribute('data-perf-page')){state.page+=Number(b.dataset.perfPage);render();}
+    else if(b.dataset.perfHome){const analysis=b.dataset.perfHome==='analysis';q('#inspirationDiscover').hidden=analysis;panel.hidden=!analysis;document.querySelectorAll('[data-perf-home]').forEach(t=>{const on=t===b;t.classList.toggle('active',on);t.setAttribute('aria-selected',on);});if(analysis)render();}
     else if(b.hasAttribute('data-perf-close'))closeDialog(b.closest('dialog'));
     else {trigger=b;showDetail(b.dataset.perfDetail,b.dataset.perfContext||'analysis');}
   });
   panel.addEventListener('change',e=>{
-    const id=e.target.id;
+    const id=e.target.id;state.page=0;
+    if(id==='perfSource')state.source=e.target.value;
+    if(id==='perfCreated')state.created=e.target.value;
     if(id==='perfRange'){state.range=e.target.value;state.end=through;state.start=dateOffset(through,1-Number(e.target.value));}
     if(id==='perfCategory')state.category=e.target.value;
     render();
   });
-  q('#perfSearch').addEventListener('input',e=>{state.search=e.target.value.trim();render();});
+  q('#perfSearch').addEventListener('input',e=>{state.search=e.target.value.trim();state.page=0;render();});
   [detail].forEach(d=>{d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog(d);}});d.addEventListener('close',()=>{d.querySelectorAll('video').forEach(v=>v.pause());});});
   render();renderAssets();
   if(typeof renderAllGeneratedReviewCards==='function')renderAllGeneratedReviewCards();

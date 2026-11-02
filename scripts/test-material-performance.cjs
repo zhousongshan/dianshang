@@ -56,3 +56,21 @@ test('sales board ranks converted revenue and has no spend threshold', () => {
   const items=[{asset:{id:'a'},n:{spend:0,sales:20}},{asset:{id:'b'},n:{spend:100,sales:10}},{asset:{id:'c'},n:{spend:500,sales:0}}];
   assert.deepEqual(rankConverted(items,'sales').map(m=>m.asset.id),['a','b']);
 });
+
+test('creation filter uses filename MMDD, handles year boundaries and rejects invalid dates', () => {
+  const {createdInRange}=require('../performance-core.js');
+  assert.equal(createdInRange('1101-张三-商品.png','1','2026-11-01'),true);
+  assert.equal(createdInRange('1026-张三-商品.png','7','2026-11-01'),true);
+  assert.equal(createdInRange('1025-张三-商品.png','7','2026-11-01'),false);
+  assert.equal(createdInRange('1231-张三-商品.png','7','2027-01-02'),true);
+  assert.equal(createdInRange('0230-张三-商品.png','30','2026-03-01'),false);
+  assert.equal(createdInRange('没有日期.png','7','2026-11-01'),false);
+  assert.equal(createdInRange('没有日期.png','all','2026-11-01'),true);
+});
+test('source filter distinguishes explicit Chaoren naming from generic AI', () => {
+  const {materialSource}=require('../performance-core.js');
+  assert.equal(materialSource('1022-LYJ-YOYO（AI复刻）-超韧AI-盲盒.mp4'),'chaoren');
+  assert.equal(materialSource('1022-LYJ-商品-超韧 ai-盲盒.png'),'chaoren');
+  assert.equal(materialSource('1022-LYJ-商品-AI-盲盒.png'),'other');
+  assert.equal(materialSource('1022-LYJ-超韧AI风格参考-原创-盲盒.png'),'other');
+});

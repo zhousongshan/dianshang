@@ -13,6 +13,21 @@
     if (!maxDay || day < 1 || day > maxDay) return {person:'',date:''};
     return {person:parts[1],date:`${month}月${day}日`};
   }
+  // User-defined creation date: MMDD in filename, not an API first-delivery timestamp.
+  function createdInRange(name, range, through) {
+    if (range === 'all') return true;
+    if (!filenameMetadata(name).date) return false;
+    const mmdd = String(name).trim().split('-')[0];
+    const end = new Date(`${through}T00:00:00Z`);
+    for (let i = 0; i < Number(range); i++) {
+      const d = new Date(end); d.setUTCDate(d.getUTCDate() - i);
+      if (d.toISOString().slice(5,10).replace('-', '') === mmdd) return true;
+    }
+    return false;
+  }
+  function materialSource(name) {
+    return normalize(name).split('-').some(part => /^超[韧韌]\s*ai$/i.test(part.trim())) ? 'chaoren' : 'other';
+  }
   function match(catalog, reports) {
     const names = new Map(), sources = new Map(), idNames = new Map();
     catalog.filter(a => !a.deleted && a.name && a.id).forEach(a => { const k = key(a.kind, a.name); const group = names.get(k) || new Map(); group.set(a.id, a); names.set(k, group); });
@@ -41,7 +56,7 @@
       .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
       .slice(0,10);
   }
-  const api = {normalize, match, aggregate, rankConverted, filenameMetadata};
+  const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PerformanceCore = api;
 })(typeof window === 'undefined' ? globalThis : window);
