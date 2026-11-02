@@ -74,3 +74,12 @@ test('source filter distinguishes explicit Chaoren naming from generic AI', () =
   assert.equal(materialSource('1022-LYJ-商品-AI-盲盒.png'),'other');
   assert.equal(materialSource('1022-LYJ-超韧AI风格参考-原创-盲盒.png'),'other');
 });
+
+test('new-material boards include zero-sale and zero-spend candidates, never invent ROI, and cap at ten', () => {
+  const {rankNewMaterials}=require('../performance-core.js');
+  const a={asset:{id:'zero'},n:{spend:0,sales:0,roi:null}};
+  const b={asset:{id:'unconverted'},n:{spend:5,sales:0,roi:0}};
+  assert.deepEqual(rankNewMaterials([a,b],'spend').map(m=>m.asset.id),['unconverted','zero']);
+  assert.deepEqual(rankNewMaterials([a,b],'roi').map(m=>m.asset.id),['unconverted']);
+  assert.equal(rankNewMaterials(Array.from({length:15},(_,i)=>({...b,asset:{id:String(i)}}))).length,10);
+});

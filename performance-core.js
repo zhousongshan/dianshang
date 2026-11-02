@@ -14,16 +14,19 @@
     return {person:parts[1],date:`${month}月${day}日`};
   }
   // User-defined creation date: MMDD in filename, not an API first-delivery timestamp.
+  const creationWindows = new Map();
   function createdInRange(name, range, through) {
     if (range === 'all') return true;
-    if (!filenameMetadata(name).date) return false;
-    const mmdd = String(name).trim().split('-')[0];
-    const end = new Date(`${through}T00:00:00Z`);
-    for (let i = 0; i < Number(range); i++) {
-      const d = new Date(end); d.setUTCDate(d.getUTCDate() - i);
-      if (d.toISOString().slice(5,10).replace('-', '') === mmdd) return true;
+    const key = `${through}:${range}`;
+    if (!creationWindows.has(key)) {
+      const days = new Set(), end = new Date(`${through}T00:00:00Z`);
+      for (let i = 0; i < Number(range); i++) {
+        const d = new Date(end); d.setUTCDate(d.getUTCDate() - i);
+        days.add(d.toISOString().slice(5,10).replace('-', ''));
+      }
+      creationWindows.set(key, days);
     }
-    return false;
+    return filenameMetadata(name).date !== '' && creationWindows.get(key).has(String(name).trim().split('-')[0]);
   }
   function materialSource(name) {
     return normalize(name).split('-').some(part => /^超[韧韌]\s*ai$/i.test(part.trim())) ? 'chaoren' : 'other';
@@ -56,7 +59,12 @@
       .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
       .slice(0,10);
   }
-  const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource};
+  function rankNewMaterials(matches, metric = 'spend') {
+    return matches.filter(m => Number.isFinite(m.n[metric]) && m.n.spend >= 0 && (metric !== 'roi' || m.n.spend > 0))
+      .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
+      .slice(0,10);
+  }
+  const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource, rankNewMaterials};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PerformanceCore = api;
 })(typeof window === 'undefined' ? globalThis : window);
