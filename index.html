@@ -3625,14 +3625,20 @@
       box-shadow: 0 16px 42px rgba(31, 41, 55, 0.1);
     }
 
-    #sessionProductName {
-      display:block; width:240px; max-width:100%; height:36px; margin:0 0 8px;
-      padding:0 12px; border:1px solid #e1e5ee; border-radius:8px;
-      background:#fff; color:#273249; font:inherit; font-size:13px; outline:none;
-      transition:border-color .15s, box-shadow .15s;
+    .composer-inline-field {
+      display:inline-flex; flex:0 0 auto; align-items:center; align-self:start;
+      gap:2px; height:42px; color:#98a2b3; font-size:14px; line-height:1;
     }
-    #sessionProductName::placeholder { color:#98a2b3; }
-    #sessionProductName:focus { border-color:#a99bf5; box-shadow:0 0 0 2px #7560eb0d; }
+    .composer-inline-field:focus-within { color:#7560eb; }
+    .composer-inline-field input {
+      box-sizing:border-box; min-width:0; width:7em; height:34px; padding:0 2px;
+      border:0; border-radius:0; outline:0; background:transparent; box-shadow:none;
+      color:#344054; font:inherit; line-height:1.5;
+    }
+    .composer-inline-field input::placeholder { color:#98a2b3; opacity:1; }
+    .composer-inline-field input:focus { box-shadow:0 1px 0 #c8bffc; }
+    .composer-inline-field #videoDouyinLink { width:10em; }
+    #sessionPrompt:placeholder-shown, #videoMotionPrompt:placeholder-shown { white-space:nowrap; overflow-x:hidden; }
 
     .session-composer-main {
       display: grid;
@@ -5890,7 +5896,7 @@
     .video-composer-reference-text b { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
     .video-composer-reference-text small { display: block; margin-top: 2px; color: #8a94a6; font-size: 10px; }
     .video-composer-reference .selected-image-remove { top: 3px; right: 3px; }
-    .video-composer-input-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: start; gap: 9px; }
+    .video-composer-input-row { display: grid; grid-template-columns: 34px auto minmax(0, 1fr); align-items: start; gap: 9px; }
     .video-add-image-btn { display: grid; width: 34px; height: 34px; margin-top: 3px; place-items: center; border: 1px solid #dce2eb; border-radius: 8px; color: #475467; background: #f8fafc; font-size: 20px; line-height: 1; }
     .video-add-image-btn:hover { color: #047857; border-color: #9bdcc5; background: #effbf6; }
     .video-chat-textarea-wrap { position: relative; min-width: 0; }
@@ -9563,7 +9569,6 @@
                   </div>
                 </div>
                 <div class="session-composer-card">
-                  <input id="sessionProductName" type="text" maxlength="40" placeholder="请输入产品名称" aria-label="产品名称" autocomplete="off" />
                   <div class="session-composer-main">
                     <div class="chat-composer-shell session-chat-composer" id="sessionImagePicker">
                       <input type="file" id="sessionImageInput" accept="image/*" multiple hidden />
@@ -9573,6 +9578,7 @@
                           <span class="upload-plus" aria-hidden="true">+</span>
                           <span class="chat-composer-add-label" id="sessionImagePlaceholder">添加图片</span>
                         </button>
+                        <span class="composer-inline-field"><span aria-hidden="true">[</span><input id="sessionProductName" name="productName" type="text" spellcheck="false" maxlength="40" placeholder="请输入产品名称" aria-label="产品名称" autocomplete="off" /><span aria-hidden="true">]</span></span>
                         <div class="session-text-wrap">
                           <textarea id="sessionPrompt" rows="1" maxlength="1000" placeholder="不会写指令，像找设计师一样描述需求即可…"></textarea>
                           <span><span id="sessionPromptCount">0</span>/1000</span>
@@ -9767,6 +9773,7 @@
                     <div class="video-composer-images" id="videoComposerImages"></div>
                     <div class="video-composer-input-row">
                       <button class="video-add-image-btn" type="button" data-open-image-source="videoStart" aria-label="上传图片" title="上传图片">＋</button>
+                      <span class="composer-inline-field"><span aria-hidden="true">[</span><input id="videoDouyinLink" type="text" inputmode="url" spellcheck="false" placeholder="请输入抖音视频链接" aria-label="抖音视频链接" autocomplete="off" /><span aria-hidden="true">]</span></span>
                       <div class="video-chat-textarea-wrap">
                         <textarea id="videoMotionPrompt" rows="1" maxlength="500" placeholder="描述你的创意，输入 @ 引用图片、视频、音频或公共素材，支持按69码搜索"></textarea>
                         <span><span id="videoMotionCount">0</span>/500</span>
@@ -11553,6 +11560,7 @@
         videoThreadHtml: snapshot.innerHTML,
         videoThreadEmpty: thread.classList.contains("is-empty"),
         videoDraft: prompt.value,
+        videoDouyinLink: $("#videoDouyinLink").value,
         videoPrimaryFlow: videoPrimaryFlow ? JSON.parse(JSON.stringify(videoPrimaryFlow)) : null,
         videoCreativeChoiceState: videoCreativeChoiceState ? JSON.parse(JSON.stringify(videoCreativeChoiceState)) : null
       });
@@ -11656,6 +11664,7 @@
           saveNavigationState({ videoThreadHtml: thread.innerHTML, videoThreadEmpty: false });
         }
       }
+      $("#videoDouyinLink").value = state.videoDouyinLink || "";
       if (typeof state.videoDraft === "string") {
         prompt.value = state.videoDraft;
         $("#videoMotionCount").textContent = state.videoDraft.length;
@@ -13739,6 +13748,7 @@
       videoRoundSequence = 0;
       videoPrimaryFlow = null;
       videoCreativeChoiceState = null;
+      $("#videoDouyinLink").value = "";
       $("#videoMotionPrompt").value = "";
       $("#videoMotionCount").textContent = "0";
       $("#videoRatioSelect").value = "16:9";
@@ -15077,6 +15087,7 @@
 
     function videoRoundReferenceMarkup(reference) {
       if (!reference) return "";
+      if (reference.source === "douyin-link") return `<a class="video-user-reference" href="${escapeHtml(reference.url)}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span><b>抖音视频链接</b></a>`;
       return `<span class="video-user-reference"><span aria-hidden="true">▶</span><b>${escapeHtml(reference.name)}</b><span>参考视频</span></span>`;
     }
 
@@ -15139,10 +15150,30 @@
       });
     }
 
+    function normalizeDouyinLink(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const match = raw.match(/https?:\/\/[^\s<>"，。！？]+/i);
+      if (!match) return null;
+      try {
+        const url = new URL(match[0]);
+        return (url.hostname === "douyin.com" || url.hostname.endsWith(".douyin.com")) ? url.href : null;
+      } catch { return null; }
+    }
+
     function startVideoGeneration() {
+      const linkInput = $("#videoDouyinLink");
+      const douyinUrl = normalizeDouyinLink(linkInput.value);
+      if (douyinUrl === null) {
+        linkInput.setCustomValidity("请粘贴有效的抖音视频链接，也可以直接粘贴分享文案。");
+        linkInput.reportValidity();
+        linkInput.focus();
+        return;
+      }
+      linkInput.value = douyinUrl;
       const prompt = $("#videoMotionPrompt").value.trim();
       const keyframeTarget = pendingVideoKeyframeEditTarget ? { ...pendingVideoKeyframeEditTarget } : null;
-      if (!prompt && !videoStartImages.length && !videoReferenceImages.length && !videoReferenceVideos.length && !videoReferenceAudios.length && !keyframeTarget) {
+      if (!prompt && !douyinUrl && !videoStartImages.length && !videoReferenceImages.length && !videoReferenceVideos.length && !videoReferenceAudios.length && !keyframeTarget) {
         showToast("请先描述需求，或通过 @ 引用图片、视频、音频或公共素材。");
         return;
       }
@@ -15157,7 +15188,7 @@
         thread.innerHTML = "";
       }
       const image = videoStartImages[0] ? { ...videoStartImages[0] } : null;
-      const reference = videoReferenceVideos[0] ? { ...videoReferenceVideos[0] } : null;
+      const reference = douyinUrl ? {name:"抖音视频链接", url:douyinUrl, source:"douyin-link"} : (videoReferenceVideos[0] ? { ...videoReferenceVideos[0] } : null);
       const intent = detectVideoConversationIntent(prompt);
       const round = {
         id: ++videoRoundSequence,
@@ -18471,6 +18502,21 @@
     });
     // 发送按钮由上面的页面级事件委托统一处理，避免页面状态切换后旧节点监听失效。
     $("#videoGenerateBtn").dataset.bound = "delegated";
+    $("#videoDouyinLink").addEventListener("input", event => {
+      event.target.setCustomValidity("");
+      saveVideoConversationState();
+    });
+    $("#videoDouyinLink").addEventListener("blur", event => {
+      const url = normalizeDouyinLink(event.target.value);
+      if (url !== null) event.target.value = url;
+      saveVideoConversationState();
+    });
+    $("#videoDouyinLink").addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault();
+        $("#videoMotionPrompt").focus();
+      }
+    });
     $("#videoMotionPrompt").addEventListener("input", event => {
       $("#videoMotionCount").textContent = event.target.value.length;
       resizeComposerTextarea(event.target);
