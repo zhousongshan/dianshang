@@ -92,7 +92,7 @@
   }
   function metrics(n) {return `<div class="perf-kpis"><div><span>总消耗</span><strong>¥${money(n.spend)}</strong></div><div><span>总成交</span><strong>¥${money(n.sales)}</strong></div><div><span>ROI</span><strong>${roi(n.roi)}</strong></div><div><span>总展现</span><strong>${n.impressions.toLocaleString('zh-CN')}</strong></div></div>`;}
   function ranking(board) {
-    return state.mode==='new' ? core.rankNewMaterials(visibleMatches(board.kind),board.metric) : core.rankConverted(visibleMatches(board.kind),board.metric);
+    return state.mode==='new' ? core.rankNewMaterials(visibleMatches(board.kind),board.metric,state.range) : core.rankConverted(visibleMatches(board.kind),board.metric,state.range);
   }
   const rankLeaf = side => `<svg class="perf-rank-leaf ${side}" viewBox="0 0 30 48" aria-hidden="true" focusable="false"><path d="M23 41C12 33 7 20 7 8" fill="none" stroke="#ffc8bd" stroke-width="1.1"/><path d="M8 13C2 10 3 3 6 1C11 4 12 9 8 13Z" fill="#ffd6cc"/><path d="M11 23C3 21 0 15 1 11C8 12 12 17 11 23Z" fill="#ffb5a5"/><path d="M16 33C6 33 2 28 2 24C10 23 15 27 16 33Z" fill="#ff927c"/><path d="M28 43C15 46 8 42 7 38C15 35 23 38 28 43Z" fill="#ff7058"/></svg>`;
   const rankTitle = title => `<span class="perf-rank-title">${rankLeaf('left')}<h2>${title}</h2>${rankLeaf('right')}</span>`;
@@ -106,7 +106,7 @@
     return `<button class="perf-download-icon" type="button" data-perf-download="${esc(asset.id)}" aria-label="下载${esc(asset.name)}" title="${available?'下载原文件':'暂无关联原文件'}" ${available?'':'disabled'}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6v9h4l-7 8-7-8h4V3Z"/></svg></button>`;
   }
   function rankingRows(ms,board) {
-    if(!ms.length)return `<div class="perf-board-empty"><span aria-hidden="true">⌕</span><strong>${state.mode==='new'?'暂无符合条件的素材':'暂无有成交的素材'}</strong><p>可调整日期、类目或搜索词</p></div>`;
+    if(!ms.length)return `<div class="perf-board-empty"><span aria-hidden="true">⌕</span><strong>${state.mode==='new'||board.metric==='roi'?'暂无符合条件的素材':'暂无有成交的素材'}</strong><p>可调整日期、类目或搜索词</p></div>`;
     return `<ol class="perf-ranking-list">${ms.map((m,i)=>`<li class="perf-ranking-item"><div class="perf-entry-main"><span class="perf-place place-${i+1}"><span>${i+1}</span></span><div class="perf-ranking-media"><button class="perf-ranking-thumb" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}的投放表现">${preview(m.asset)}${board.kind==='video'&&m.asset.item.previewUrl?'<span class="perf-play" aria-hidden="true">▷</span>':''}</button>${downloadButton(m.asset)}</div><div class="perf-ranking-copy"><button class="perf-entry-title" type="button" data-perf-detail="${esc(m.asset.id)}">${esc(m.asset.name)}</button><span class="perf-owner">姓名：${esc(m.filename.person||'—')}</span><small class="perf-created">日期：${esc(m.filename.date||'—')}</small></div></div><div class="perf-entry-bottom"><dl class="perf-entry-metrics"><div><dt>${board.metric==='roi'?'ROI':'总消耗'}</dt><dd class="${board.metric==='roi'?'perf-roi-value':'perf-spend-value'}">${board.metric==='roi'?roi(m.n.roi):'¥'+money(m.n.spend)}</dd></div><div><dt>${board.metric==='roi'?'总消耗':'ROI'}</dt><dd>${board.metric==='roi'?'¥'+money(m.n.spend):roi(m.n.roi)}</dd></div><div><dt>总成交</dt><dd>¥${money(m.n.sales)}</dd></div></dl><button class="perf-detail-button" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}详情">详情 <span aria-hidden="true">↗</span></button></div></li>`).join('')}</ol>`;
   }
   function updateScope() {
@@ -121,7 +121,7 @@
     if (!snapshot) { q('#perfBody').innerHTML='<div class="perf-board-empty"><strong>榜单数据加载失败</strong><p>请刷新页面重试</p></div>'; return; }
     q('#perfBody').innerHTML=`<div class="perf-board-heading"><h1>${state.mode==='new'?'新建素材排行榜':'素材总榜单'}</h1><span class="perf-scope-caption">${state.mode==='new'?'按名称创建日期筛选 · 同期投放表现':'不限创建日期 · '+({'7':'近7天','15':'近15天','30':'近30天'}[state.range])+'投放表现'}</span></div><div class="perf-boards">${boards.map(board=>{
       const ms=ranking(board);
-      return `<section class="perf-board" aria-label="${board.title}"><header><div class="perf-board-title-copy">${rankTitle(board.title)}<small>${board.metric==='roi'?'按 ROI 从高到低':'按总消耗从高到低'} · TOP 20</small></div></header>${rankingRows(ms,board)}<footer><span>已展示 ${ms.length} 条${ms.length<20?' · 符合条件不足20条':''}</span></footer></section>`;
+      return `<section class="perf-board" aria-label="${board.title}"><header><div class="perf-board-title-copy">${rankTitle(board.title)}<small>${board.metric==='roi'?'总消耗 ≥ ¥'+core.roiSpendThreshold(state.range)+' · 按 ROI 从高到低':'按总消耗从高到低'} · TOP 20</small></div></header>${rankingRows(ms,board)}<footer><span>已展示 ${ms.length} 条${ms.length<20?' · 符合条件不足20条':''}</span></footer></section>`;
     }).join('')}</div>`;
   }
   function showDetail(id,context='analysis') {

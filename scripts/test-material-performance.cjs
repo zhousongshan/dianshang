@@ -103,3 +103,24 @@ test('plush filter merges only the two requested categories; fifteen days is inc
   assert.equal(createdInRange('1018-小王-商品.png','15','2026-11-01'),true);
   assert.equal(createdInRange('1017-小王-商品.png','15','2026-11-01'),false);
 });
+
+
+test('ROI spend thresholds use period totals inclusively in both board modes, before TOP 20', () => {
+  const {rankConverted,rankNewMaterials}=require('../performance-core.js');
+  const entry=(id,spend,sales)=>({asset:{id},n:aggregate([{spend,sales}])});
+  for (const rank of [rankConverted,rankNewMaterials]) {
+    for (const [range,min] of [['7',50],['15',50],['30',200]]) {
+      const low=entry('below',min-0.01,100000);
+      const exact={asset:{id:'exact'},n:aggregate([{spend:min-20,sales:100},{spend:20,sales:100}])};
+      const higher=entry('higher',min+10,100);
+      assert.deepEqual(rank([low,exact,higher],'roi',range).map(m=>m.asset.id),['exact','higher']);
+      assert.deepEqual(rank([low,exact,higher],'spend',range).map(m=>m.asset.id),['higher','exact','below']);
+      const eligible=Array.from({length:25},(_,i)=>entry(String(i),min,500+i));
+      const result=rank([low,...eligible],'roi',range);
+      assert.equal(result.length,20);
+      assert.equal(result[0].asset.id,'24');
+      assert.equal(result.at(-1).asset.id,'5');
+      assert.ok(result.every(m=>m.n.spend>=min));
+    }
+  }
+});
