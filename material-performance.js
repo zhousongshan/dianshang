@@ -96,9 +96,18 @@
   }
   const rankLeaf = side => `<svg class="perf-rank-leaf ${side}" viewBox="0 0 30 48" aria-hidden="true" focusable="false"><path d="M23 41C12 33 7 20 7 8" fill="none" stroke="#ffc8bd" stroke-width="1.1"/><path d="M8 13C2 10 3 3 6 1C11 4 12 9 8 13Z" fill="#ffd6cc"/><path d="M11 23C3 21 0 15 1 11C8 12 12 17 11 23Z" fill="#ffb5a5"/><path d="M16 33C6 33 2 28 2 24C10 23 15 27 16 33Z" fill="#ff927c"/><path d="M28 43C15 46 8 42 7 38C15 35 23 38 28 43Z" fill="#ff7058"/></svg>`;
   const rankTitle = title => `<span class="perf-rank-title">${rankLeaf('left')}<h2>${title}</h2>${rankLeaf('right')}</span>`;
+  function originalDownloadUrl(asset) {
+    const url=asset.item.downloadUrl||asset.item.originalUrl||'';
+    if(!url)return '';
+    try {return ['http:','https:','blob:','file:'].includes(new URL(url,document.baseURI).protocol)?url:'';} catch {return '';}
+  }
+  function downloadButton(asset) {
+    const available=Boolean(originalDownloadUrl(asset));
+    return `<button class="perf-download-text" type="button" data-perf-download="${esc(asset.id)}" aria-label="下载${esc(asset.name)}" title="${available?'下载原文件':'暂无关联原文件'}" ${available?'':'disabled'}>下载</button>`;
+  }
   function rankingRows(ms,board) {
     if(!ms.length)return `<div class="perf-board-empty"><span aria-hidden="true">⌕</span><strong>${state.mode==='new'?'暂无符合条件的素材':'暂无有成交的素材'}</strong><p>可调整日期、类目或搜索词</p></div>`;
-    return `<ol class="perf-ranking-list">${ms.map((m,i)=>`<li class="perf-ranking-item"><div class="perf-entry-main"><span class="perf-place place-${i+1}"><span>${i+1}</span></span><button class="perf-ranking-thumb" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}的投放表现">${preview(m.asset)}${board.kind==='video'&&m.asset.item.previewUrl?'<span class="perf-play" aria-hidden="true">▷</span>':''}</button><div class="perf-ranking-copy"><button class="perf-entry-title" type="button" data-perf-detail="${esc(m.asset.id)}">${esc(m.asset.name)}</button><span class="perf-owner">姓名：${esc(m.filename.person||'—')}</span><small class="perf-created">日期：${esc(m.filename.date||'—')}</small></div></div><div class="perf-entry-bottom"><dl class="perf-entry-metrics"><div><dt>${board.metric==='roi'?'ROI':'总消耗'}</dt><dd class="${board.metric==='roi'?'perf-roi-value':'perf-spend-value'}">${board.metric==='roi'?roi(m.n.roi):'¥'+money(m.n.spend)}</dd></div><div><dt>${board.metric==='roi'?'总消耗':'ROI'}</dt><dd>${board.metric==='roi'?'¥'+money(m.n.spend):roi(m.n.roi)}</dd></div><div><dt>总成交</dt><dd>¥${money(m.n.sales)}</dd></div></dl><button class="perf-detail-button" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}详情">详情 <span aria-hidden="true">↗</span></button></div></li>`).join('')}</ol>`;
+    return `<ol class="perf-ranking-list">${ms.map((m,i)=>`<li class="perf-ranking-item"><div class="perf-entry-main"><span class="perf-place place-${i+1}"><span>${i+1}</span></span><div class="perf-ranking-media"><button class="perf-ranking-thumb" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}的投放表现">${preview(m.asset)}${board.kind==='video'&&m.asset.item.previewUrl?'<span class="perf-play" aria-hidden="true">▷</span>':''}</button>${downloadButton(m.asset)}</div><div class="perf-ranking-copy"><button class="perf-entry-title" type="button" data-perf-detail="${esc(m.asset.id)}">${esc(m.asset.name)}</button><span class="perf-owner">姓名：${esc(m.filename.person||'—')}</span><small class="perf-created">日期：${esc(m.filename.date||'—')}</small></div></div><div class="perf-entry-bottom"><dl class="perf-entry-metrics"><div><dt>${board.metric==='roi'?'ROI':'总消耗'}</dt><dd class="${board.metric==='roi'?'perf-roi-value':'perf-spend-value'}">${board.metric==='roi'?roi(m.n.roi):'¥'+money(m.n.spend)}</dd></div><div><dt>${board.metric==='roi'?'总消耗':'ROI'}</dt><dd>${board.metric==='roi'?'¥'+money(m.n.spend):roi(m.n.roi)}</dd></div><div><dt>总成交</dt><dd>¥${money(m.n.sales)}</dd></div></dl><button class="perf-detail-button" type="button" data-perf-detail="${esc(m.asset.id)}" aria-label="查看${esc(m.asset.name)}详情">详情 <span aria-hidden="true">↗</span></button></div></li>`).join('')}</ol>`;
   }
   function updateScope() {
     state.created=state.mode==='new'?state.range:'all';
@@ -135,9 +144,10 @@
   });
   function closeDialog(d) {d.querySelectorAll('video').forEach(v=>v.pause());d.close();trigger?.focus();}
   document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-perf-home],[data-perf-detail],[data-perf-close],[data-perf-mode],[data-perf-category-toggle],[data-perf-category]');
+    const b=e.target.closest('[data-perf-download],[data-perf-home],[data-perf-detail],[data-perf-close],[data-perf-mode],[data-perf-category-toggle],[data-perf-category]');
     if(!b)return;e.stopPropagation();
-    if(b.hasAttribute('data-perf-category-toggle')){setCategoryPanel(q('#perfCategoryPanel').hidden);}
+    if(b.hasAttribute('data-perf-download')){const m=visibleMatches().find(x=>x.asset.id===b.dataset.perfDownload);const url=m&&originalDownloadUrl(m.asset);if(url)downloadResource(url,m.asset.name);}
+    else if(b.hasAttribute('data-perf-category-toggle')){setCategoryPanel(q('#perfCategoryPanel').hidden);}
     else if(b.hasAttribute('data-perf-category')){state.category=b.dataset.perfCategory;q('#perfCategoryLabel').textContent=state.category==='all'?'全部':state.category;panel.querySelectorAll('[data-perf-category]').forEach(el=>{const selected=el.dataset.perfCategory===state.category;el.classList.toggle('active',selected);el.setAttribute('aria-pressed',String(selected));});setCategoryPanel(false);q('#perfCategoryTrigger').focus();render();}
     else if(b.hasAttribute('data-perf-mode')){state.mode=b.dataset.perfMode;updateScope();render();}
     else if(b.dataset.perfHome){const analysis=b.dataset.perfHome==='analysis';q('#inspirationDiscover').hidden=analysis;panel.hidden=!analysis;document.querySelectorAll('[data-perf-home]').forEach(t=>{const on=t===b;t.classList.toggle('active',on);t.setAttribute('aria-selected',on);});if(analysis)render();}
