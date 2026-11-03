@@ -74,12 +74,12 @@
     <button id="perfCategoryTrigger" class="inspiration-filter-tab inspiration-dropdown-trigger inspiration-category-trigger" type="button" data-perf-category-toggle aria-label="选择榜单类目" aria-expanded="false" aria-controls="perfCategoryPanel"><span id="perfCategoryLabel">全部</span></button>
     <label><span>来源</span><select id="perfSource" aria-label="素材来源" title="按素材名称是否标注超韧AI区分"><option value="all">全部</option><option value="chaoren">超韧 AI</option><option value="other">非超韧 AI</option></select></label>
     <div class="perf-segment perf-mode-switch" role="group" aria-label="榜单范围" data-active="0"><span class="perf-segment-thumb" aria-hidden="true"></span><button type="button" data-perf-mode="all" aria-pressed="true">总榜单</button><button type="button" data-perf-mode="new" aria-pressed="false">新建素材榜</button></div>
-    <label class="perf-date-filter"><span class="perf-sr-only">时间范围</span><select id="perfRange" aria-label="时间范围"><option value="1">昨日</option><option value="7">近7天</option><option value="30" selected>近30天</option></select></label>
+    <label class="perf-date-filter"><span class="perf-sr-only">时间范围</span><select id="perfRange" aria-label="时间范围"><option value="7">近7天</option><option value="15">近15天</option><option value="30" selected>近30天</option></select></label>
     <label class="perf-search"><span class="perf-sr-only">搜索素材标题</span><input id="perfSearch" type="search" placeholder="搜索素材标题" aria-label="搜索素材标题"></label>
     </div>
-    <div id="perfCategoryPanel" class="inspiration-category-panel" hidden><div class="inspiration-category-list" role="group" aria-label="榜单类目选项">${['all',...demo.categories].map(c=>{
+    <div id="perfCategoryPanel" class="inspiration-category-panel" hidden><div class="inspiration-category-list" role="group" aria-label="榜单类目选项">${['all',...new Set(demo.categories.map(core.categoryGroup))].map(c=>{
       const existing=Array.from(document.querySelectorAll('[data-inspiration-category]')).find(el=>el.dataset.inspirationCategory===c);
-      const picture=existing?.querySelector('img')?.getAttribute('src')||({'家居日用':'./login-assets-v2/home.png','香水香薰':'./login-assets-v4/carousel-diffuser.png','ckw常规':'./login-assets-v2/teddy-after-photo.png','多爱':'./login-assets-v2/teddy-after-photo.png','数码服饰':'./watch-product.png','出行个护':'./login-assets-v2/home.png','其他常规':'./login-assets-v2/home.png'}[c])||'./login-assets-v2/home.png';
+      const picture=existing?.querySelector('img')?.getAttribute('src')||({'毛绒':'./login-assets-v2/teddy-after-photo.png','家居日用':'./login-assets-v2/home.png','香水香薰':'./login-assets-v4/carousel-diffuser.png','ckw常规':'./login-assets-v2/teddy-after-photo.png','多爱':'./login-assets-v2/teddy-after-photo.png','数码服饰':'./watch-product.png','出行个护':'./login-assets-v2/home.png','其他常规':'./login-assets-v2/home.png'}[c])||'./login-assets-v2/home.png';
       return `<button class="inspiration-category-item ${c==='all'?'active':''}" type="button" data-perf-category="${esc(c)}" aria-pressed="${c==='all'}">${c==='all'?'<span class="inspiration-category-logo all" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':`<img class="inspiration-category-logo" src="${esc(picture)}" alt="" />`}<span>${esc(c==='all'?'全部':c)}</span></button>`;
     }).join('')}</div></div>
     <div id="perfBody" aria-live="polite"></div>
@@ -88,7 +88,7 @@
   let trigger=null;
   function visibleMatches(kind=null) {
     const source=snapshotMatches(state.range);
-    return source.filter(m=>(!kind||m.asset.kind===kind)&&(state.category==='all'||m.asset.category===state.category)&&(state.source==='all'||core.materialSource(m.asset.name)===state.source)&&core.createdInRange(m.asset.name,state.created,through)&&m.asset.name.toLowerCase().includes(state.search.toLowerCase())&&m.n.count);
+    return source.filter(m=>(!kind||m.asset.kind===kind)&&(state.category==='all'||core.categoryGroup(m.asset.category)===state.category)&&(state.source==='all'||core.materialSource(m.asset.name)===state.source)&&core.createdInRange(m.asset.name,state.created,through)&&m.asset.name.toLowerCase().includes(state.search.toLowerCase())&&m.n.count);
   }
   function metrics(n) {return `<div class="perf-kpis"><div><span>总消耗</span><strong>¥${money(n.spend)}</strong></div><div><span>总成交</span><strong>¥${money(n.sales)}</strong></div><div><span>ROI</span><strong>${roi(n.roi)}</strong></div><div><span>总展现</span><strong>${n.impressions.toLocaleString('zh-CN')}</strong></div></div>`;}
   function ranking(board) {
@@ -114,14 +114,14 @@
     state.end=through;state.start=dateOffset(through,1-Number(state.range));
     q('.perf-mode-switch').dataset.active=state.mode==='new'?'1':'0';
     q('#perfRange').value=state.range;
-    Array.from(q('#perfRange').options).forEach(o=>{o.textContent=({'1':'昨日','7':'近7天','30':'近30天'}[o.value])+(state.mode==='new'?'新建':'');});
+    Array.from(q('#perfRange').options).forEach(o=>{o.textContent=({'7':'近7天','15':'近15天','30':'近30天'}[o.value])+(state.mode==='new'?'新建':'');});
     panel.querySelectorAll('[data-perf-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.perfMode===state.mode)));
   }
   function render() {
     if (!snapshot) { q('#perfBody').innerHTML='<div class="perf-board-empty"><strong>榜单数据加载失败</strong><p>请刷新页面重试</p></div>'; return; }
-    q('#perfBody').innerHTML=`<div class="perf-board-heading"><h1>${state.mode==='new'?'新建素材排行榜':'素材总榜单'}</h1><span class="perf-scope-caption">${state.mode==='new'?'按名称创建日期筛选 · 同期投放表现':'不限创建日期 · '+({'1':'昨日','7':'近7天','30':'近30天'}[state.range])+'投放表现'}</span></div><div class="perf-boards">${boards.map(board=>{
+    q('#perfBody').innerHTML=`<div class="perf-board-heading"><h1>${state.mode==='new'?'新建素材排行榜':'素材总榜单'}</h1><span class="perf-scope-caption">${state.mode==='new'?'按名称创建日期筛选 · 同期投放表现':'不限创建日期 · '+({'7':'近7天','15':'近15天','30':'近30天'}[state.range])+'投放表现'}</span></div><div class="perf-boards">${boards.map(board=>{
       const ms=ranking(board);
-      return `<section class="perf-board" aria-label="${board.title}"><header><div class="perf-board-title-copy">${rankTitle(board.title)}<small>${board.metric==='roi'?'按 ROI 从高到低':'按总消耗从高到低'} · TOP 10</small></div></header>${rankingRows(ms,board)}<footer><span>已展示 ${ms.length} 条${ms.length<10?' · 符合条件不足10条':''}</span></footer></section>`;
+      return `<section class="perf-board" aria-label="${board.title}"><header><div class="perf-board-title-copy">${rankTitle(board.title)}<small>${board.metric==='roi'?'按 ROI 从高到低':'按总消耗从高到低'} · TOP 20</small></div></header>${rankingRows(ms,board)}<footer><span>已展示 ${ms.length} 条${ms.length<20?' · 符合条件不足20条':''}</span></footer></section>`;
     }).join('')}</div>`;
   }
   function showDetail(id,context='analysis') {

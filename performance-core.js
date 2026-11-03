@@ -57,14 +57,15 @@
   function rankConverted(matches, metric = 'spend') {
     return matches.filter(m => Number.isFinite(m.n.sales) && m.n.sales > 0 && Number.isFinite(m.n[metric]) && (metric !== 'roi' || m.n.spend > 0))
       .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
-      .slice(0,10);
+      .slice(0,20);
   }
   function rankNewMaterials(matches, metric = 'spend') {
     return matches.filter(m => Number.isFinite(m.n[metric]) && m.n.spend >= 0 && (metric !== 'roi' || m.n.spend > 0))
       .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
-      .slice(0,10);
+      .slice(0,20);
   }
-  const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource, rankNewMaterials};
+  const categoryGroup = category => ['其他毛绒','ckw毛绒'].includes(category) ? '毛绒' : category;
+  const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource, rankNewMaterials, categoryGroup};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PerformanceCore = api;
 })(typeof window === 'undefined' ? globalThis : window);

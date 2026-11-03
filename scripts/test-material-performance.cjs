@@ -33,13 +33,13 @@ test('totals use cents, weighted ROI, inclusive dates and channel filters', () =
   assert.equal(aggregate(rows,{start:'2026-11-02'}).count,0);
 });
 
-test('leaderboards admit any converted material, cap at ten, and exclude undefined ROI', () => {
+test('leaderboards admit any converted material, cap at twenty, and exclude undefined ROI', () => {
   const {rankConverted}=require('../performance-core.js');
   const entry=(id,spend,sales)=>({asset:{id},n:{spend,sales,roi:spend?sales/spend:null}});
-  const entries=Array.from({length:15},(_,i)=>entry(String(i),i+1,(i+1)*2));
+  const entries=Array.from({length:25},(_,i)=>entry(String(i),i+1,(i+1)*2));
   const list=rankConverted([...entries,entry('no-sale',9999,0),entry('negative-sale',9998,-10)],'spend');
-  assert.equal(list.length,10);
-  assert.equal(list[0].n.spend,15);
+  assert.equal(list.length,20);
+  assert.equal(list[0].n.spend,25);
   assert.equal(list.at(-1).n.spend,6);
   const small=entry('small',0.1,0.01),free=entry('zero-spend',0,10);
   assert.deepEqual(rankConverted([small,free],'spend').map(m=>m.asset.id),['small','zero-spend']);
@@ -75,13 +75,13 @@ test('source filter distinguishes explicit Chaoren naming from generic AI', () =
   assert.equal(materialSource('1022-LYJ-超韧AI风格参考-原创-盲盒.png'),'other');
 });
 
-test('new-material boards include zero-sale and zero-spend candidates, never invent ROI, and cap at ten', () => {
+test('new-material boards include zero-sale and zero-spend candidates, never invent ROI, and cap at twenty', () => {
   const {rankNewMaterials}=require('../performance-core.js');
   const a={asset:{id:'zero'},n:{spend:0,sales:0,roi:null}};
   const b={asset:{id:'unconverted'},n:{spend:5,sales:0,roi:0}};
   assert.deepEqual(rankNewMaterials([a,b],'spend').map(m=>m.asset.id),['unconverted','zero']);
   assert.deepEqual(rankNewMaterials([a,b],'roi').map(m=>m.asset.id),['unconverted']);
-  assert.equal(rankNewMaterials(Array.from({length:15},(_,i)=>({...b,asset:{id:String(i)}}))).length,10);
+  assert.equal(rankNewMaterials(Array.from({length:25},(_,i)=>({...b,asset:{id:String(i)}}))).length,20);
 });
 
 test('direct-file data script loads without fetch and exactly preserves the report snapshot', () => {
@@ -93,4 +93,13 @@ test('direct-file data script loads without fetch and exactly preserves the repo
   assert.deepEqual(JSON.parse(JSON.stringify(sandbox.window.PerformanceSnapshot)),expected);
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   assert.ok(html.indexOf('src="./data/performance-snapshots.js') < html.indexOf('src="./material-performance.js'));
+});
+
+test('plush filter merges only the two requested categories; fifteen days is inclusive', () => {
+  const {categoryGroup,createdInRange}=require('../performance-core.js');
+  assert.equal(categoryGroup('其他毛绒'),'毛绒');
+  assert.equal(categoryGroup('ckw毛绒'),'毛绒');
+  assert.equal(categoryGroup('ckw常规'),'ckw常规');
+  assert.equal(createdInRange('1018-小王-商品.png','15','2026-11-01'),true);
+  assert.equal(createdInRange('1017-小王-商品.png','15','2026-11-01'),false);
 });
