@@ -103,7 +103,7 @@
   }
   function downloadButton(asset) {
     const available=Boolean(originalDownloadUrl(asset));
-    return `<button class="perf-download-text" type="button" data-perf-download="${esc(asset.id)}" aria-label="下载${esc(asset.name)}" title="${available?'下载原文件':'暂无关联原文件'}" ${available?'':'disabled'}>下载</button>`;
+    return `<button class="perf-download-icon" type="button" data-perf-download="${esc(asset.id)}" aria-label="下载${esc(asset.name)}" title="${available?'下载原文件':'暂无关联原文件'}" ${available?'':'disabled'}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6v9h4l-7 8-7-8h4V3Z"/></svg></button>`;
   }
   function rankingRows(ms,board) {
     if(!ms.length)return `<div class="perf-board-empty"><span aria-hidden="true">⌕</span><strong>${state.mode==='new'?'暂无符合条件的素材':'暂无有成交的素材'}</strong><p>可调整日期、类目或搜索词</p></div>`;
