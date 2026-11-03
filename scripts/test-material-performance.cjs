@@ -83,3 +83,14 @@ test('new-material boards include zero-sale and zero-spend candidates, never inv
   assert.deepEqual(rankNewMaterials([a,b],'roi').map(m=>m.asset.id),['unconverted']);
   assert.equal(rankNewMaterials(Array.from({length:15},(_,i)=>({...b,asset:{id:String(i)}}))).length,10);
 });
+
+test('direct-file data script loads without fetch and exactly preserves the report snapshot', () => {
+  const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+  const root=path.resolve(__dirname,'..');
+  const sandbox={window:{},fetch(){throw new Error('file:// must not fetch JSON');}};
+  vm.runInNewContext(fs.readFileSync(path.join(root,'data/performance-snapshots.js'),'utf8'),sandbox);
+  const expected=JSON.parse(fs.readFileSync(path.join(root,'data/performance-snapshots.json'),'utf8'));
+  assert.deepEqual(JSON.parse(JSON.stringify(sandbox.window.PerformanceSnapshot)),expected);
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.ok(html.indexOf('src="./data/performance-snapshots.js') < html.indexOf('src="./material-performance.js'));
+});

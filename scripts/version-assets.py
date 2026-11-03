@@ -1,12 +1,19 @@
 """Give local JS/CSS URLs content versions so browsers load changed assets."""
 
 import hashlib
+import json
 import re
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
 def version_assets(root: Path) -> int:
+    # Classic scripts also work when index.html is opened directly via file://.
+    snapshot = root / "data/performance-snapshots.json"
+    if snapshot.is_file():
+        data = json.loads(snapshot.read_text(encoding="utf-8"))
+        bundle = "/* Generated from performance-snapshots.json; supports file:// and HTTP. */\nwindow.PerformanceSnapshot = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        (root / "data/performance-snapshots.js").write_text(bundle, encoding="utf-8")
     index = root / "index.html"
     source = index.read_text(encoding="utf-8")
     pattern = re.compile(

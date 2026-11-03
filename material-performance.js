@@ -1,14 +1,9 @@
 /* Shared material performance snapshot for local preview and GitHub Pages. */
-(async () => {
+(() => {
   'use strict';
   const core = window.PerformanceCore, demo = window.PerformanceDemo;
-  // Both deployments use the same published snapshot; never silently substitute demo rankings.
-  let snapshot = null;
-  try {
-    const response = await fetch('./data/performance-snapshots.json?v=a60c322d9498', {cache:'no-store'});
-    if (!response.ok) throw new Error(`Snapshot HTTP ${response.status}`);
-    snapshot = await response.json();
-  } catch (error) { console.warn('排行榜快照加载失败', error); }
+  // A classic script supplies the same snapshot for file://, localhost and Pages.
+  const snapshot = window.PerformanceSnapshot || null;
   const through=snapshot?.through||demo.through;
   const snapshotCache=new Map();
   function snapshotMatches(range) {
