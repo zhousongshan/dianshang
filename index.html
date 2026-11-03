@@ -3625,6 +3625,25 @@
       box-shadow: 0 16px 42px rgba(31, 41, 55, 0.1);
     }
 
+    .session-product-field {
+      margin: 0 0 10px; padding: 10px 12px; border: 1px solid #e8e6f2;
+      border-radius: 11px; background: #faf9fe;
+    }
+    .session-product-row { display:flex; align-items:center; gap:12px; }
+    .session-product-row label { flex-shrink:0; font-size:12px; font-weight:600; color:#48536a; }
+    .session-product-row label small { margin-left:5px; font-weight:400; color:#9299ac; }
+    .session-product-input { display:flex; align-items:center; flex:1; min-width:0; gap:8px; }
+    #sessionProductName { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#273249; font:inherit; font-size:13px; }
+    #sessionProductName::placeholder { color:#a0a7b8; }
+    .session-product-field:focus-within { border-color:#a99bf5; box-shadow:0 0 0 3px #7560eb0d; background:#fff; }
+    #sessionProductClear { border:0; border-radius:50%; width:20px; height:20px; padding:0; background:#eeecf6; color:#85819b; cursor:pointer; }
+    #sessionProductClear[hidden] { display:none; }
+    #sessionProductClear:hover { color:#6950db; background:#e5dffb; }
+    #sessionProductCount { flex-shrink:0; color:#a0a7b8; font-size:10px; font-variant-numeric:tabular-nums; }
+    .session-product-preview { margin:7px 0 0; font-size:11px; line-height:1.5; color:#8b93a7; overflow-wrap:anywhere; }
+    #sessionProductPreview { color:#7765bb; font-weight:500; }
+    @media(max-width:600px) { .session-product-row { flex-wrap:wrap; gap:7px; } .session-product-input { flex-basis:100%; } }
+
     .session-composer-main {
       display: grid;
       grid-template-columns: 94px minmax(0, 1fr);
@@ -9554,6 +9573,17 @@
                   </div>
                 </div>
                 <div class="session-composer-card">
+                  <div class="session-product-field">
+                    <div class="session-product-row">
+                      <label for="sessionProductName">产品名称<small>选填</small></label>
+                      <div class="session-product-input">
+                        <input id="sessionProductName" type="text" maxlength="40" placeholder="例如：YOYO萌动心愿盲盒" autocomplete="off" aria-describedby="sessionProductHint" />
+                        <button id="sessionProductClear" type="button" aria-label="清空产品名称" title="清空" hidden>×</button>
+                        <span id="sessionProductCount">0/40</span>
+                      </div>
+                    </div>
+                    <p class="session-product-preview" id="sessionProductHint">图片命名：<span id="sessionProductPreview">未填写时使用默认名称</span></p>
+                  </div>
                   <div class="session-composer-main">
                     <div class="chat-composer-shell session-chat-composer" id="sessionImagePicker">
                       <input type="file" id="sessionImageInput" accept="image/*" multiple hidden />
@@ -13394,6 +13424,8 @@
       roundSequence = 0;
       generationBusy = false;
       setTargetImages("session", []);
+      $("#sessionProductName").value = "";
+      updateProductNamePreview();
       $("#sessionPrompt").value = "";
       $("#sessionPromptCount").textContent = "0";
       resizeComposerTextarea($("#sessionPrompt"));
@@ -15824,9 +15856,31 @@
       return { round, result };
     }
 
+    function cleanProductName(value = "") {
+      return String(value).normalize("NFC").replace(/[<>:"/\\|?*\x00-\x1f]/g, " ")
+        .replace(/\s+/g, " ").trim().replace(/\.(png|jpe?g|webp)$/i, "").replace(/[. ]+$/, "").slice(0,40).trim();
+    }
+
+    function nextProductImageName(productName, assets = mockAssets) {
+      const names = new Set(assets.map(asset => String(asset.name || "").toLowerCase()));
+      let sequence = 1;
+      while (names.has(`${productName}-${String(sequence).padStart(2,"0")}`.toLowerCase())) sequence++;
+      return `${productName}-${String(sequence).padStart(2,"0")}`;
+    }
+
+    function updateProductNamePreview() {
+      const input = $("#sessionProductName");
+      const name = cleanProductName(input.value);
+      $("#sessionProductCount").textContent = `${input.value.length}/40`;
+      $("#sessionProductClear").hidden = !input.value;
+      $("#sessionProductPreview").textContent = name
+        ? `${nextProductImageName(name)} · 多张自动递增编号`
+        : "未填写时使用默认名称";
+    }
+
     function createGeneratedResult(round, index) {
       const assetIndex = mockAssets.push({
-        name: `${currentAgentName}生成结果 ${round.id}-${index + 1}`,
+        name: round.productName ? nextProductImageName(round.productName) : `${currentAgentName}生成结果 ${round.id}-${index + 1}`,
         category: "图片素材",
         type: "product",
         tags: `${round.settings.goal}、${round.settings.style}`,
@@ -15844,6 +15898,7 @@
         creatorId: currentReviewIdentity().id,
         creatorName: currentReviewIdentity().name,
         prompt: round.prompt,
+        productName: round.productName || "",
         images: round.images.map(image => ({ ...image })),
         settings: { ...round.settings, count: "1" },
         isGenerating: false,
@@ -15928,6 +15983,7 @@
       $("#sessionGenerate").disabled = false;
       $("#generateBtn").disabled = false;
       $("#sessionGenerate").textContent = "再次生成";
+      updateProductNamePreview();
       setTimeout(() => {
         $(`#generationResult-${round.id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, 120);
@@ -16083,6 +16139,8 @@
     function editGeneratedResult(roundId, resultId) {
       const { result } = getGeneratedResult(roundId, resultId);
       if (!result) return;
+      $("#sessionProductName").value = result.productName || "";
+      updateProductNamePreview();
       $("#sessionPrompt").value = result.prompt;
       $("#sessionPromptCount").textContent = result.prompt.length;
       resizeComposerTextarea($("#sessionPrompt"));
@@ -16154,6 +16212,7 @@
 
       const round = {
         id: ++roundSequence,
+        productName: cleanProductName($("#sessionProductName").value),
         prompt: cleanPrompt || "请根据上传的商品图片生成一张营销活动海报。",
         images: images.map(image => ({ ...image })),
         settings: getGenerationSettings()
@@ -18397,6 +18456,8 @@
         }
         generationRounds.length = 0;
         roundSequence = 0;
+        $("#sessionProductName").value = "";
+        updateProductNamePreview();
         $("#sessionThread").innerHTML = "";
         $("#sessionModelSelect").value = $("#configModel").value;
         $("#sessionModeSelect").value = $("#modeSelect").value;
@@ -18407,6 +18468,23 @@
         requestAnimationFrame(() => startGeneration(prompt, mainImages));
       } else {
         showToast("普通模式已进入卖点生成步骤，按钮文案和流程已按需求区分。");
+      }
+    });
+
+    $("#sessionProductName").addEventListener("input", updateProductNamePreview);
+    $("#sessionProductName").addEventListener("blur", event => {
+      event.target.value = cleanProductName(event.target.value);
+      updateProductNamePreview();
+    });
+    $("#sessionProductClear").addEventListener("click", () => {
+      $("#sessionProductName").value = "";
+      updateProductNamePreview();
+      $("#sessionProductName").focus();
+    });
+    $("#sessionProductName").addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault();
+        $("#sessionPrompt").focus();
       }
     });
 
