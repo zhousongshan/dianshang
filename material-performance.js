@@ -76,12 +76,17 @@
     {id:'video-roi',kind:'video',metric:'roi',title:'视频 ROI 榜'}
   ];
   panel.innerHTML=`<div class="perf-filters">
-    <label><span class="perf-sr-only">商品类目</span><select id="perfCategory" aria-label="商品类目"><option value="all">全部类目</option>${demo.categories.map(c=>`<option value="${esc(c)}">${esc(c.replace('国内-MINISO-','').replace('国内-',''))}</option>`).join('')}</select></label>
-    <label><span class="perf-sr-only">素材来源</span><select id="perfSource" aria-label="素材来源" title="按素材名称是否标注超韧AI区分"><option value="all">全部来源</option><option value="chaoren">超韧 AI</option><option value="other">非超韧 AI</option></select></label>
+    <button id="perfCategoryTrigger" class="inspiration-filter-tab inspiration-dropdown-trigger inspiration-category-trigger" type="button" data-perf-category-toggle aria-label="选择榜单类目" aria-expanded="false" aria-controls="perfCategoryPanel"><span id="perfCategoryLabel">全部</span></button>
+    <label><span>来源</span><select id="perfSource" aria-label="素材来源" title="按素材名称是否标注超韧AI区分"><option value="all">全部</option><option value="chaoren">超韧 AI</option><option value="other">非超韧 AI</option></select></label>
     <div class="perf-segment perf-mode-switch" role="group" aria-label="榜单范围" data-active="0"><span class="perf-segment-thumb" aria-hidden="true"></span><button type="button" data-perf-mode="all" aria-pressed="true">总榜单</button><button type="button" data-perf-mode="new" aria-pressed="false">新建素材榜</button></div>
     <label class="perf-date-filter"><span class="perf-sr-only">时间范围</span><select id="perfRange" aria-label="时间范围"><option value="1">昨日</option><option value="7">近7天</option><option value="30" selected>近30天</option></select></label>
     <label class="perf-search"><span class="perf-sr-only">搜索素材标题</span><input id="perfSearch" type="search" placeholder="搜索素材标题" aria-label="搜索素材标题"></label>
     </div>
+    <div id="perfCategoryPanel" class="inspiration-category-panel" hidden><div class="inspiration-category-list" role="group" aria-label="榜单类目选项">${['all',...demo.categories].map(c=>{
+      const existing=Array.from(document.querySelectorAll('[data-inspiration-category]')).find(el=>el.dataset.inspirationCategory===c);
+      const picture=existing?.querySelector('img')?.getAttribute('src')||({'家居日用':'./login-assets-v2/home.png','香水香薰':'./login-assets-v4/carousel-diffuser.png','ckw常规':'./login-assets-v2/teddy-after-photo.png','多爱':'./login-assets-v2/teddy-after-photo.png','数码服饰':'./watch-product.png','出行个护':'./login-assets-v2/home.png','其他常规':'./login-assets-v2/home.png'}[c])||'./login-assets-v2/home.png';
+      return `<button class="inspiration-category-item ${c==='all'?'active':''}" type="button" data-perf-category="${esc(c)}" aria-pressed="${c==='all'}">${c==='all'?'<span class="inspiration-category-logo all" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':`<img class="inspiration-category-logo" src="${esc(picture)}" alt="" />`}<span>${esc(c==='all'?'全部':c)}</span></button>`;
+    }).join('')}</div></div>
     <div id="perfBody" aria-live="polite"></div>
     `;
   const detail=document.createElement('dialog');detail.id='perfDetail';detail.className='perf-dialog';detail.setAttribute('aria-labelledby','perfDetailTitle');document.body.append(detail);
@@ -122,11 +127,24 @@
     detail.innerHTML=`<header><div><h2 id="perfDetailTitle">${esc(m.asset.name)}</h2><p>${filter.start} 至 ${filter.end}</p></div><button type="button" data-perf-close aria-label="关闭素材投放详情">×</button></header><div class="perf-detail-layout"><div class="perf-detail-media">${preview(m.asset,true)}</div><div class="perf-detail-content"><span class="perf-demo-tag">${m.snapshot?'接口快照 · 非实时':'演示数据 · 非实时'}</span><div class="perf-detail-owner"><span>姓名：${esc(m.filename.person||'—')}</span><span>日期：${esc(m.filename.date||'—')}</span><span>类目：${esc(categoryName(m.asset))}</span></div>${metrics(n)}<h3>渠道明细</h3><div class="perf-table-wrap"><table class="perf-table"><thead><tr><th>全域渠道</th><th>总消耗</th><th>总成交</th><th>ROI</th><th>总展现</th></tr></thead><tbody>${[...groups.values()].map(rs=>{let t=core.aggregate(rs);return `<tr><td>${esc(rs[0].channel)}</td><td>¥${money(t.spend)}</td><td>¥${money(t.sales)}</td><td>${roi(t.roi)}</td><td>${t.impressions.toLocaleString('zh-CN')}</td></tr>`;}).join('')}</tbody></table></div></div></div>`;
     if(!detail.open)detail.showModal();
   }
+  function setCategoryPanel(open) {
+    q('#perfCategoryTrigger').setAttribute('aria-expanded',String(open));
+    q('#perfCategoryPanel').hidden=!open;
+    q('#perfCategoryPanel').classList.toggle('open',open);
+  }
+  panel.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!q('#perfCategoryPanel').hidden){setCategoryPanel(false);q('#perfCategoryTrigger').focus();}
+  });
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#perfCategoryPanel,#perfCategoryTrigger'))setCategoryPanel(false);
+  });
   function closeDialog(d) {d.querySelectorAll('video').forEach(v=>v.pause());d.close();trigger?.focus();}
   document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-perf-home],[data-perf-detail],[data-perf-close],[data-perf-mode]');
+    const b=e.target.closest('[data-perf-home],[data-perf-detail],[data-perf-close],[data-perf-mode],[data-perf-category-toggle],[data-perf-category]');
     if(!b)return;e.stopPropagation();
-    if(b.hasAttribute('data-perf-mode')){state.mode=b.dataset.perfMode;updateScope();render();}
+    if(b.hasAttribute('data-perf-category-toggle')){setCategoryPanel(q('#perfCategoryPanel').hidden);}
+    else if(b.hasAttribute('data-perf-category')){state.category=b.dataset.perfCategory;q('#perfCategoryLabel').textContent=state.category==='all'?'全部':state.category;panel.querySelectorAll('[data-perf-category]').forEach(el=>{const selected=el.dataset.perfCategory===state.category;el.classList.toggle('active',selected);el.setAttribute('aria-pressed',String(selected));});setCategoryPanel(false);q('#perfCategoryTrigger').focus();render();}
+    else if(b.hasAttribute('data-perf-mode')){state.mode=b.dataset.perfMode;updateScope();render();}
     else if(b.dataset.perfHome){const analysis=b.dataset.perfHome==='analysis';q('#inspirationDiscover').hidden=analysis;panel.hidden=!analysis;document.querySelectorAll('[data-perf-home]').forEach(t=>{const on=t===b;t.classList.toggle('active',on);t.setAttribute('aria-selected',on);});if(analysis)render();}
     else if(b.hasAttribute('data-perf-close'))closeDialog(b.closest('dialog'));
     else {trigger=b;showDetail(b.dataset.perfDetail,b.dataset.perfContext||'analysis');}
@@ -135,7 +153,6 @@
     const id=e.target.id;
     if(id==='perfRange'){state.range=e.target.value;updateScope();}
     if(id==='perfSource')state.source=e.target.value;
-    if(id==='perfCategory')state.category=e.target.value;
     render();
   });
   q('#perfSearch').addEventListener('input',e=>{state.search=e.target.value.trim();render();});
