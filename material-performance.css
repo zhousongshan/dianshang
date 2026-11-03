@@ -187,3 +187,5 @@
 .perf-ranking-media{position:relative;min-width:0}.perf-download-icon{position:absolute;right:3px;bottom:3px;z-index:2;display:grid;place-items:center;width:22px;height:22px;padding:3px;border:0;border-radius:4px;background:transparent;color:#fff;cursor:pointer;transition:opacity .15s,background .15s}.perf-download-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;filter:drop-shadow(0 1px 2px #19203380)}.perf-download-icon:hover:not(:disabled){background:#15203326}.perf-download-icon:focus-visible{outline:2px solid #a597df;outline-offset:1px}.perf-download-icon:disabled{color:#aeb5c3;cursor:default;opacity:.8}.perf-download-icon:disabled svg{filter:none}
 
 .perf-ranking-media .perf-media-empty{box-sizing:border-box;padding-bottom:14px}
+
+.perf-detail-media{position:relative}.perf-detail-media>.perf-download-icon{right:10px;bottom:10px;width:28px;height:28px;padding:5px}.perf-detail-media>.perf-download-icon svg{width:18px;height:18px}.perf-detail-media:has(video)>.perf-download-icon{bottom:46px}
