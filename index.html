@@ -3625,24 +3625,14 @@
       box-shadow: 0 16px 42px rgba(31, 41, 55, 0.1);
     }
 
-    .session-product-field {
-      margin: 0 0 10px; padding: 10px 12px; border: 1px solid #e8e6f2;
-      border-radius: 11px; background: #faf9fe;
+    #sessionProductName {
+      display:block; width:240px; max-width:100%; height:36px; margin:0 0 8px;
+      padding:0 12px; border:1px solid #e1e5ee; border-radius:8px;
+      background:#fff; color:#273249; font:inherit; font-size:13px; outline:none;
+      transition:border-color .15s, box-shadow .15s;
     }
-    .session-product-row { display:flex; align-items:center; gap:12px; }
-    .session-product-row label { flex-shrink:0; font-size:12px; font-weight:600; color:#48536a; }
-    .session-product-row label small { margin-left:5px; font-weight:400; color:#9299ac; }
-    .session-product-input { display:flex; align-items:center; flex:1; min-width:0; gap:8px; }
-    #sessionProductName { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#273249; font:inherit; font-size:13px; }
-    #sessionProductName::placeholder { color:#a0a7b8; }
-    .session-product-field:focus-within { border-color:#a99bf5; box-shadow:0 0 0 3px #7560eb0d; background:#fff; }
-    #sessionProductClear { border:0; border-radius:50%; width:20px; height:20px; padding:0; background:#eeecf6; color:#85819b; cursor:pointer; }
-    #sessionProductClear[hidden] { display:none; }
-    #sessionProductClear:hover { color:#6950db; background:#e5dffb; }
-    #sessionProductCount { flex-shrink:0; color:#a0a7b8; font-size:10px; font-variant-numeric:tabular-nums; }
-    .session-product-preview { margin:7px 0 0; font-size:11px; line-height:1.5; color:#8b93a7; overflow-wrap:anywhere; }
-    #sessionProductPreview { color:#7765bb; font-weight:500; }
-    @media(max-width:600px) { .session-product-row { flex-wrap:wrap; gap:7px; } .session-product-input { flex-basis:100%; } }
+    #sessionProductName::placeholder { color:#98a2b3; }
+    #sessionProductName:focus { border-color:#a99bf5; box-shadow:0 0 0 2px #7560eb0d; }
 
     .session-composer-main {
       display: grid;
@@ -9573,17 +9563,7 @@
                   </div>
                 </div>
                 <div class="session-composer-card">
-                  <div class="session-product-field">
-                    <div class="session-product-row">
-                      <label for="sessionProductName">产品名称<small>选填</small></label>
-                      <div class="session-product-input">
-                        <input id="sessionProductName" type="text" maxlength="40" placeholder="例如：YOYO萌动心愿盲盒" autocomplete="off" aria-describedby="sessionProductHint" />
-                        <button id="sessionProductClear" type="button" aria-label="清空产品名称" title="清空" hidden>×</button>
-                        <span id="sessionProductCount">0/40</span>
-                      </div>
-                    </div>
-                    <p class="session-product-preview" id="sessionProductHint">图片命名：<span id="sessionProductPreview">未填写时使用默认名称</span></p>
-                  </div>
+                  <input id="sessionProductName" type="text" maxlength="40" placeholder="请输入产品名称" aria-label="产品名称" autocomplete="off" />
                   <div class="session-composer-main">
                     <div class="chat-composer-shell session-chat-composer" id="sessionImagePicker">
                       <input type="file" id="sessionImageInput" accept="image/*" multiple hidden />
@@ -13425,7 +13405,6 @@
       generationBusy = false;
       setTargetImages("session", []);
       $("#sessionProductName").value = "";
-      updateProductNamePreview();
       $("#sessionPrompt").value = "";
       $("#sessionPromptCount").textContent = "0";
       resizeComposerTextarea($("#sessionPrompt"));
@@ -15868,16 +15847,6 @@
       return `${productName}-${String(sequence).padStart(2,"0")}`;
     }
 
-    function updateProductNamePreview() {
-      const input = $("#sessionProductName");
-      const name = cleanProductName(input.value);
-      $("#sessionProductCount").textContent = `${input.value.length}/40`;
-      $("#sessionProductClear").hidden = !input.value;
-      $("#sessionProductPreview").textContent = name
-        ? `${nextProductImageName(name)} · 多张自动递增编号`
-        : "未填写时使用默认名称";
-    }
-
     function createGeneratedResult(round, index) {
       const assetIndex = mockAssets.push({
         name: round.productName ? nextProductImageName(round.productName) : `${currentAgentName}生成结果 ${round.id}-${index + 1}`,
@@ -15983,7 +15952,6 @@
       $("#sessionGenerate").disabled = false;
       $("#generateBtn").disabled = false;
       $("#sessionGenerate").textContent = "再次生成";
-      updateProductNamePreview();
       setTimeout(() => {
         $(`#generationResult-${round.id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, 120);
@@ -16140,7 +16108,6 @@
       const { result } = getGeneratedResult(roundId, resultId);
       if (!result) return;
       $("#sessionProductName").value = result.productName || "";
-      updateProductNamePreview();
       $("#sessionPrompt").value = result.prompt;
       $("#sessionPromptCount").textContent = result.prompt.length;
       resizeComposerTextarea($("#sessionPrompt"));
@@ -18457,7 +18424,6 @@
         generationRounds.length = 0;
         roundSequence = 0;
         $("#sessionProductName").value = "";
-        updateProductNamePreview();
         $("#sessionThread").innerHTML = "";
         $("#sessionModelSelect").value = $("#configModel").value;
         $("#sessionModeSelect").value = $("#modeSelect").value;
@@ -18471,15 +18437,8 @@
       }
     });
 
-    $("#sessionProductName").addEventListener("input", updateProductNamePreview);
     $("#sessionProductName").addEventListener("blur", event => {
       event.target.value = cleanProductName(event.target.value);
-      updateProductNamePreview();
-    });
-    $("#sessionProductClear").addEventListener("click", () => {
-      $("#sessionProductName").value = "";
-      updateProductNamePreview();
-      $("#sessionProductName").focus();
     });
     $("#sessionProductName").addEventListener("keydown", event => {
       if (event.key === "Enter" && !event.isComposing) {
