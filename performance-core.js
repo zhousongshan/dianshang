@@ -65,7 +65,13 @@
       .sort((a,b) => b.n[metric] - a.n[metric] || String(a.asset.id).localeCompare(String(b.asset.id)))
       .slice(0,20);
   }
-  const categoryGroup = category => ['其他毛绒','ckw毛绒'].includes(category) ? '毛绒' : category;
+  const categoryGroups = new Map([
+    ['其他毛绒','毛绒'], ['ckw毛绒','毛绒'],
+    ['家居日用','家居日用'], ['生活百货','家居日用'],
+    ['数码香薰','香水香薰'], ['香水香薰','香水香薰'],
+    ['其他常规','常规'], ['ckw常规','常规']
+  ]);
+  const categoryGroup = category => categoryGroups.get(category) || category;
   const api = {normalize, match, aggregate, rankConverted, filenameMetadata, createdInRange, materialSource, rankNewMaterials, categoryGroup, roiSpendThreshold};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PerformanceCore = api;

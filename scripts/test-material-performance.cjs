@@ -95,11 +95,19 @@ test('direct-file data script loads without fetch and exactly preserves the repo
   assert.ok(html.indexOf('src="./data/performance-snapshots.js') < html.indexOf('src="./material-performance.js'));
 });
 
-test('plush filter merges only the two requested categories; fifteen days is inclusive', () => {
+test('category filters merge the requested pairs and preserve unrelated categories; fifteen days is inclusive', () => {
   const {categoryGroup,createdInRange}=require('../performance-core.js');
   assert.equal(categoryGroup('其他毛绒'),'毛绒');
   assert.equal(categoryGroup('ckw毛绒'),'毛绒');
-  assert.equal(categoryGroup('ckw常规'),'ckw常规');
+  assert.equal(categoryGroup('家居日用'),'家居日用');
+  assert.equal(categoryGroup('生活百货'),'家居日用');
+  assert.equal(categoryGroup('数码香薰'),'香水香薰');
+  assert.equal(categoryGroup('香水香薰'),'香水香薰');
+  assert.equal(categoryGroup('其他常规'),'常规');
+  assert.equal(categoryGroup('ckw常规'),'常规');
+  for (const category of ['盲盒','毛绒','常规','数码服饰','出行个护','多爱','TME','未分类']) {
+    assert.equal(categoryGroup(category),category);
+  }
   assert.equal(createdInRange('1018-小王-商品.png','15','2026-11-01'),true);
   assert.equal(createdInRange('1017-小王-商品.png','15','2026-11-01'),false);
 });
