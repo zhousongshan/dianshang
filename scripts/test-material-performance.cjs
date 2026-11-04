@@ -105,7 +105,8 @@ test('category filters merge the requested pairs and preserve unrelated categori
   assert.equal(categoryGroup('香水香薰'),'香水香薰');
   assert.equal(categoryGroup('其他常规'),'常规');
   assert.equal(categoryGroup('ckw常规'),'常规');
-  for (const category of ['盲盒','毛绒','常规','数码服饰','出行个护','多爱','TME','未分类']) {
+  assert.equal(categoryGroup('未分类'),'其他');
+  for (const category of ['盲盒','毛绒','常规','数码服饰','出行个护','多爱','TME','其他']) {
     assert.equal(categoryGroup(category),category);
   }
   assert.equal(createdInRange('1018-小王-商品.png','15','2026-11-01'),true);
