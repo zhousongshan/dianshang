@@ -2,11 +2,7 @@
 .public-library-actions { display:flex; gap:10px; align-items:center; }
 .public-library-actions[hidden], .public-mention-menu[hidden] { display:none !important; }
 .public-upload-error { color:#d14b54; font-size:13px; margin:12px 0 0; }
-.public-folder-card { position:relative; padding:0; }
-.public-folder-open { display:block; width:100%; min-height:144px; border:0; padding:24px 25px 18px; background:transparent; color:inherit; text-align:left; cursor:pointer; border-radius:inherit; }
-.public-folder-open .asset-folder-main-row { display:flex; }
-.public-folder-title { font-size:15px; font-weight:600; padding-right:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.public-folder-open .asset-folder-meta { margin-top:8px; }
+.public-folder-open {width:100%;border:0;border-radius:inherit;background:transparent;color:inherit;text-align:left;cursor:pointer;}
 .public-breadcrumb { display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-height:32px; font-size:13px; }
 .public-breadcrumb button { background:none; border:0; color:var(--muted); font:inherit; cursor:pointer; padding:4px 0; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .public-breadcrumb button:last-child { color:var(--text); font-weight:600; }
@@ -29,11 +25,7 @@
 .public-mention-all { width:100%; padding:11px; border:0; border-top:1px solid var(--line); background:white; color:var(--primary); text-align:left; border-radius:0 0 8px 8px; cursor:pointer; }
 .public-mention-empty { padding:20px 10px; color:var(--muted); font-size:13px; }
 .public-folder-open:focus-visible, .public-breadcrumb button:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
-@media(max-width:640px) { .public-library-actions { flex-wrap:wrap; } .public-folder-open { padding:18px; } }
-.asset-file-shell.is-favorite.is-folder-root .public-folder-card { padding:0; min-height:165px; }
-.public-folder-card .public-folder-open { min-height:165px; padding:26px 22px 20px; }
-.public-folder-card .asset-folder-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:15px; line-height:1.6; }
-.public-folder-card .asset-folder-main-row { align-items:center; justify-content:flex-start; gap:16px; }
+@media(max-width:640px){.public-library-actions{flex-wrap:wrap;}}
 .public-mention-option .asset-folder-icon { width:34px; height:26px; flex:0 0 34px; transform:none; border-radius:4px; background:linear-gradient(#8b83ff,#a9a5ff); box-shadow:0 3px 7px #4f46e526; }
 .public-mention-option .asset-folder-icon::before { top:-5px; width:17px; height:7px; border-radius:3px 3px 0 0; background:#786ef5; }
 .public-mention-option .asset-folder-icon::after { display:none; }

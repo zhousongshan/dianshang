@@ -171,15 +171,15 @@
     const images = matchingImages(assetSelectorState.folderId, assetSelectorState.keyword, assetSelectorState);
     const selected = assetSelectorState.draftSelected;
     const ids = new Set(images.map(item => item.id));
-    const limit = activeImagePickerTarget === 'videoStart' ? 1 : MAX_COMPOSER_IMAGES;
-    const localCount = activeImagePickerTarget === 'videoStart' ? 0 : getTargetImages(activeImagePickerTarget).filter(item => item.source === 'local').length;
+    const limit = singleImageSelection() ? 1 : MAX_COMPOSER_IMAGES;
+    const localCount = singleImageSelection() ? 0 : getTargetImages(activeImagePickerTarget).filter(item => item.source === 'local').length;
     const others = [...selected.keys()].filter(id => !ids.has(id)).length;
     const available = Math.max(0, limit - localCount - others);
     const candidates = images.slice(0, available);
     if (candidates.length && candidates.every(item => selected.has(item.id))) images.forEach(item => selected.delete(item.id));
     else {
-      if (activeImagePickerTarget === 'videoStart' && images.length) selected.clear();
-      images.slice(0, activeImagePickerTarget === 'videoStart' ? 1 : available).forEach(item => selected.set(item.id, descriptor(item)));
+      if (singleImageSelection() && images.length) selected.clear();
+      images.slice(0, singleImageSelection() ? 1 : available).forEach(item => selected.set(item.id, descriptor(item)));
       if (images.length > available) showToast(`最多添加 ${limit} 张图片。`);
     }
     renderAssetSelector();
@@ -193,7 +193,7 @@
     const count = files.filter(image => mediaKind(image) === 'image').length;
     if (selector) return `<button class="asset-selector-folder" type="button" data-public-selector-folder="${item.id}"><span class="asset-folder-icon" aria-hidden="true"></span><span><b>${esc(item.name)}</b><small>${count} 张图片 · ${esc(ownerName(item))}</small></span><span>›</span></button>`;
     return `<article class="asset-folder-card public-folder-card" aria-label="${esc(item.name)}">
-      <button class="public-folder-open" type="button" data-public-folder="${item.id}" aria-label="打开${esc(item.name)}"><span class="asset-folder-main-row"><span class="asset-folder-icon" aria-hidden="true"></span><span class="public-folder-title">${esc(item.name)}</span></span><span class="asset-folder-meta"><span>${mediaCounts(files)}</span><span>·</span><span>${esc(item.createdAt || item.updatedAt)}</span></span></button>
+      <button class="public-folder-open" type="button" data-public-folder="${item.id}" aria-label="打开${esc(item.name)}">${libraryFolderFace(item.name, mediaCounts(files), item.updatedAt || item.createdAt)}</button>
       ${canEdit(item) && q('#page-assets').classList.contains('asset-list-view') ? `<div class="asset-folder-actions"><button type="button" data-public-rename-folder="${item.id}">重命名</button>${canDelete() ? `<button class="danger" type="button" data-public-delete-folder="${item.id}">删除</button>` : ''}</div>` : `      ${canEdit(item) ? `<button class="folder-more-btn" type="button" data-public-menu="${item.id}" aria-label="${esc(item.name)}的更多操作" aria-expanded="${menuId === item.id}">···</button>${menuId === item.id ? `<div class="folder-menu" role="menu"><button type="button" data-public-rename-folder="${item.id}" role="menuitem">重命名</button>${canDelete() ? `<button class="danger" type="button" data-public-delete-folder="${item.id}" role="menuitem">删除文件夹</button>` : ''}</div>` : ''}` : ''}`}
 
     </article>`;
@@ -274,7 +274,7 @@
     const pages = Math.max(1, Math.ceil(entries.length / pageSize)); currentAssetPage = Math.min(currentAssetPage, pages);
     const visible = entries.slice((currentAssetPage - 1) * pageSize, currentAssetPage * pageSize);
     q('#assetResultSummary').textContent = `共 ${entries.filter(entry => entry.kind === 'folder').length} 个文件夹，${mediaCounts(entries.filter(entry => entry.kind !== 'folder').map(entry => entry.item))}${busy ? ' · 正在保存…' : ''}`;
-    q('#assetGrid').innerHTML = !loaded || loadError ? `<div class="empty-state public-empty" role="status">${esc(loadError || '正在加载公共素材…')}</div>` : visible.length ? visible.map(entry => entry.kind === 'folder' ? folderCard(entry.item) : imageCard(entry.item)).join('') : `<div class="empty-state public-empty">${q('#assetSearch').value ? '没有找到匹配的文件夹或素材' : '暂无审核通过的素材，可在审核中心查看进度'}${!q('#assetSearch').value && canEdit(current) ? '<button class="btn btn-primary" type="button" data-public-upload>↥ 上传文件</button>' : ''}</div>`;
+    q('#assetGrid').innerHTML = !loaded || loadError ? `<div class="empty-state public-empty" role="status">${esc(loadError || '正在加载公共素材…')}</div>` : visible.length ? libraryGridContent(visible.filter(e => e.kind === 'folder').map(e => folderCard(e.item)).join(''), visible.filter(e => e.kind !== 'folder').map(e => imageCard(e.item)).join(''), entries.filter(e => e.kind !== 'folder').length, folderId === ROOT) : `<div class="empty-state public-empty">${q('#assetSearch').value ? '没有找到匹配的文件夹或素材' : '暂无审核通过的素材，可在审核中心查看进度'}${!q('#assetSearch').value && canEdit(current) ? '<button class="btn btn-primary" type="button" data-public-upload>↥ 上传文件</button>' : ''}</div>`;
     renderAssetPagination(entries.length, pages);
     return true;
   }
@@ -299,7 +299,7 @@
     const pages = Math.max(1, Math.ceil(entries.length / pagination.pageSize)), page = Math.min(pagination.page, pages);
     setSelectorPage(page);
     const visible = entries.slice((page - 1) * pagination.pageSize, page * pagination.pageSize);
-    q('#assetSelectorContent').innerHTML = `<div class="asset-selector-content-inner"><div class="asset-selector-result-summary">全公司可用 · 进入文件夹选择图片${activeImagePickerTarget === 'videoStart' ? ' · 最多选择 1 张视频参考图' : ` · 最多添加 ${MAX_COMPOSER_IMAGES} 张`}</div>${!loaded || loadError ? `<div class="asset-selector-empty">${esc(loadError || '正在加载…')}</div>` : visible.length ? `<div class="asset-selector-grid">${visible.map(entry => entry.kind === 'folder' ? folderCard(entry.item, true) : imageCard(entry.item, true)).join('')}</div>` : '<div class="asset-selector-empty">没有找到图片或文件夹</div>'}</div>`;
+    q('#assetSelectorContent').innerHTML = `<div class="asset-selector-content-inner"><div class="asset-selector-result-summary">全公司可用 · 进入文件夹选择图片${singleImageSelection() ? ' · 选择 1 张图片' : ` · 最多添加 ${MAX_COMPOSER_IMAGES} 张`}</div>${!loaded || loadError ? `<div class="asset-selector-empty">${esc(loadError || '正在加载…')}</div>` : visible.length ? `<div class="asset-selector-grid">${visible.map(entry => entry.kind === 'folder' ? folderCard(entry.item, true) : imageCard(entry.item, true)).join('')}</div>` : '<div class="asset-selector-empty">没有找到图片或文件夹</div>'}</div>`;
     q('#assetSelectorPaginationHost').innerHTML = renderSelectorPagination(entries.length, pages, page, pagination.pageSize);
     q('#assetSelectorSelectedCount').textContent = `已选择 ${assetSelectorState.draftSelected.size} 张`;
     q('#assetSelectorConfirm').disabled = !assetSelectorState.draftSelected.size;
@@ -751,7 +751,7 @@
     if (data.publicSelect && isAvailable(image) && mediaKind(image) === 'image') {
       const selected = assetSelectorState.draftSelected;
       if (selected.has(image.id)) selected.delete(image.id);
-      else if (activeImagePickerTarget === 'videoStart') { selected.clear(); selected.set(image.id, descriptor(image)); }
+      else if (singleImageSelection()) { selected.clear(); selected.set(image.id, descriptor(image)); }
       else {
         const localCount = getTargetImages(activeImagePickerTarget).filter(item => item.source === 'local').length;
         if (localCount + selected.size >= MAX_COMPOSER_IMAGES) { showToast(`最多添加 ${MAX_COMPOSER_IMAGES} 张图片。`); return; }
@@ -803,6 +803,14 @@
     return saved ? candidates.length : 0;
   }
   window.PublicAssets = {
+    getBatchVideoImages() {
+      return { loaded, folders: library.folders.filter(item => !item.archived).map(item => ({ id: item.id, path: folderPath(item.id) })),
+        images: library.images.filter(item => isAvailable(item) && mediaKind(item) === 'image' && imageUrl(item)).map(item => ({ ...descriptor(item), folderId: item.folderId, path: folderPath(item.folderId) })) };
+    },
+    getBatchVideoVideos() {
+      return { loaded, folders: library.folders.filter(item => !item.archived).map(item => ({ id: item.id, path: folderPath(item.id) })),
+        videos: library.images.filter(item => isAvailable(item) && mediaKind(item) === 'video' && imageUrl(item)).map(item => ({ id: item.id, name: item.name, url: imageUrl(item), duration: item.duration, folderId: item.folderId, path: folderPath(item.folderId) })) };
+    },
     renderLibrary, renderSelector, reviewRecords, applyReviewDecision: applyPublicReviewDecision,
     confirmMention() { if (pendingMention && assetSelectorState.draftSelected.size) { const context = pendingMention; pendingMention = null; clearMention(context); } },
     closeSelector() { const input = pendingMention?.input; pendingMention = null; hideMention(); if (input) input.focus(); },

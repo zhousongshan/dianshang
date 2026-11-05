@@ -41,11 +41,12 @@
   const demoBoardMatches = () => core.match(demo.items.map((item,i)=>({id:'demo-board:'+i,name:item.name,kind:item.kind,item:{},category:item.category})),reports).map(m=>({...m,filename:core.filenameMetadata(m.rows[0].name)}));
   const findMatch = (item,kind) => matchList().find(m=>m.asset.id===stableId(item)&&m.asset.kind===kind);
   const numbers = m => core.aggregate(m.rows,state);
-  function inline(item,kind) {
+  function inline(item,kind,compact=false) {
     if (!item) return '';
     const m=findMatch(item,kind); if(!m) return '';
     const n=core.aggregate(m.rows,inlineFilter);
     if(!n.count) return '';
+    if(compact) return `<button class="library-performance-link" type="button" data-perf-detail="${esc(m.asset.id)}" data-perf-context="inline">投放详情</button>`;
     return `<button class="perf-inline" type="button" data-perf-detail="${esc(m.asset.id)}" data-perf-context="inline" aria-label="查看${esc(item.name)}的投放表现"><span class="perf-inline-label"><span class="perf-inline-period">近7天投放 <small>演示</small></span><span class="perf-inline-more">详情 <span aria-hidden="true">↗</span></span></span><span class="perf-inline-values"><span class="perf-inline-spend"><small>总消耗</small><b>¥${money(n.spend)}</b></span><span><small>总成交</small><b>¥${money(n.sales)}</b></span><span class="perf-inline-roi"><small>ROI</small><b>${roi(n.roi)}</b></span></span></button>`;
   }
   function preview(asset,large=false) {

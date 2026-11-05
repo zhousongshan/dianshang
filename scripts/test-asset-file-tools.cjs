@@ -24,7 +24,14 @@ try{
  await page.evaluate(()=>switchReviewIdentity('supervisor'));await page.locator('[data-asset-scope="public"]').click();await page.locator('[data-public-folder="public-product"]').first().click();assert.equal(await page.locator('.public-image-card').count(),2);await page.locator('[data-public-folder="public-root"]').first().click();
  await page.locator('[data-public-folder="public-product"]').first().click();
  await page.locator('.public-library-actions [data-public-upload]').click();const chooser=page.waitForEvent('filechooser');await page.locator('#publicUploadDropzone').click();const fileInput=await chooser;assert.equal(await fileInput.element().evaluate(n=>n.webkitdirectory),false);await fileInput.setFiles({name:'6941234567890_商品.png',mimeType:'image/png',buffer:fs.readFileSync(path.resolve(__dirname,'../watch-product.png'))});
- await page.waitForFunction(()=>!document.querySelector('#publicUploadConfirm').disabled);await page.locator('#publicUploadConfirm').click();await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('已上传'));
+ await page.waitForFunction(()=>!document.querySelector('#publicUploadConfirm').disabled);await page.locator('#publicUploadConfirm').click();await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('已提交'));
+ // Public uploads become visible only after the assigned reviewer approves them.
+ assert.equal(await page.locator('.public-image-card').filter({hasText:'6941234567890_商品.png'}).count(),0);
+ await page.evaluate(async()=>{
+   const record=PublicAssets.reviewRecords().find(r=>r.title==='6941234567890_商品.png'&&r.status==='pending');
+   switchReviewIdentity(Object.keys(REVIEW_IDENTITIES).find(key=>REVIEW_IDENTITIES[key].id===record.reviewerId));
+   await applyReviewDecision([record.id],'approved');
+ });
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('[data-asset-scope="public"]').click();await page.locator('[data-public-folder="public-product"]').first().click();assert.equal(await page.locator('.public-image-card').filter({hasText:'6941234567890_商品.png'}).locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),true);
  await page.evaluate(()=>showPage('config'));await page.locator('#mainPrompt').fill('@6941234567890');await page.locator('#publicMentionMenu').waitFor();await page.locator('#mainPrompt').press('Enter');assert.equal(await page.locator('#mainImageList .selected-image-item').count(),1);
  await page.evaluate(()=>showPage('assets'));

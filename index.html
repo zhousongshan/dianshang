@@ -4447,20 +4447,6 @@
       font-weight: 700;
     }
 
-    .asset-folder-foot {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 0;
-      opacity: 0;
-      transition: 0.16s ease;
-    }
-
-    .asset-folder-card:hover .asset-folder-foot {
-      opacity: 1;
-    }
-
     .asset-real-preview {
       width: 100%;
       height: 100%;
@@ -5265,97 +5251,6 @@
 
     .asset-file-shell.is-favorite.is-folder-root .asset-pathbar { display: none; }
 
-    .asset-file-shell.is-favorite.is-folder-root .asset-simple-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 24px;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-card {
-      display: block;
-      width: 100%;
-      min-height: 174px;
-      padding: 34px 24px 22px;
-      border: 1px solid #e4e7ee;
-      border-radius: 14px;
-      background: #fff;
-      box-shadow: 0 8px 24px rgba(16, 24, 40, 0.055);
-      text-align: left;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-card:hover {
-      border-color: #d5d1ff;
-      background: #fff;
-      box-shadow: 0 12px 28px rgba(79, 70, 229, 0.09);
-      transform: translateY(-2px);
-    }
-
-    .asset-folder-main-row {
-      display: grid;
-      justify-items: center;
-      gap: 10px;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-main-row {
-      display: flex;
-      align-items: center;
-      justify-items: initial;
-      gap: 18px;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-icon {
-      width: 48px;
-      height: 36px;
-      flex: 0 0 auto;
-      border-radius: 5px 5px 7px 7px;
-      background: linear-gradient(180deg, #8b83ff, #a9a5ff);
-      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 7px 14px rgba(79, 70, 229, 0.18);
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-icon::before {
-      top: -7px;
-      width: 24px;
-      height: 11px;
-      border-radius: 5px 5px 0 0;
-      background: #7067f4;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-icon::after {
-      display: none;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-card h3 {
-      width: auto;
-      color: #1d2939;
-      font-size: 16px;
-      line-height: 1.4;
-      text-align: left;
-    }
-
-    .asset-folder-meta {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      margin-top: 32px;
-      color: #7c879b;
-      font-size: 12px;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .asset-folder-meta { display: flex; }
-
-    .asset-file-shell.is-favorite.is-folder-root .folder-more-btn {
-      top: auto;
-      right: 18px;
-      bottom: 17px;
-      opacity: 1;
-      background: transparent;
-    }
-
-    .asset-file-shell.is-favorite.is-folder-root .folder-menu {
-      top: auto;
-      right: 18px;
-      bottom: 48px;
-    }
-
     @media (max-width: 1600px) {
       .asset-simple-grid,
       .asset-file-shell.is-favorite .asset-simple-grid {
@@ -5369,9 +5264,6 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
-      .asset-file-shell.is-favorite.is-folder-root .asset-simple-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 940px) {
@@ -5394,9 +5286,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .asset-file-shell.is-favorite.is-folder-root .asset-simple-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 640px) {
@@ -5419,9 +5308,6 @@
         grid-template-columns: 1fr;
       }
 
-      .asset-file-shell.is-favorite.is-folder-root .asset-simple-grid {
-        grid-template-columns: 1fr;
-      }
 
       .asset-pagination {
         flex-wrap: wrap;
@@ -9004,12 +8890,13 @@
     }
   </style>
   <link rel="stylesheet" href="./review-center.css?v=bc72aa0aa11e" />
-  <link rel="stylesheet" href="./public-assets.css?v=461ddab59f45" />
+  <link rel="stylesheet" href="./public-assets.css?v=931a1b2736eb" />
   <link rel="stylesheet" href="./asset-tags.css?v=14fec4646376">
-  <link rel="stylesheet" href="./asset-file-tools.css?v=8fe9fc0b6853" />
+  <link rel="stylesheet" href="./asset-file-tools.css?v=019aa94566d1" />
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=d5526bd3d90d" />
   <link rel="stylesheet" href="./material-performance.css?v=d5b0b0aa3253" />
+  <link rel="stylesheet" href="./batch-video.css?v=552288778233" />
 </head>
 <body>
   <div class="app-shell">
@@ -15397,6 +15284,7 @@
     }
 
     function getTargetImages(target = activeImagePickerTarget) {
+      if (target === "singleImage") return [];
       if (target === "session") return sessionImages;
       if (target === "videoStart") return videoStartImages;
       if (target === "videoReference") return videoReferenceImages;
@@ -15604,6 +15492,19 @@
       $("#videoMentionButton")?.setAttribute("aria-expanded", "false");
     }
 
+    let singleImageRequest = null;
+    function openSingleImageMenu(anchor, request) {
+      activeImagePickerTarget = "singleImage";
+      singleImageRequest = request;
+      const host = anchor.closest("dialog[open]");
+      if (host) host.append($("#imageSourceMenu"));
+      positionImageSourceMenu(anchor);
+    }
+
+    function singleImageSelection() {
+      return activeImagePickerTarget === "singleImage" || activeImagePickerTarget === "videoStart";
+    }
+
     function positionImageSourceMenu(anchor) {
       const menu = $("#imageSourceMenu");
       if (!menu || !anchor) return;
@@ -15619,8 +15520,14 @@
       menu.style.top = `${top}px`;
     }
 
-    function closeImageSourceMenu() {
-      $("#imageSourceMenu").hidden = true;
+    function closeImageSourceMenu(choosing = false) {
+      const menu = $("#imageSourceMenu");
+      if (!menu.hidden && !choosing && activeImagePickerTarget === "singleImage") {
+        singleImageRequest = null;
+        activeImagePickerTarget = "main";
+      }
+      menu.hidden = true;
+      if (menu.parentElement?.matches("dialog")) document.body.append(menu);
     }
 
     function createAssetImageDescriptor(item, index) {
@@ -15752,6 +15659,7 @@
       });
 
       let records = getSelectorImageRecords();
+      if (activeImagePickerTarget === "singleImage") records = records.filter(({item}) => item.previewUrl);
       const keyword = assetSelectorState.keyword.toLowerCase();
       if (!isFavorites) {
         path.classList.add("is-empty");
@@ -15818,6 +15726,7 @@
 
     function openAssetSelector(target) {
       activeImagePickerTarget = target;
+      if (target === "singleImage") singleImageRequest?.beforeLibrary?.();
       assetSelectorState.scope = "generated";
       assetSelectorState.type = "all";
       assetSelectorState.source = "all";
@@ -15838,12 +15747,22 @@
     }
 
     function closeAssetSelector() {
+      const request = activeImagePickerTarget === "singleImage" ? singleImageRequest : null;
+      if (request) { singleImageRequest = null; activeImagePickerTarget = "main"; }
       window.PublicAssets?.closeSelector();
       $("#assetSelectorModal").classList.remove("show");
       document.body.style.overflow = "";
+      request?.afterLibrary?.();
     }
 
     function confirmAssetSelection() {
+      if (activeImagePickerTarget === "singleImage") {
+        const image = [...assetSelectorState.draftSelected.values()][0];
+        const apply = singleImageRequest?.apply;
+        closeAssetSelector();
+        if (image?.url) apply?.(image);
+        return;
+      }
       window.PublicAssets?.confirmMention();
       if (activeImagePickerTarget === "videoStart") {
         const selected = [...assetSelectorState.draftSelected.values()][0];
@@ -16361,14 +16280,15 @@
       const canUse = canUseAsset(kind, index);
       const favoriteDisabled = canUse ? "" : 'disabled title="审核通过后可收藏"';
       const kindBadge = reviewSelectable
-        ? `<label class="asset-kind-badge asset-review-badge" title="选择图片"><input type="checkbox" data-asset-review-select="${index}" ${assetReviewSelection.has(index) ? "checked" : ""} aria-label="选择${escapeHtml(item.name)}推送审核" /></label>`
+        ? `<span class="asset-kind-badge paired-kind">图片</span><label class="asset-kind-badge asset-review-badge" title="选择图片"><input type="checkbox" data-asset-review-select="${index}" ${assetReviewSelection.has(index) ? "checked" : ""} aria-label="选择${escapeHtml(item.name)}推送审核" /></label>`
         : `<span class="asset-kind-badge">${kind === "video" ? "视频" : "图片"}</span>`;
       if (item.previewUrl) {
+        const coverPlay = kind === "video" && !$("#page-assets").classList.contains("asset-list-view");
         return `
           <div class="${previewClass}">
             ${kindBadge}
             <button class="favorite-btn ${favoriteClass}" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? `title="${item.favorite ? "取消收藏" : "收藏"}"` : favoriteDisabled}>${item.favorite ? "♥" : "♡"}</button>
-            ${kind === "video" ? `<video class="asset-real-preview" src="${item.previewUrl}" muted playsinline></video>` : `<img class="asset-real-preview" data-image-preview src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" />`}
+            ${kind === "video" ? `<video class="asset-real-preview" src="${escapeHtml(item.previewUrl)}" ${coverPlay ? "preload=metadata" : item.batchId ? "controls preload=metadata" : ""} muted playsinline></video>${coverPlay ? `<button class="material-play-cover" data-material-play aria-label="播放${escapeHtml(item.name)}"><span>▶</span></button>` : ""}` : `<img class="asset-real-preview" data-image-preview src="${escapeHtml(item.previewUrl)}" alt="${escapeHtml(item.name)}" />`}
           </div>
         `;
       }
@@ -16410,15 +16330,99 @@
       return getAssetRecords().filter(({ item }) => item.favorite);
     }
 
+    const initialFavoriteFolders = assetFolders.map(folder => ({...folder}));
+    const seedMaterialLocations = new Map([
+      ...mockAssets.map((item,index) => [item, 'image-' + index]),
+      ...mockVideos.map((item,index) => [item, 'video-' + index])
+    ]);
+    let folderOwner;
+    let personalFolders = [];
+    let activePersonalFolderId = ROOT_FOLDER_ID;
+
+    function loadLibraryFolders() {
+      const owner = currentReviewIdentity().id;
+      if (owner === folderOwner) return;
+      folderOwner = owner;
+      function read(key, fallback) {
+        try {
+          const value = JSON.parse(localStorage.getItem(key));
+          return Array.isArray(value) ? value : fallback;
+        } catch { return fallback; }
+      }
+      const legacy = read('batch-video-folders:' + owner, []).filter(name => typeof name === 'string' && name !== '批量复刻');
+      personalFolders = read('material-folders:' + owner, legacy.map((name, i) => ({
+        id: 'legacy-personal-' + i, name, parentId: ROOT_FOLDER_ID
+      })));
+      assetFolders = read('favorite-folders:' + owner, initialFavoriteFolders.map(folder => ({...folder})));
+      const positions = new Map(read('material-positions:' + owner, []));
+      for (const [item, key] of seedMaterialLocations) {
+        const id = positions.get(key);
+        item.materialFolderId = personalFolders.some(folder => folder.id === id) ? id : ROOT_FOLDER_ID;
+      }
+      activePersonalFolderId = activeFavoriteFolderId = ROOT_FOLDER_ID;
+    }
+
+    function persistLocation(item) {
+      if (item.batchId) {
+        window.BatchVideoResults?.persistItem(item);
+      } else if (activeAssetScope === 'generated' && seedMaterialLocations.has(item)) {
+        const positions = [...seedMaterialLocations].filter(([asset]) => asset.materialFolderId && asset.materialFolderId !== ROOT_FOLDER_ID)
+          .map(([asset,key]) => [key,asset.materialFolderId]);
+        localStorage.setItem('material-positions:' + folderOwner, JSON.stringify(positions));
+      }
+    }
+
+    function scopedFolders() {
+      return activeAssetScope === 'generated' ? personalFolders : assetFolders;
+    }
+
+    function persistFolders() {
+      const key = activeAssetScope === 'generated' ? 'material-folders:' : 'favorite-folders:';
+      localStorage.setItem(key + folderOwner, JSON.stringify(scopedFolders()));
+    }
+
+    function currentFolder() {
+      return activeAssetScope === 'generated' ? activePersonalFolderId : activeFavoriteFolderId;
+    }
+
+    function enterFolder(id) {
+      if (activeAssetScope === 'generated') activePersonalFolderId = id;
+      else activeFavoriteFolderId = id;
+      currentAssetPage = 1;
+      $("#assetSearch").value = "";
+    }
+
+    function scopedPath(id, folders = scopedFolders()) {
+      const path = [];
+      for (let folder = folders.find(f => f.id === id); folder; folder = folders.find(f => f.id === folder.parentId)) path.unshift(folder);
+      return path;
+    }
+
     function countAssetsInFolder(folderId) {
-      return getFavoriteRecordsByType().filter(({ item }) => item.folderId === folderId).length;
+      return activeAssetScope === 'generated'
+        ? getAssetRecords().filter(({item}) => item.materialFolderId === folderId).length
+        : getFavoriteRecordsByType().filter(({item}) => item.folderId === folderId).length;
+    }
+
+    // All library scopes use the same folder face and section order; permissions stay with the caller.
+    function libraryFolderFace(name, count, date) {
+      const stamp = String(date || "").slice(0, 10).replace(/-(\d+)/g, (_, part) => "/" + Number(part));
+      return `<span class="asset-folder-main-row"><span class="asset-folder-icon" aria-hidden="true"></span><h3 title="${escapeHtml(name)}">${escapeHtml(name)}</h3></span>
+        <span class="asset-folder-meta"><span>${escapeHtml(count)}</span>${stamp ? `<span>·</span><span>${escapeHtml(stamp)} 更新</span>` : ""}</span>`;
+    }
+
+    function libraryGridContent(folderHtml, assetHtml, assetCount, atRoot) {
+      if ($("#page-assets").classList.contains("asset-list-view")) return folderHtml + assetHtml;
+      const folders = folderHtml ? `<section class="library-folders ${atRoot ? "root-folders" : "subfolders"}" aria-label="文件夹">${folderHtml}</section>` : "";
+      const label = assetHtml && (folderHtml || !atRoot) ? `<div class="library-media-count">共 ${assetCount} 个素材</div>` : "";
+      return folders + label + assetHtml;
     }
 
     function renderFolderCard(folder) {
       const isMenuOpen = openFolderMenuId === folder.id;
       const listView = document.querySelector("#page-assets").classList.contains("asset-list-view");
-      const assetCount = folder.displayCount ?? countAssetsInFolder(folder.id);
-      const createdAt = folder.createdAt || folder.updatedAt || "2026-07-13";
+      const assetCount = countAssetsInFolder(folder.id);
+      const date = folder.updatedAt || folder.createdAt;
       return `
         <article class="asset-folder-card" data-open-folder="${folder.id}" aria-label="${escapeHtml(folder.name)}">
           ${listView ? `<div class="asset-folder-actions"><button type="button" data-rename-folder data-folder-id="${folder.id}">重命名</button>${folder.system ? "" : `<button class="danger" type="button" data-delete-folder data-folder-id="${folder.id}">删除</button>`}</div>` : `
@@ -16430,12 +16434,8 @@
             </div>
           ` : ""}
           `}
-          <div class="asset-folder-main-row">
-            <div class="asset-folder-icon" aria-hidden="true"></div>
-            <h3>${escapeHtml(folder.name)}</h3>
-          </div>
+          ${libraryFolderFace(folder.name, assetCount + " 个素材", date)}
           <span class="folder-drop-hint">移动到这里</span>
-          <div class="asset-folder-meta"><span>${assetCount} 个素材</span><span>·</span><span>${createdAt}</span></div>
         </article>
       `;
     }
@@ -16445,15 +16445,13 @@
     }
 
     function renderPathbar(activeFolderId, keyword, typeText) {
-      const parentFolderId = getParentFolderId(activeFolderId);
-      const pathItems = activeFolderId === ROOT_FOLDER_ID
-        ? [{ id: ROOT_FOLDER_ID, name: "收藏" }]
-        : [{ id: ROOT_FOLDER_ID, name: "收藏" }, ...getFolderPath(activeFolderId)];
+      const path = scopedPath(activeFolderId);
+      const parentFolderId = path.at(-1)?.parentId || ROOT_FOLDER_ID;
+      const pathItems = [{id: ROOT_FOLDER_ID, name: activeAssetScope === "generated" ? "我的素材" : "我的收藏"}, ...path];
       const pathHtml = pathItems.map((item, index) => {
         const isCurrent = index === pathItems.length - 1;
         return `
-          <span class="asset-path-segment ${isCurrent ? "current" : ""}">${item.name}</span>
-          ${isCurrent ? "" : "<span>/</span>"}
+          ${isCurrent ? `<span class="asset-path-segment current">${escapeHtml(item.name)}</span>` : `<button type="button" class="asset-path-segment" data-folder-back="${item.id}">${escapeHtml(item.name)}</button><span aria-hidden="true"> › </span>`}
         `;
       }).join("");
 
@@ -16511,6 +16509,9 @@
 
     // 渲染资产库：我的素材与收藏文件夹共享同一套操作能力
     function renderAssets() {
+      $("#page-assets").classList.toggle("library-browser", ["generated","favorites","public"].includes(activeAssetScope));
+      loadLibraryFolders();
+      window.BatchVideoResults?.syncLibrary();
       window.MaterialPerformance?.syncScope(activeAssetScope);
       if (window.AssetTags?.renderScope()) return;
       if (window.PublicAssets?.renderLibrary()) return;
@@ -16521,13 +16522,13 @@
       const sectionTitle = $("#assetSectionTitle");
       const fileShell = $("#assetFileShell");
       const pathbar = $("#assetPathbar");
-      const resolvedFavoriteFolderId = getFolderById(activeFavoriteFolderId) ? activeFavoriteFolderId : ROOT_FOLDER_ID;
+      const resolvedFavoriteFolderId = scopedFolders().some(f => f.id === currentFolder()) ? currentFolder() : ROOT_FOLDER_ID;
 
       if (isFavoriteScope) activeAssetReviewStatus = "all";
       sectionTitle.hidden = true;
-      fileShell.classList.toggle("is-favorite", isFavoriteScope);
-      fileShell.classList.toggle("is-folder-root", isFavoriteScope && resolvedFavoriteFolderId === ROOT_FOLDER_ID);
-      $("#assetNewFolderBtn").hidden = !isFavoriteScope;
+      fileShell.classList.toggle("is-favorite", isFavoriteScope || resolvedFavoriteFolderId !== ROOT_FOLDER_ID);
+      fileShell.classList.toggle("is-folder-root", resolvedFavoriteFolderId === ROOT_FOLDER_ID);
+      $("#assetNewFolderBtn").hidden = false;
       $("#assetUploadBtn").hidden = isFavoriteScope;
       $("#submitAssetReviewSelection").hidden = isFavoriteScope || currentReviewIdentity().canReview;
       $(".asset-filter-controls").hidden = false;
@@ -16547,72 +16548,48 @@
       });
 
       let records = getAssetRecords().filter(({ item, index, kind }) => {
-        const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
+        const source = `${item.name}${item.tags || ""}${isFavoriteScope ? getFolderName(item.folderId) : scopedPath(item.materialFolderId).map(folder => folder.name).join("/")}`.toLowerCase();
         const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
         const matchesReviewStatus = activeAssetReviewStatus === "all" || assetReviewStatus(kind, index) === activeAssetReviewStatus;
         const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
         return source.includes(keyword) && matchesSource && matchesReviewStatus && matchesDate;
       });
 
-      if (isFavoriteScope) {
-        const activeFolderId = resolvedFavoriteFolderId;
-        const favoriteRecords = getFavoriteRecordsByType().filter(({ item, index, kind }) => {
-          const matchesSource = activeAssetSource === "all" || getAssetSource(item) === activeAssetSource;
-          const matchesReviewStatus = activeAssetReviewStatus === "all" || assetReviewStatus(kind, index) === activeAssetReviewStatus;
-          const matchesDate = !activeAssetDate || getAssetRecordDate(item, index, kind) === activeAssetDate;
-          return matchesSource && matchesReviewStatus && matchesDate;
-        });
-        const folderRecords = activeAssetDate || activeAssetReviewStatus !== "all" ? [] : keyword
-          ? assetFolders.filter(folder => folder.name.toLowerCase().includes(keyword))
-          : getChildFolders(activeFolderId);
+      const activeFolderId = resolvedFavoriteFolderId;
+      const tree = scopedFolders();
+      const searching = Boolean(keyword || activeAssetDate || activeAssetReviewStatus !== "all");
+      const folderRecords = activeAssetDate || activeAssetReviewStatus !== "all" ? [] :
+        tree.filter(folder => keyword ? folder.name.toLowerCase().includes(keyword) : folder.parentId === activeFolderId);
+      pathbar.innerHTML = renderPathbar(activeFolderId, keyword, typeText);
+      records = records.filter(({item}) => {
+        if (isFavoriteScope && !item.favorite) return false;
+        const id = isFavoriteScope ? item.folderId : item.materialFolderId || ROOT_FOLDER_ID;
+        return searching || id === activeFolderId;
+      });
+      if (!isFavoriteScope) records.sort((a,b) => (b.item.batchCreated || 0) - (a.item.batchCreated || 0));
 
-        pathbar.innerHTML = renderPathbar(activeFolderId, keyword, typeText);
-        records = keyword || activeAssetDate || activeAssetReviewStatus !== "all"
-          ? favoriteRecords.filter(({ item }) => {
-              const source = `${item.name}${item.tags}${getFolderName(item.folderId)}`.toLowerCase();
-              return source.includes(keyword);
-            })
-          : favoriteRecords.filter(({ item }) => item.folderId === activeFolderId);
-
-        const combinedEntries = [
-          ...folderRecords.map(folder => ({ entryType: "folder", folder })),
-          ...records.map(record => ({ entryType: "asset", record }))
-        ];
-        const pageSize = Number($("#assetPageSize")?.value || 10);
-        const totalPages = Math.max(1, Math.ceil(combinedEntries.length / pageSize));
-        currentAssetPage = Math.min(Math.max(1, currentAssetPage), totalPages);
-        const pageEntries = combinedEntries.slice((currentAssetPage - 1) * pageSize, currentAssetPage * pageSize);
-        $("#assetResultSummary").textContent = activeFolderId === ROOT_FOLDER_ID
-          ? `共 ${folderRecords.length} 个文件夹`
-          : `共 ${combinedEntries.length} 个内容`;
-        renderAssetPagination(combinedEntries.length, totalPages);
-
-        const pageHtml = pageEntries.map(entry => entry.entryType === "folder"
-          ? renderFolderCard(entry.folder)
-          : renderAssetCard(entry.record.item, entry.record.index, entry.record.kind, isFavoriteScope)
-        ).join("");
-
-        grid.innerHTML = pageHtml
-          ? pageHtml
-          : `<div class="empty-state" style="grid-column: 1 / -1">当前文件夹还没有素材。</div>`;
-        updateAssetReviewSelectionBar();
-        return;
-      }
-
+      const combinedEntries = [
+        ...folderRecords.map(folder => ({ entryType: "folder", folder })),
+        ...records.map(record => ({ entryType: "asset", record }))
+      ];
       const pageSize = Number($("#assetPageSize")?.value || 10);
-      const totalPages = Math.max(1, Math.ceil(records.length / pageSize));
+      const totalPages = Math.max(1, Math.ceil(combinedEntries.length / pageSize));
       currentAssetPage = Math.min(Math.max(1, currentAssetPage), totalPages);
-      const pageRecords = records.slice((currentAssetPage - 1) * pageSize, currentAssetPage * pageSize);
-      $("#assetResultSummary").textContent = `共 ${records.length} 个素材`;
-      renderAssetPagination(records.length, totalPages);
+      const pageEntries = combinedEntries.slice((currentAssetPage - 1) * pageSize, currentAssetPage * pageSize);
+      const isGrid = !$("#page-assets").classList.contains("asset-list-view");
+      $("#assetResultSummary").textContent = folderRecords.length && isGrid && pageEntries.some(e => e.entryType === "folder")
+        ? `共 ${folderRecords.length} 个文件夹` : folderRecords.length && !isGrid ? `共 ${folderRecords.length} 个文件夹，${records.length} 个素材` : `共 ${records.length} 个素材`;
+      renderAssetPagination(combinedEntries.length, totalPages);
 
-      if (!records.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1">没有找到匹配${typeText}</div>`;
-        updateAssetReviewSelectionBar();
-        return;
-      }
+      const folderHtml = pageEntries.filter(entry => entry.entryType === "folder")
+        .map(entry => renderFolderCard(entry.folder)).join("");
+      const assetHtml = pageEntries.filter(entry => entry.entryType === "asset")
+        .map(({record}) => renderAssetCard(record.item, record.index, record.kind, isFavoriteScope)).join("");
+      const pageHtml = libraryGridContent(folderHtml, assetHtml, records.length, activeFolderId === ROOT_FOLDER_ID);
 
-      grid.innerHTML = pageRecords.map(({ item, index, kind }) => renderAssetCard(item, index, kind, isFavoriteScope)).join("");
+      grid.innerHTML = pageHtml
+        ? pageHtml
+        : `<div class="empty-state" style="grid-column: 1 / -1">当前文件夹还没有素材。</div>`;
       updateAssetReviewSelectionBar();
     }
 
@@ -16703,25 +16680,28 @@
       const isMenuOpen = openAssetMenuKey === menuKey;
       const canSubmitReview = !isFavoriteScope && canPushAssetReview(kind, index);
       const displayDate = getAssetRecordDate(item, index, kind);
+      const listView = $("#page-assets").classList.contains("asset-list-view");
+      const performance = listView || isMenuOpen ? window.MaterialPerformance?.inline(item, kind, true) || "" : "";
+      const details = item.batchId && isMenuOpen ? `<dl class="material-provenance"><dt>参考视频</dt><dd>${escapeHtml(item.referenceName || "—")}</dd><dt>保存位置</dt><dd>${escapeHtml(scopedPath(item.materialFolderId, personalFolders).map(f => f.name).join(" / ") || "我的素材")}</dd></dl>` : "";
       return `
-        <article class="asset-card-lite" aria-label="${escapeHtml(item.name)}" ${isFavoriteScope ? `draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}"` : ""}>
+        <article class="asset-card-lite" aria-label="${escapeHtml(item.name)}" draggable="true" data-drag-asset-kind="${kind}" data-drag-asset-index="${index}">
           ${renderAssetPreview(kind, item, index, item.favorite ? "" : "inactive", canSubmitReview)}
           <div class="asset-card-info">
-            <h3 class="asset-card-title">${escapeHtml(item.name)}${window.AssetTags?.summary(item, kind) || ""}</h3>
+            <h3 class="asset-card-title" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}${window.AssetTags?.summary(item, kind) || ""}</h3>
             <div class="asset-state-row">
               <span class="asset-status-pill ${isLocal ? "warn" : ""}">${isLocal ? "本地上传" : "AI生成"}</span>
               <span class="asset-card-date">${displayDate}</span>
             </div>
-            ${window.MaterialPerformance?.inline(item, kind) || ""}
+            ${listView ? performance : ""}
             <div class="asset-card-actions">
-              ${window.AssetTags?.action(item, kind) || ""}
+              ${listView || !isFavoriteScope ? window.AssetTags?.action(item, kind) || "" : ""}
               <button class="link-btn" data-rename-asset data-asset-kind="${kind}" data-asset-index="${index}">✎ 重命名</button>
-              ${isFavoriteScope ? `<button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>` : ""}
+              <button class="asset-move-btn" data-move-asset data-asset-kind="${kind}" data-asset-index="${index}" title="移动到其他文件夹">↗ 移动</button>
               ${isFavoriteScope ? `<button class="link-btn" data-toggle-favorite data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>取消收藏</button>` : ""}
               <button class="link-btn" data-download-asset data-asset-kind="${kind}" data-asset-index="${index}" ${canUse ? "" : useRestriction}>⇩ 下载</button>
               ${document.querySelector('#page-assets').classList.contains('asset-list-view') ? `<button class="link-btn asset-delete-direct" type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}">删除</button>` : `
               <button class="link-btn asset-card-more ${isMenuOpen ? "active" : ""}" data-asset-menu="${menuKey}" aria-label="更多操作" aria-expanded="${isMenuOpen}">···</button>
-              ${isMenuOpen ? `<div class="asset-card-menu" role="menu"><button type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}" role="menuitem">删除</button></div>` : ""}`}
+              ${isMenuOpen ? `<div class="asset-card-menu" role="menu">${details}${performance}${isFavoriteScope ? window.AssetTags?.action(item, kind) || "" : ""}<button type="button" data-delete-asset data-asset-kind="${kind}" data-asset-index="${index}" role="menuitem">删除</button></div>` : ""}`}
 
             </div>
           </div>
@@ -16734,7 +16714,7 @@
     }
 
     function populateFavoriteFolders() {
-      $("#favoriteFolderSelect").innerHTML = assetFolders.map(folder => `<option value="${folder.id}">${folder.name}</option>`).join("");
+      $("#favoriteFolderSelect").innerHTML = assetFolders.map(folder => `<option value="${folder.id}">${escapeHtml(folder.name)}</option>`).join("");
     }
 
     function openFavoriteModal(kind, index) {
@@ -16759,6 +16739,7 @@
       if (pendingFavorite.kind === "image") {
         forEachGeneratedResultByAssetIndex(pendingFavorite.index, updateGeneratedFavoriteButton);
       }
+      window.BatchVideoResults?.persistItem(item);
       closeFavoriteModal();
       renderAssets();
       showToast(`已收藏到「${getFolderName(folderId)}」。`);
@@ -16778,6 +16759,7 @@
         if (kind === "image") {
           forEachGeneratedResultByAssetIndex(index, updateGeneratedFavoriteButton);
         }
+        window.BatchVideoResults?.persistItem(item);
         renderAssets();
         showToast("已加入默认收藏。");
         return;
@@ -16788,6 +16770,7 @@
       if (kind === "image") {
         forEachGeneratedResultByAssetIndex(index, updateGeneratedFavoriteButton);
       }
+      window.BatchVideoResults?.persistItem(item);
       renderAssets();
       showToast("已取消收藏。");
     }
@@ -16807,6 +16790,7 @@
           if (kind === "image") {
             forEachGeneratedResultByAssetIndex(index, updateGeneratedResultCard);
           }
+          window.BatchVideoResults?.persistItem(item);
           renderAssets();
           showToast(`已重命名为「${trimmedName}」。`);
         }
@@ -16827,6 +16811,7 @@
           item.folderId = "";
           openAssetMenuKey = null;
           currentAssetPage = 1;
+          window.BatchVideoResults?.persistItem(item);
           renderAssets();
           showToast(`已删除「${item.name}」。`);
         }
@@ -16840,15 +16825,16 @@
         label: "文件夹名称",
         value: "新品主图",
         onSubmit: trimmedName => {
-          const parentId = activeFavoriteFolderId === ROOT_FOLDER_ID ? ROOT_FOLDER_ID : activeFavoriteFolderId;
-          if (assetFolders.some(folder => folder.parentId === parentId && folder.name === trimmedName)) {
+          const parentId = currentFolder();
+          if (scopedFolders().some(folder => folder.parentId === parentId && folder.name === trimmedName)) {
             showToast("这个文件夹已经存在。");
             return;
           }
 
           const folderId = `folder-${Date.now()}`;
-          assetFolders.push({ id: folderId, name: trimmedName, parentId });
-          activeFavoriteFolderId = folderId;
+          scopedFolders().push({ id: folderId, name: trimmedName, parentId, createdAt: new Date().toLocaleDateString('sv-SE') });
+          enterFolder(folderId);
+          persistFolders();
           renderAssets();
           showToast(`已新建文件夹「${trimmedName}」。`);
         }
@@ -16856,7 +16842,7 @@
     }
 
     function renameFolder(folderId) {
-      const folder = getFolderById(folderId);
+      const folder = scopedFolders().find(f => f.id === folderId);
       if (!folder) return;
 
       openInputModal({
@@ -16866,12 +16852,14 @@
         value: folder.name,
         onSubmit: trimmedName => {
           if (trimmedName === folder.name) return;
-          if (assetFolders.some(item => item.parentId === folder.parentId && item.id !== folder.id && item.name === trimmedName)) {
+          if (scopedFolders().some(item => item.parentId === folder.parentId && item.id !== folder.id && item.name === trimmedName)) {
             showToast("同级下已有同名文件夹。");
             return;
           }
 
           folder.name = trimmedName;
+          folder.updatedAt = new Date().toLocaleDateString("sv-SE");
+          persistFolders();
           renderAssets();
           showToast(`文件夹已重命名为「${trimmedName}」。`);
         }
@@ -16880,51 +16868,55 @@
 
     function getDescendantFolderIds(folderId) {
       const ids = [];
-      getChildFolders(folderId).forEach(child => {
+      scopedFolders().filter(f => f.parentId === folderId).forEach(child => {
         ids.push(child.id, ...getDescendantFolderIds(child.id));
       });
       return ids;
     }
 
     function deleteFolder(folderId) {
-      const folder = getFolderById(folderId);
+      const folder = scopedFolders().find(f => f.id === folderId);
       if (!folder || folder.system) return;
 
       const affectedFolderIds = [folderId, ...getDescendantFolderIds(folderId)];
-      const assetCount = [...mockAssets, ...mockVideos].filter(item => item.favorite && affectedFolderIds.includes(item.folderId)).length;
-      const childCount = affectedFolderIds.length - 1;
-
+      const personal = activeAssetScope === "generated";
+      const key = personal ? "materialFolderId" : "folderId";
+      const affected = [...mockAssets, ...mockVideos].filter(item => (personal || item.favorite) && affectedFolderIds.includes(item[key]));
       openConfirmModal({
         title: `删除「${folder.name}」？`,
-        desc: `其中包含 ${childCount} 个子文件夹和 ${assetCount} 个素材。删除后，素材会移入默认文件夹，避免丢失。`,
+        desc: `其中的 ${affected.length} 个素材将移入${personal ? '我的素材根目录' : '默认收藏'}。`,
         confirmText: "删除文件夹",
         onConfirm: () => {
-          [...mockAssets, ...mockVideos].forEach(item => {
-            if (item.favorite && affectedFolderIds.includes(item.folderId)) item.folderId = DEFAULT_FOLDER_ID;
+          affected.forEach(item => {
+            item[key] = personal ? ROOT_FOLDER_ID : DEFAULT_FOLDER_ID;
+            persistLocation(item);
           });
-          assetFolders = assetFolders.filter(item => !affectedFolderIds.includes(item.id));
-          if (affectedFolderIds.includes(activeFavoriteFolderId)) activeFavoriteFolderId = ROOT_FOLDER_ID;
+          const remaining = scopedFolders().filter(item => !affectedFolderIds.includes(item.id));
+          if (personal) personalFolders = remaining; else assetFolders = remaining;
+          if (affectedFolderIds.includes(currentFolder())) enterFolder(ROOT_FOLDER_ID);
+          persistFolders();
           openFolderMenuId = null;
           renderAssets();
-          showToast(`已删除「${folder.name}」，其中的素材已移入默认文件夹。`);
+          showToast(`已删除「${folder.name}」。`);
         }
       });
     }
 
     function renderMoveFolderOptions() {
       const keyword = ($("#moveFolderSearch")?.value || "").trim().toLowerCase();
-      const folders = assetFolders.filter(folder => {
-        const path = getFolderPath(folder.id).map(item => item.name).join(" / ");
+      const choices = activeAssetScope === "generated" ? [{id: ROOT_FOLDER_ID, name: "我的素材（根目录）"}, ...scopedFolders()] : scopedFolders();
+      const folders = choices.filter(folder => {
+        const path = scopedPath(folder.id).map(item => item.name).join(" / ");
         return path.toLowerCase().includes(keyword);
       });
 
       $("#moveFolderList").innerHTML = folders.map(folder => {
-        const parentPath = getFolderPath(folder.parentId).map(item => item.name).join(" / ") || "收藏根目录";
-        const depth = getFolderPath(folder.id).length - 1;
+        const parentPath = scopedPath(folder.parentId).map(item => item.name).join(" / ") || (activeAssetScope === "generated" ? "我的素材" : "收藏根目录");
+        const depth = Math.max(0, scopedPath(folder.id).length - 1);
         return `
           <button class="move-folder-option ${selectedMoveFolderId === folder.id ? "active" : ""}" data-select-move-folder="${folder.id}" style="padding-left: ${12 + Math.min(depth, 4) * 14}px">
             <span class="move-folder-symbol" aria-hidden="true"></span>
-            <span class="move-folder-copy"><strong>${folder.name}</strong><small>${parentPath}</small></span>
+            <span class="move-folder-copy"><strong>${escapeHtml(folder.name)}</strong><small>${escapeHtml(parentPath)}</small></span>
           </button>
         `;
       }).join("") || `<div class="empty-state" style="padding: 24px 12px">没有找到匹配的文件夹</div>`;
@@ -16934,7 +16926,7 @@
       const item = getAssetItem(kind, index);
       if (!item) return;
       pendingMoveAsset = { kind, index };
-      selectedMoveFolderId = item.folderId || DEFAULT_FOLDER_ID;
+      selectedMoveFolderId = activeAssetScope === "generated" ? item.materialFolderId || ROOT_FOLDER_ID : item.folderId || DEFAULT_FOLDER_ID;
       $("#moveFolderSearch").value = "";
       renderMoveFolderOptions();
       $("#moveModal").classList.add("show");
@@ -16947,23 +16939,21 @@
 
     function moveAssetToFolder(kind, index, folderId, allowUndo = true) {
       const item = getAssetItem(kind, index);
-      const folder = getFolderById(folderId);
+      const personal = activeAssetScope === "generated";
+      const folder = personal && folderId === ROOT_FOLDER_ID ? {id:folderId, name:"我的素材"} : scopedFolders().find(f => f.id === folderId);
       if (!item || !folder) return;
-      if (item.folderId === folderId) {
-        showToast(`素材已经在「${folder.name}」中。`);
-        return;
-      }
-      const previousFolderId = item.folderId;
-      item.folderId = folderId;
+      const key = personal ? "materialFolderId" : "folderId";
+      const previousFolderId = item[key] || (personal ? ROOT_FOLDER_ID : DEFAULT_FOLDER_ID);
+      if (previousFolderId === folderId) return;
+      item[key] = folderId;
+      persistLocation(item);
       renderAssets();
-      if (allowUndo && getFolderById(previousFolderId)) {
-        showToast(`已移动到「${folder.name}」。`, "撤销", () => {
-          moveAssetToFolder(kind, index, previousFolderId, false);
-          showToast(`已撤销，素材已回到「${getFolderName(previousFolderId)}」。`);
-        });
-      } else {
-        showToast(`已移动到「${folder.name}」。`);
-      }
+      const undo = () => {
+        item[key] = previousFolderId;
+        persistLocation(item);
+        renderAssets();
+      };
+      showToast(`已移动到「${folder.name}」。`, allowUndo ? "撤销" : "", allowUndo ? undo : null);
     }
 
     function confirmMoveAsset() {
@@ -16990,6 +16980,7 @@
           source: "local",
           favorite: true,
           folderId: targetFolderId,
+          materialFolderId: activeAssetScope === "generated" ? activePersonalFolderId : ROOT_FOLDER_ID,
           previewUrl: URL.createObjectURL(file)
         };
 
@@ -17044,12 +17035,13 @@
     }
 
     const aiAppCategoryNames = { image: "生图", video: "视频", audio: "音频" };
-    const aiAppGroups = ["视频应用", "图片工具"];
+    const aiAppGroups = ["视频应用", "图片工具", "批量创作"];
     const aiAppSourceImage = { key: "source", label: "原始图片", kind: "image" };
     const aiAppReferenceImage = { key: "reference", label: "参考图片", kind: "image" };
     const aiAppSourceVideo = { key: "source", label: "原始视频", kind: "video" };
     const aiAppPrompt = { key: "prompt", label: "修改要求", type: "textarea", placeholder: "描述需要修改的部分，以及希望保留的内容…" };
     const aiApplications = [
+      { id: "batch-video", group: "批量创作", category: "video", icon: "layers", name: "批量视频", description: "一批参考视频换成自己的产品：建好批次一次启动，做完集中验收。", uploads: [], fields: [] },
       { id: "qianchuan-video-review", group: "视频应用", category: "video", icon: "video", name: "千川投放审核", description: "上传投放视频，提交后查看审核结果。", purpose: "review", kindLabel: "视频审核", actionLabel: "提交审核", note: "审核服务暂未开放。", uploads: [{ ...aiAppSourceVideo, label: "待审核视频" }], fields: [] },
       { id: "white-background", group: "图片工具", category: "image", icon: "image", name: "白底图生成", description: "保留商品主体，将背景替换为纯白色，准备清晰的商品展示图。", kindLabel: "图片工具", actionLabel: "生成白底图", parameterTitle: "输出设置", note: "生成服务暂未开放。", uploads: [{ ...aiAppSourceImage, label: "商品原图" }], fields: [{ key: "ratio", label: "画面比例", type: "select", options: ["保持原图比例", "1:1", "3:4", "4:3", "9:16"], value: "保持原图比例" }, { key: "format", label: "输出格式", type: "select", options: ["PNG", "JPEG"], value: "PNG" }] },
     ];
@@ -17681,8 +17673,15 @@
       const imageSourceButton = event.target.closest("[data-image-source]");
       if (imageSourceButton) {
         const source = imageSourceButton.dataset.imageSource;
-        closeImageSourceMenu();
+        closeImageSourceMenu(true);
         if (source === "local") {
+          if (activeImagePickerTarget === "singleImage") {
+            const request = singleImageRequest;
+            singleImageRequest = null;
+            activeImagePickerTarget = "main";
+            request?.upload();
+            return;
+          }
           const input = activeImagePickerTarget === "session"
             ? $("#sessionImageInput")
             : activeImagePickerTarget === "videoStart"
@@ -17734,7 +17733,7 @@
         const image = createAssetImageDescriptor(item, index);
         if (assetSelectorState.draftSelected.has(image.id)) assetSelectorState.draftSelected.delete(image.id);
         else {
-          if (activeImagePickerTarget === "videoStart") {
+          if (singleImageSelection()) {
             assetSelectorState.draftSelected.clear();
             assetSelectorState.draftSelected.set(image.id, image);
             renderAssetSelector();
@@ -18047,7 +18046,7 @@
         activeAssetType = "all";
         activeAssetSource = "all";
         currentAssetPage = 1;
-        if (activeAssetScope === "favorites") activeFavoriteFolderId = ROOT_FOLDER_ID;
+        enterFolder(ROOT_FOLDER_ID);
         renderAssets();
         return;
       }
@@ -18091,32 +18090,43 @@
       const folderCard = event.target.closest("[data-open-folder]");
       if (folderCard) {
         openFolderMenuId = null;
-        activeFavoriteFolderId = folderCard.dataset.openFolder;
+        enterFolder(folderCard.dataset.openFolder);
         renderAssets();
         return;
       }
 
       const folderCrumb = event.target.closest("[data-folder-crumb]");
       if (folderCrumb) {
-        activeFavoriteFolderId = folderCrumb.dataset.folderCrumb;
+        enterFolder(folderCrumb.dataset.folderCrumb);
         renderAssets();
         return;
       }
 
       const folderBack = event.target.closest("[data-folder-back]");
       if (folderBack) {
-        activeFavoriteFolderId = folderBack.dataset.folderBack;
+        enterFolder(folderBack.dataset.folderBack);
         renderAssets();
         return;
       }
 
+      const playCover = event.target.closest("[data-material-play]");
+      if (playCover) {
+        const video = playCover.parentElement.querySelector("video");
+        playCover.hidden = true;
+        video.controls = true;
+        video.focus();
+        video.play().catch(() => { video.controls = false; playCover.hidden = false; });
+        return;
+      }
       if (event.target.closest("[data-download-asset]")) {
         const button = event.target.closest("[data-download-asset]");
         if (!canUseAsset(button.dataset.assetKind, Number(button.dataset.assetIndex))) {
           showToast("图片审核通过后才可以下载。");
           return;
         }
-        showToast("已开始下载素材。");
+        const item = getAssetItem(button.dataset.assetKind, Number(button.dataset.assetIndex));
+        if (item?.batchId) downloadResource(item.previewUrl, item.name + ".webm");
+        else showToast("已开始下载素材。");
         return;
       }
 
@@ -18318,7 +18328,7 @@
 
       if (event.target === $("#assetScopeSelect")) {
         activeAssetScope = event.target.value;
-        currentAssetPage = 1;
+        enterFolder(ROOT_FOLDER_ID);
         renderAssets();
         return;
       }
@@ -18721,7 +18731,7 @@
       closeModelEditor();
       closeReviewDetail();
       closeReviewReject();
-      if ($("#assetSelectorModal").classList.contains("show")) closeAssetSelector();
+      if ($("#assetSelectorModal").classList.contains("show")) { event.preventDefault(); closeAssetSelector(); }
     });
     $("#moveFolderSearch").addEventListener("input", renderMoveFolderOptions);
 
@@ -19695,7 +19705,7 @@
     restoreVideoConversationState();
   </script>
   <script src="./asset-tags.js?v=7db27a323c59"></script>
-  <script src="./public-assets.js?v=086c027f9fd8"></script>
+  <script src="./public-assets.js?v=f7d3d5d92f93"></script>
   <script src="./asset-file-tools.js?v=fc4b61f06ee5"></script>
   <script src="./video-tools.js?v=b40e688b605c"></script>
   <script src="./image-tools.js?v=f8055344a2eb"></script>
@@ -19709,8 +19719,11 @@
   <script src="./performance-core.js?v=4f54ad48df0b"></script>
   <script src="./performance-demo.js?v=b428bc987d38"></script>
   <script src="./data/performance-snapshots.js?v=3b61e34ab20a"></script>
-  <script src="./material-performance.js?v=9cc4d2cbd286"></script>
+  <script src="./material-performance.js?v=43f62ebe1d7a"></script>
   <script src="./workbench.js?v=3989a18900c0"></script>
   <script src="./qianchuan-review.js?v=f1838c893f9a"></script>
+  <script src="./batch-video-media/export-thumbnails.js?v=9c93c18a91fe"></script>
+  <script src="./batch-video-results.js?v=34fa0f174560"></script>
+  <script src="./batch-video.js?v=b5a84f6db148"></script>
 </body>
 </html>
