@@ -623,6 +623,19 @@
     .ai-app-item.active { color: var(--primary); background: var(--primary-soft); font-weight: 750; }
     .ai-app-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
     .ai-app-directory-empty { padding: 12px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .ai-app-workspace.profit-workspace { grid-template-columns: 182px minmax(0, 1fr); align-items: start; }
+    .profit-workspace > .ai-app-editor, .profit-workspace > .ai-app-results { display: none; }
+    .profit-workspace > .ai-app-directory { grid-row: 1; background: white; }
+    #crossBorderProfit { grid-column: 2; grid-row: 1; display: block; width: 100%; height: calc(100dvh - var(--topbar)); border: 0; background: #f6f7fb; }
+    #crossBorderProfit[hidden] { display: none; }
+    @media (max-width: 1050px) {
+      .ai-app-workspace.profit-workspace { grid-template-columns: 145px minmax(0, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .ai-app-workspace.profit-workspace { display: flex; flex-direction: column; }
+      .profit-workspace > .ai-app-directory { position: static; width: 100%; height: auto; max-height: 150px; border-right: 0; border-bottom: 1px solid var(--line); }
+      #crossBorderProfit { min-height: 450px; height: calc(100dvh - 210px); }
+    }
     .ai-app-editor { padding: 22px 20px 28px; border-right: 1px solid var(--line); min-width: 0; }
     .ai-app-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
     .ai-app-editor-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
@@ -9130,6 +9143,7 @@
               <nav id="aiAppDirectory" aria-label="选择AI应用"></nav>
               <p class="ai-app-directory-empty" id="aiAppDirectoryEmpty" hidden>没有找到相关应用。</p>
             </aside>
+            <iframe id="crossBorderProfit" title="跨境利润工作区" hidden></iframe>
             <div class="ai-app-editor" id="aiAppEditor" aria-label="应用素材和参数"></div>
             <section class="ai-app-results" aria-labelledby="aiAppResultsTitle">
               <div class="ai-app-results-toolbar"><h2 id="aiAppResultsTitle">生成结果</h2></div>
@@ -17034,13 +17048,14 @@
       return `<svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M7 5h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/><path d="m17 9 4-2v10l-4-2V9Z" stroke="currentColor" stroke-width="2"/></svg>`;
     }
 
-    const aiAppCategoryNames = { image: "生图", video: "视频", audio: "音频" };
-    const aiAppGroups = ["视频应用", "图片工具", "批量创作"];
+    const aiAppCategoryNames = { image: "生图", video: "视频", audio: "音频", operations: "运营" };
+    const aiAppGroups = ["视频应用", "图片工具", "批量创作", "运营工具"];
     const aiAppSourceImage = { key: "source", label: "原始图片", kind: "image" };
     const aiAppReferenceImage = { key: "reference", label: "参考图片", kind: "image" };
     const aiAppSourceVideo = { key: "source", label: "原始视频", kind: "video" };
     const aiAppPrompt = { key: "prompt", label: "修改要求", type: "textarea", placeholder: "描述需要修改的部分，以及希望保留的内容…" };
     const aiApplications = [
+      { id: "cross-border-profit", group: "运营工具", category: "operations", icon: "profit", name: "跨境利润", description: "商品利润档案、跨境小包运费与历史测算对比。", uploads: [], fields: [] },
       { id: "batch-video", group: "批量创作", category: "video", icon: "layers", name: "批量视频", description: "一批参考视频换成自己的产品：建好批次一次启动，做完集中验收。", uploads: [], fields: [] },
       { id: "qianchuan-video-review", group: "视频应用", category: "video", icon: "video", name: "千川投放审核", description: "上传投放视频，提交后查看审核结果。", purpose: "review", kindLabel: "视频审核", actionLabel: "提交审核", note: "审核服务暂未开放。", uploads: [{ ...aiAppSourceVideo, label: "待审核视频" }], fields: [] },
       { id: "white-background", group: "图片工具", category: "image", icon: "image", name: "白底图生成", description: "保留商品主体，将背景替换为纯白色，准备清晰的商品展示图。", kindLabel: "图片工具", actionLabel: "生成白底图", parameterTitle: "输出设置", note: "生成服务暂未开放。", uploads: [{ ...aiAppSourceImage, label: "商品原图" }], fields: [{ key: "ratio", label: "画面比例", type: "select", options: ["保持原图比例", "1:1", "3:4", "4:3", "9:16"], value: "保持原图比例" }, { key: "format", label: "输出格式", type: "select", options: ["PNG", "JPEG"], value: "PNG" }] },
@@ -17050,6 +17065,7 @@
 
     function aiApplicationIcon(name) {
       const paths = {
+        profit: '<path d="M3 3v17h18M6 14l5-5 4 3 6-7"/><path d="M17 5h4v4"/>',
         image: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8" cy="9" r="1.5"/><path d="m3 17 5-5 4 4 3-3 6 6"/>',
         expand: '<path d="M9 3H3v6M15 3h6v6M3 15v6h6M21 15v6h-6M3 3l6 6M21 3l-6 6M3 21l6-6M21 21l-6-6"/>',
         cutout: '<rect x="3" y="3" width="18" height="18" rx="4" stroke-dasharray="3 3"/><path d="M8 15v-5a4 4 0 0 1 8 0v5l2 3H6l2-3Z"/>',
@@ -17088,6 +17104,12 @@
         return `<div class="ai-app-group"><h2>${escapeHtml(group)}</h2>${apps.map(app => `<button class="ai-app-item ${app.id === activeAiApplicationId ? "active" : ""}" type="button" data-ai-app-open="${app.id}" ${app.id === activeAiApplicationId ? 'aria-current="true"' : ""}>${aiApplicationIcon(app.icon)}<span>${escapeHtml(app.name)}</span></button>`).join("")}</div>`;
       }).join("");
       $("#aiAppDirectoryEmpty").hidden = matches.length > 0;
+
+      const profitFrame = $("#crossBorderProfit");
+      const showProfit = activeAiApplicationId === "cross-border-profit";
+      profitFrame.closest(".ai-app-workspace").classList.toggle("profit-workspace", showProfit);
+      profitFrame.hidden = !showProfit;
+      if (showProfit && !profitFrame.hasAttribute("src")) profitFrame.src = "./cross-border-profit.html";
     }
 
     function aiAppUploadMarkup(app, slot, draft) {
@@ -19725,5 +19747,13 @@
   <script src="./batch-video-media/export-thumbnails.js?v=9c93c18a91fe"></script>
   <script src="./batch-video-results.js?v=34fa0f174560"></script>
   <script src="./batch-video.js?v=b5a84f6db148"></script>
+  <script>
+    if (location.hash === "#ai-apps/cross-border-profit") {
+      document.querySelector('[data-platform="creation"][aria-pressed="false"]')?.click();
+      showPage("ai-apps");
+      openAiApplication("cross-border-profit");
+      history.replaceState(history.state, "", location.pathname + location.search);
+    }
+  </script>
 </body>
 </html>
