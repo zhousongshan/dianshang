@@ -21,7 +21,7 @@
       return `${intro}\n\n跟进重点\n${records.slice(0,12).map(record=>`• ${record.name}：${record.mark.note?'按备注核对“'+record.mark.note+'”':'先确认合作意向、内容形式与排期'}${record.sender?'；与寄样人 '+record.sender+' 对齐进度':''}。`).join('\n')}\n\n建议顺序：补全缺失资料 → 确认合作与排期 → 核对寄样进度 → 记录下次跟进时间。现有表格没有物流或履约结果，不能判断达人是否已签收、发布。`;
     }
     if(/比较|对比|排序|优先|谁/.test(followup)&&!one){
-      return `达人资料对比\n\n${records.slice(0,15).map(record=>`• ${describe(record)}${missing(record).length?' 待补充 '+missing(record).length+' 项基础资料。':' 基础资料已填写。'}`).join('\n')}\n\n当前只有人工标签和录入资料，没有粉丝、播放、互动率、报价及成交数据，因此无法给出有依据的商业价值排序。可先核实标签和资料，再安排沟通。`;
+      return `达人资料对比\n\n${records.slice(0,15).map(record=>`• ${describe(record)}${missing(record).length?' 待补充 '+missing(record).length+' 项基础资料。':' 基础资料已填写。'}`).join('\n')}\n\n当前只有合作分级标签和录入资料，没有粉丝、播放、互动率、报价及成交数据，因此无法给出有依据的商业价值排序。可先核实标签和资料，再安排沟通。`;
     }
     const lines=records.slice(0,12).map(record=>`• ${describe(record)}${record.productName?' 寄样产品：'+record.productName+'。':''}${record.mark.note?' 备注：'+record.mark.note:' 暂无合作备注。'}`);
     return `${one?'达人合作资料梳理':'当前达人资料概览'}\n\n${lines.join('\n')}${records.length>12?`\n另有 ${records.length-12} 位达人，可切换单个达人继续分析。`:''}\n\n建议\n1. 把现有标签作为沟通线索，核实内容质量、互动表现和合作意向。\n2. 补全主页、内容形式和寄样资料，再确认合作排期与负责人。\n3. 补充近期作品、互动率、报价和成交数据后，再评估是否扩大合作。\n\n当前没有抖音实时数据；以上是依据本地录入资料的演示整理，不能据此推断真实带货能力。`;

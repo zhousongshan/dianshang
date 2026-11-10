@@ -8,7 +8,7 @@ const invalid=[...row];invalid[3]='2026-02-30';assert.match(ctx.window.CreatorIm
 invalid[3]='';invalid[4]='javascript:alert(1)';assert.equal(ctx.window.CreatorImport.reviewRows([header,invalid])[0].status,'error');
 assert.equal(ctx.window.CreatorImport.reviewRows([header,row],[ready.record])[0].status,'duplicate');
 const source=fs.readFileSync(path.join(root,'platform-preview.js'),'utf8');
-const fields=source.slice(source.indexOf('  const creatorFields='),source.indexOf('  const CREATOR_PRESET_TAGS'));
+const fields=source.slice(source.indexOf('  const creatorFields='),source.indexOf('  const CREATOR_STORAGE_KEY'));
 const loader=source.slice(source.indexOf('  function loadCreators(){'),source.indexOf('  function addCreatorExample'));
 const old={id:'old',date:'2026-10-20',name:'旧达人',douyinUid:'1000',phone:'13000000000',address:'旧地址',recipient:'收件人',aiAnalysis:'旧分析',profileUrl:'',sender:'甲',contentType:'种草-视频',productName:'杯子',mark:{tags:['内容好'],note:'旧备注',group:'旧分组'}};
 const migration={state:{},CREATOR_STORAGE_KEY:'test',localStorage:{getItem:()=>JSON.stringify([old])}};

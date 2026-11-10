@@ -16,7 +16,8 @@ const filter=source.slice(source.indexOf('  function filteredCreators(){'),sourc
 const creators=Array.from({length:45},(_,i)=>({date:`2026-10-${String(i%28+1).padStart(2,'0')}`,name:String(i),douyinUid:'',phone:'',mark:{tags:[]}}));
 creators.push({date:'',name:'empty',douyinUid:'',phone:'',mark:{tags:[]}});
 const state={creators,creatorQuery:'',creatorDateStart:'',creatorDateEnd:'',creatorTags:[],creatorSort:'desc'};
-const sortCtx={state};vm.runInNewContext(filter+';result=filteredCreators()',sortCtx);
+vm.runInNewContext(fs.readFileSync(path.join(root,'creator-management.js'),'utf8'),context);
+const sortCtx={state,management:context.window.CreatorManagement,localDate:()=> '2026-11-10',rules:[],ruleMode:'all'};vm.runInNewContext(filter+';result=filteredCreators()',sortCtx);
 assert.equal(sortCtx.result[0].date,'2026-10-28');assert.equal(sortCtx.result.at(-1).name,'empty');assert.equal(sortCtx.result.slice(20,40).length,20);
 state.creatorSort='asc';vm.runInNewContext('result=filteredCreators()',sortCtx);assert.equal(sortCtx.result[0].date,'2026-10-01');assert.equal(sortCtx.result.at(-1).name,'empty');
 const importer=source.slice(source.indexOf('  async function readCreatorImportFile(file){'),source.indexOf('  function enableCreatorAiDrag'));
