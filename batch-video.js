@@ -775,5 +775,9 @@
   renderAiAppEditor=function(){original();$('.ai-app-workspace').classList.toggle('bw-workspace',active());root.hidden=!active();if(active())render();else{root.querySelectorAll('video').forEach(v=>v.pause());if(dialog.open)closeModal();}};
   window.addEventListener('beforeunload',()=>{state.epoch++;owned.forEach(u=>URL.revokeObjectURL(u));});
   renderAiApplications();renderAiAppEditor();
-  if(location.hash==='#batch-video'){showPage('ai-apps');openAiApplication(APP);}
+  if(location.hash==='#batch-video'){
+    document.querySelector('[data-platform="creation"][aria-pressed="false"]')?.click();
+    showPage('ai-apps');
+    openAiApplication(APP);
+  }
 })();
