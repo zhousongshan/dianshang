@@ -18,7 +18,7 @@
   };
   const btn = (text, action, extra = '') => `<button type="button" data-w-action="${action}" ${extra}>${text}</button>`;
   const modeName = () => state.mode === 'product' ? '换产品' : '换背景';
-  const assetName = () => state.mode === 'product' ? '替换产品' : '新背景';
+  const assetName = () => state.mode === 'product' ? '替换方案' : '新背景';
   let seq = 0;
   const uid = () => `bw-${Date.now().toString(36)}-${++seq}`;
   // Keep the approved mockups intact. Render just the photographic region inside each live UI control.
@@ -41,11 +41,33 @@
     {name:'好物推荐.mp4',duration:9,thumb:'photo:recommend',risk:'low'}
   ];
   const results = window.BatchVideoResults;
-  function fresh() { return {step:1,maxStep:1,mode:'product',folderId:results.folders()[0].id,batchId:null,batchOwner:null,linksOpen:false,rows:[],selected:new Set(),linkText:'',notice:null,filter:'running',followResults:true,busy:0,started:false,epoch:0}; }
+  function fresh() { return {step:1,maxStep:1,mode:'product',folderId:results.folders()[0].id,batchId:null,batchOwner:null,linksOpen:false,rows:[],versionCounters:{},selected:new Set(),linkText:'',notice:null,filter:'running',followResults:true,busy:0,started:false,epoch:0}; }
   let state = fresh(), modal = null, composing = false, pending = false;
   const owned = new Set();
   const active = () => activeAiApplicationId === APP;
-  const ready = r => Boolean(r.assets[state.mode]);
+  const ready = row => Boolean(displayAsset(row));
+  const sourceRows = () => Array.from(new Set(state.rows.map(row => row.groupId)), id => state.rows.find(row => row.groupId === id));
+  const siblings = row => state.rows.filter(other => other.groupId === row.groupId);
+  const taskName = row => row.variantNo === 1 ? row.source.name : row.source.name + ' · 副本 ' + (row.variantNo - 1);
+  const displayAsset = row => state.mode === 'product' ? row.refs[0] : row.assets.background;
+  const summary = row => state.mode === 'product'
+    ? row.refs.map(ref => '图' + ref.number + ' ' + ref.name).join('、')
+    : row.assets.background?.name || '';
+  function imageSettings(row) {
+    return {refs:row.refs.map(ref => ({...ref})), nextImage:row.nextImage};
+  }
+  function imageMetadata(row) {
+    if (state.mode !== 'product') return {};
+    return {images:row.refs.map(({number, name}) => ({number, name}))};
+  }
+  function putImage(row, image, number) {
+    if (number) {
+      const index = row.refs.findIndex(ref => ref.number === number);
+      if (index >= 0) row.refs[index] = {...image, number};
+    } else {
+      row.refs.push({...image, number:row.nextImage++});
+    }
+  }
   const terminal = r => ['done','cancelled'].includes(r.status);
   const getRow = id => state.rows.find(r=>r.id===id);
   const notify = (text, tone='info') => { state.notice={text,tone}; };
@@ -55,10 +77,38 @@
   const imageInput=document.createElement('input'); imageInput.type='file'; imageInput.hidden=true; imageInput.accept='image/png,image/jpeg,image/webp'; document.body.append(imageInput);
   const namingCategories = () => Array.from($('#videoNamingCategory').options, option => option.value);
   const categoryOptions = selected => namingCategories().map(value => `<option value="${esc(value)}" ${value===selected?'selected':''}>${esc(value)}</option>`).join('');
-  function rowFrom(source) { return {id:uid(),source,category:$('#videoNamingCategory').value,assets:{product:null,background:null},notes:'',status:'ready',progress:0,run:0,analysis:null,versions:[]}; }
+  function rowFrom(source, groupId=uid(), variantNo=1) { return {id:uid(),groupId,variantNo,source,category:$('#videoNamingCategory').value,refs:[],nextImage:1,assets:{background:null},notes:'',status:'ready',progress:0,run:0,analysis:null,versions:[]}; }
   function addSource(source) {
     if(state.rows.some(r=>r.source.key===source.key)) return false;
-    state.rows.push(rowFrom(source)); return true;
+    const row=rowFrom(source);state.rows.push(row);state.versionCounters[row.groupId]=1;return true;
+  }
+  function copyRow(row) {
+    const next = rowFrom(row.source, row.groupId, ++state.versionCounters[row.groupId]);
+    Object.assign(next, imageSettings(row), {category:row.category, notes:row.notes, assets:{...row.assets}});
+    state.rows.splice(state.rows.indexOf(row) + 1, 0, next);
+    render();
+    root.querySelector(`[data-task-id="${next.id}"]`)?.scrollIntoView({block:'nearest'});
+  }
+  function addMappingExample() {
+    if (!state.rows.some(row => row.source.key === 'mapping:pair')) {
+      const pair = rowFrom({kind:'sample',key:'mapping:pair',name:'双产品桌面展示',duration:8,thumb:'photo:desk',risk:'low'});
+      putImage(pair, {id:'demo-mint',name:'薄荷绿保温杯',url:'photo:mint'});
+      putImage(pair, {id:'demo-bag',name:'帆布托特包',url:'photo:bag'});
+      pair.notes = '左边的杯子换成图1，右边的包换成图2，保留桌面背景。';
+      state.rows.push(pair);
+      state.versionCounters[pair.groupId] = 1;
+    }
+    if (!state.rows.some(row => row.source.key === 'mapping:cups')) {
+      const source = {kind:'sample',key:'mapping:cups',name:'保温杯卖点展示',duration:12,thumb:'photo:hand',risk:'low'};
+      const groupId = uid();
+      [['薄荷绿杯','photo:mint'],['白色杯','photo:old'],['随行杯','photo:product']].forEach(([name,url], i) => {
+        const row = rowFrom(source,groupId,i+1);
+        putImage(row,{id:'demo-cup-'+i,name,url});
+        state.rows.push(row);
+      });
+      state.versionCounters[groupId] = 3;
+    }
+    go(3);
   }
   function thumb(r) {
     const s=r.source;
@@ -116,25 +166,53 @@
   function sourcesView() {
     const hasRows = state.rows.length > 0;
     const linkPanel = state.linksOpen ? linkEditor(state.linkText) : '';
-    const rows = state.rows.map(r => `<div class="bw-source-row">${btn(thumb(r),'preview',`data-id="${r.id}" class="bw-media-button" aria-label="预览${esc(r.source.name)}"`)}<div class="bw-source-title"><strong>${esc(r.source.name)}</strong><small>${sourceLabel(r)}</small></div><span class="bw-duration">${r.source.duration?`${Math.round(r.source.duration)}秒`:'—'}</span><span class="bw-ready">${icons.check}已添加</span>${btn('×','remove',`data-id="${r.id}" class="bw-x" aria-label="移除${esc(r.source.name)}"`)}</div>`).join('');
+    const rows = sourceRows().map(r => `<div class="bw-source-row">${btn(thumb(r),'preview',`data-id="${r.id}" class="bw-media-button" aria-label="预览${esc(r.source.name)}"`)}<div class="bw-source-title"><strong>${esc(r.source.name)}</strong><small>${sourceLabel(r)} · ${siblings(r).length} 条任务</small></div><span class="bw-duration">${r.source.duration?`${Math.round(r.source.duration)}秒`:'—'}</span><span class="bw-ready">${icons.check}已添加</span>${btn('×','remove',`data-id="${r.id}" class="bw-x" aria-label="移除${esc(r.source.name)}"`)}</div>`).join('');
     const list = hasRows ? `<div class="bw-source-list">${rows}</div>` : '';
     const empty = !hasRows && !state.linksOpen ? `<div class="bw-import-empty">${addVideoMenu()}<small>或直接拖入视频文件 · MP4、MOV、WebM</small></div>` : '';
-    return `<section class="bw-panel" data-video-drop><div class="bw-panel-head"><h2>参考视频${hasRows ? ` <small>（${state.rows.length}）</small>` : ''}</h2>
-      <div class="bw-actions">${btn('添加 4 条示例','samples','class="bw-button text"')}${hasRows || state.linksOpen ? addVideoMenu() : ''}</div></div>
+    return `<section class="bw-panel" data-video-drop><div class="bw-panel-head"><h2>参考视频${hasRows ? ` <small>（${sourceRows().length}）</small>` : ''}</h2>
+      <div class="bw-actions">${state.mode==='product'?btn('查看换产品示例','mapping-example','class="bw-button text"'):''}${btn('添加 4 条示例','samples','class="bw-button text"')}${hasRows || state.linksOpen ? addVideoMenu() : ''}</div></div>
       ${empty}${linkPanel}${state.busy ? '<p class="bw-import-status" role="status">正在读取视频…</p>' : ''}${list}
       ${footer(btn('上一步','back','class="bw-button"'),btn(`下一步：配置替换 ${icons.arrow}`,'next',`class="bw-button primary" ${!hasRows||state.busy?'disabled':''}`))}</section>`;
   }
+  function productField(row) {
+    const attrs = `data-id="${row.id}"`;
+    const tiles = row.refs.map(ref => `<span class="bw-image-tile">
+      ${btn(picture(ref.url,ref.name)+'<small>图'+ref.number+'</small>','choose-image',`${attrs} data-number="${ref.number}" title="更换图${ref.number} · ${esc(ref.name)}" aria-label="更换图${ref.number} · ${esc(ref.name)}"`)}
+      ${btn('×','remove-image',`${attrs} data-number="${ref.number}" class="bw-image-x" aria-label="移除图${ref.number}"`)}
+    </span>`).join('');
+    return `<div class="bw-row-images">${tiles}${btn(row.refs.length?'+':'＋ 选产品图','choose-image',`${attrs} class="bw-add-image" aria-label="添加产品图"`)}</div>`;
+  }
+  function configRow(row) {
+    const label = esc(taskName(row)), attrs = `data-id="${row.id}"`;
+    const selected = state.selected.has(row.id);
+    const background = row.assets.background;
+    const picker = state.mode==='product' ? productField(row) : btn(
+      background ? picture(background.url,background.name)+esc(background.name) : '＋ 选背景图',
+      'choose-asset', `${attrs} class="bw-asset-button ${background?'filled':''}"`
+    );
+    const hint = state.mode==='product' && row.refs.length > 1 ? `例：杯子换图${row.refs[0].number}，包换图${row.refs[1].number}` : '填写这条视频的特殊要求';
+    return `<tr data-task-id="${row.id}" class="${selected?'selected':''}">
+      <td><input type="checkbox" data-w-change="select" ${attrs} aria-label="选择${label}" ${selected?'checked':''}></td>
+      <td>${btn(thumb(row)+'<strong>'+label+'</strong>','preview',`${attrs} class="bw-ref-button"`)}</td>
+      <td><span class="${ready(row)?'bw-ready':'bw-pending'}">${ready(row)?'已就绪':'待配置'}</span></td>
+      <td>${picker}</td>
+      <td><select class="bw-category" data-w-change="category" ${attrs} aria-label="${label}的视频命名分类">${categoryOptions(row.category)}</select></td>
+      <td><textarea rows="2" maxlength="1000" data-w-input="notes" ${attrs} aria-label="${label}的特殊要求" placeholder="${hint}">${esc(row.notes)}</textarea></td>
+      <td>${btn('复制','copy-row',`${attrs} class="bw-row-action"`)}${row.variantNo>1?btn('移除','remove-copy',`${attrs} class="bw-row-action muted"`):''}</td></tr>`;
+  }
   function configView() {
-    const destinations = results.folders();
-    if (!destinations.some(folder => folder.id === state.folderId)) state.folderId = destinations[0].id;
-    const missing=state.rows.filter(r=>!ready(r)).length;
-    const destination = `<label class="bw-folder-field">${icons.folder}<strong>成片保存位置</strong>
-      <select data-w-change="folder" aria-label="保存文件夹">${destinations.map(folder=>`<option value="${esc(folder.id)}" ${state.folderId===folder.id?'selected':''}>${esc(folder.name)}</option>`).join('')}</select></label>`;
-    return `<section class="bw-panel bw-config-panel"><div class="bw-panel-head"><h2>为每条视频选择${assetName()}</h2></div>
-      <div class="bw-config-toolbar">${destination}<div class="bw-actions">${btn(`批量设置${state.mode==='product'?'产品':'背景'}`,'bulk-asset',`class="bw-button outline" ${!state.selected.size?'disabled':''}`)}${btn('批量设置分类','bulk-category',`class="bw-button outline" ${!state.selected.size?'disabled':''}`)}${btn('批量填写要求','bulk-notes',`class="bw-button outline" ${!state.selected.size?'disabled':''}`)}</div></div>
-      <div class="bw-config-meta"><span>${state.selected.size?`已选 ${state.selected.size} 条`: `共 ${state.rows.length} 条视频`}</span><span>${missing?`${missing} 条待选择素材`:'全部已就绪'}</span></div>
-      <div class="bw-table-scroll"><table class="bw-config-table"><thead><tr><th><input type="checkbox" data-w-change="select-all" aria-label="全选视频" ${state.rows.length&&state.selected.size===state.rows.length?'checked':''}></th><th>参考视频</th><th>状态</th><th>${assetName()}</th><th>视频命名分类</th><th>特殊要求 <small>（选填）</small></th></tr></thead><tbody>${state.rows.map(r=>{const a=r.assets[state.mode];return `<tr class="${state.selected.has(r.id)?'selected':''}"><td><input type="checkbox" data-w-change="select" data-id="${r.id}" aria-label="选择${esc(r.source.name)}" ${state.selected.has(r.id)?'checked':''}></td><td>${btn(`${thumb(r)}<strong>${esc(r.source.name)}</strong>`,'preview',`data-id="${r.id}" class="bw-ref-button"`)}</td><td><span class="${a?'bw-ready':'bw-pending'}">${a?icons.check:''}${a?'已就绪':'待配置'}</span></td><td>${btn(a?`${picture(a.url,a.name)}<span>${esc(a.name)}</span><em>更换</em>`:`${icons.plus}<span>选择${state.mode==='product'?'产品图':'背景图'}</span>`,'choose-asset',`data-id="${r.id}" class="bw-asset-button ${a?'filled':''}" aria-label="${esc(r.source.name)}的${assetName()}"`)}</td><td><select class="bw-category" data-w-change="category" data-id="${r.id}" aria-label="${esc(r.source.name)}的视频命名分类">${categoryOptions(r.category)}</select></td><td><textarea rows="2" maxlength="1000" data-w-input="notes" data-id="${r.id}" aria-label="${esc(r.source.name)}的特殊要求" placeholder="填写这条视频的特殊要求">${esc(r.notes)}</textarea></td></tr>`;}).join('')}</tbody></table></div>
-      ${footer(btn('上一步','back','class="bw-button"'),`<span>${missing?`还有 ${missing} 条待配置`:`${state.rows.length} 条视频已就绪`}</span>${btn(`开始制作 ${state.rows.length} 条 ${icons.arrow}`,'start',`class="bw-button primary" ${missing||!state.rows.length?'disabled':''}`)}`)}</section>`;
+    const folders = results.folders();
+    if (!folders.some(folder => folder.id===state.folderId)) state.folderId=folders[0].id;
+    const folderOptions = folders.map(folder => `<option value="${esc(folder.id)}" ${state.folderId===folder.id?'selected':''}>${esc(folder.name)}</option>`).join('');
+    const missing = state.rows.filter(row => !ready(row)).length;
+    const bulkAttrs = `class="bw-button outline" ${state.selected.size?'':'disabled'}`;
+    return `<section class="bw-panel bw-config-panel"><div class="bw-panel-head"><h2>为每条视频选择${state.mode==='product'?'替换产品':'新背景'}</h2></div>
+      <div class="bw-config-toolbar"><label class="bw-folder-field">${icons.folder}<strong>成片保存位置</strong><select data-w-change="folder" aria-label="保存文件夹">${folderOptions}</select></label>
+      <div class="bw-actions">${btn(state.mode==='product'?'批量设置替换产品':'批量设置背景',state.mode==='product'?'bulk-product':'bulk-asset',bulkAttrs)}<select class="bw-button outline bw-bulk-category" data-w-change="bulk-category" aria-label="批量设置分类" ${state.selected.size?'':'disabled'}><option value="" disabled selected>批量设置分类</option>${categoryOptions('')}</select>${btn('批量填写要求','bulk-notes',bulkAttrs)}</div></div>
+      <div class="bw-config-meta"><span>共 ${state.rows.length} 条任务${state.selected.size?'，已选 '+state.selected.size+' 条':''}</span><span>${missing?missing+' 条待配置':'全部已就绪'}</span></div>
+      <div class="bw-table-scroll"><table class="bw-config-table bw-flat-table"><thead><tr><th><input type="checkbox" data-w-change="select-all" aria-label="全选任务" ${state.selected.size===state.rows.length?'checked':''}></th>
+      <th>参考视频</th><th>状态</th><th>${state.mode==='product'?'替换产品':'新背景'}</th><th>命名分类</th><th>特殊要求 <small>选填</small></th><th>操作</th></tr></thead><tbody>${state.rows.map(configRow).join('')}</tbody></table></div>
+      ${footer(btn('上一步','back','class="bw-button"'),`<span>预计生成 ${state.rows.length} 条视频</span>${btn('开始制作 '+state.rows.length+' 条 '+icons.arrow,'start',`class="bw-button primary" ${missing||!state.rows.length?'disabled':''}`)}`)}</section>`;
   }
   function counts() { return {running:state.rows.filter(r=>['queued','analyzing','approved','generating'].includes(r.status)).length,confirm:state.rows.filter(r=>['blocked','failed'].includes(r.status)).length,done:state.rows.filter(r=>r.status==='done').length,cancelled:state.rows.filter(r=>r.status==='cancelled').length}; }
   function resultView() {
@@ -147,7 +225,7 @@
   }
   function runningCard(r) {
     const label={queued:'等待分析',analyzing:'分析中',approved:'等待制作',generating:'制作中'}[r.status];
-    return `<article class="bw-running-row">${thumb(r)}<div><strong>${esc(r.source.name)}</strong><small>${assetName()}：${esc(r.assets[state.mode]?.name||'')}</small></div><div class="bw-row-progress"><span>${label}${r.status==='generating'?` ${r.progress}%`:''}</span><div class="bw-progress-track"><i class="${r.status==='analyzing'?'pulsing':''}" style="width:${r.status==='generating'?r.progress:r.status==='analyzing'?35:0}%"></i></div></div><span class="bw-sim">模拟</span></article>`;
+    return `<article class="bw-running-row">${thumb(r)}<div><strong>${esc(taskName(r))}</strong><small>${esc(summary(r))}</small></div><div class="bw-row-progress"><span>${label}${r.status==='generating'?` ${r.progress}%`:''}</span><div class="bw-progress-track"><i class="${r.status==='analyzing'?'pulsing':''}" style="width:${r.status==='generating'?r.progress:r.status==='analyzing'?35:0}%"></i></div></div><span class="bw-sim">模拟</span></article>`;
   }
   function resultTable(rows, filter) {
     const completed = filter === 'done';
@@ -156,13 +234,13 @@
     return `<div class="bw-review-scroll"><table class="bw-review-table"><caption class="bw-sr-only">${caption}</caption><thead><tr><th>${completed?'成片视频':'参考视频'}</th><th>${assetName()}</th><th>其他要求</th><th>${resultHeading}</th><th>操作</th></tr></thead><tbody>${rows.map(row => resultTableRow(row, completed)).join('')}</tbody></table></div>`;
   }
   function resultTableRow(row, completed) {
-    const asset = row.assets[state.mode];
+    const asset = displayAsset(row);
     const rowId = `data-id="${row.id}"`;
     const result = completed ? completedCells(row, rowId) : row.status==='cancelled'?cancelledCells(row):reviewCells(row, rowId);
     const version = completed ? row.versions.at(-1) : null;
     const preview = completed ? `<span class="bw-thumb">${picture(asset.url, asset.name)}<i>${icons.play}</i></span>` : thumb(row);
-    return `<tr><td>${btn(`${preview}<span><strong>${esc(version?.name || row.source.name)}</strong><small>${completed?'点击预览成片':sourceLabel(row)}</small></span>`, completed?'play-result':'preview', `${rowId} class="bw-review-reference"`)}</td>
-      <td><div class="bw-review-asset">${picture(asset.url,asset.name)}<span>${esc(asset.name)}</span></div></td>
+    return `<tr><td>${btn(`${preview}<span><strong>${esc(version?.name || taskName(row))}</strong><small>${completed?'点击预览成片':sourceLabel(row)}</small></span>`, completed?'play-result':'preview', `${rowId} class="bw-review-reference"`)}</td>
+      <td><div class="bw-review-asset">${picture(asset.url,asset.name)}<span>${esc(summary(row))}</span></div></td>
       <td class="bw-review-notes">${row.notes ? esc(row.notes) : '<span class="bw-muted">—</span>'}</td>${result}</tr>`;
   }
   function completedCells(row, rowId) {
@@ -170,7 +248,7 @@
     const favorite = results.favoriteState(version.id);
     const favoriteAction = btn(favorite ? '取消收藏' : '收藏', 'favorite-result',
       `${rowId} data-version="${esc(version.id)}" class="bw-action-edit" ${favorite === null ? 'disabled' : ''}`);
-    return `<td><span class="bw-review-state completed">已完成 · V${version.version}</span><div class="bw-review-reasons"><small>已保存到 ${esc(version.folder)}</small></div></td>
+    return `<td><span class="bw-review-state completed">已完成 · 第 ${version.version} 次制作</span><div class="bw-review-reasons"><small>已保存到 ${esc(version.folder)}</small></div></td>
       <td><div class="bw-review-actions">${favoriteAction}${btn('调整后重做','redo',`${rowId} class="bw-action-edit"`)}${downloadLink(version, true)}</div></td>`;
   }
   function reviewCells(row, rowId) {
@@ -181,22 +259,23 @@
   }
   function cancelledCells(row) {
     const version=row.versions.at(-1);
-    return `<td><span class="bw-review-state neutral">已取消</span>${version?`<div class="bw-review-reasons"><small>已保留 V${version.version} 成片</small></div>`:''}</td><td><div class="bw-review-actions">${version?downloadLink(version,true):'—'}</div></td>`;
+    return `<td><span class="bw-review-state neutral">已取消</span>${version?`<div class="bw-review-reasons"><small>已保留第 ${version.version} 次成片</small></div>`:''}</td><td><div class="bw-review-actions">${version?downloadLink(version,true):'—'}</div></td>`;
   }
   function downloadLink(version, compact = false) {
     return `<a class="${compact ? 'bw-action-download' : 'bw-button'}" href="${esc(version.url)}" download="${esc(version.name)}.webm">${compact ? '下载' : '下载演示视频'}</a>`;
   }
   function playerBody(version) {
-    return `<video class="bw-result-player" src="${esc(version.url)}" controls autoplay playsinline aria-label="播放演示成片"></video><p class="bw-help">本地演示短片 · ${esc(version.assetName)} · V${version.version} · 我的素材 / ${esc(version.folder)}</p>`;
+    return `<video class="bw-result-player" src="${esc(version.url)}" controls autoplay playsinline aria-label="播放演示成片"></video><p class="bw-help">本地演示短片 · ${esc(version.assetName)} · 第 ${version.version} 次制作 · 我的素材 / ${esc(version.folder)}</p>`;
   }
   function finishVersion(r,run) {
     const version=r.versions.length + 1;
-    const asset=r.assets[state.mode];
+    const asset=displayAsset(r);
     const record={id:uid(),rowId:r.id,batch:state.batchId,owner:state.batchOwner,folder:state.folderName,folderId:state.folderId,created:Date.now(),version,
-      name:`${r.source.name.replace(/\.[^.]+$/,'')} · ${r.category} · 复刻 V${version}`,category:r.category,sourceName:r.source.name,assetName:asset.name,notes:r.notes,mode:modeName()};
-    results.finish(record,asset,photos[asset.url],saved=>{
+      name:`${r.source.name.replace(/\.[^.]+$/,'')}${r.variantNo>1?' · 副本 '+(r.variantNo-1):''} · ${r.category} · 第${version}次制作`,category:r.category,sourceName:r.source.name,assetName:asset.name,notes:r.notes,mode:modeName(),variantNo:r.variantNo,groupId:r.groupId,...imageMetadata(r),replacementSummary:summary(r)};
+    const previewAsset={...asset,previewItems:state.mode==='product'?r.refs.map(ref=>({asset:ref,region:photos[ref.url],target:'图'+ref.number+' '+ref.name})):null};
+    results.finish(record,previewAsset,photos[asset.url],saved=>{
       if(r.run!==run||r.status!=='generating')return;
-      r.versions.push(saved);r.versionSources ||= new Map();r.versionSources.set(saved.id,r.source);r.completedSettings={asset:{...asset},notes:record.notes,source:r.source};state.notice=null;r.progress=100;r.status='done';pump();
+      r.versions.push(saved);r.versionSources ||= new Map();r.versionSources.set(saved.id,r.source);r.completedSettings={asset:{...asset},...imageSettings(r),notes:record.notes,source:r.source};state.notice=null;r.progress=100;r.status='done';pump();
       if(state.followResults&&!counts().running&&!counts().confirm)state.filter='done';
       render();
     },reason=>{
@@ -208,7 +287,7 @@
     if(!active())return;
     if(composing){pending=true;return;}
     const oldFocus=document.activeElement; let focusId=null,range=null;
-    if(root.contains(oldFocus)&&oldFocus.dataset.wInput){focusId=[oldFocus.dataset.wInput,oldFocus.dataset.id];try{range=[oldFocus.selectionStart,oldFocus.selectionEnd];}catch{}}
+    if(root.contains(oldFocus)&&oldFocus.dataset.wInput){focusId=[oldFocus.dataset.wInput,oldFocus.dataset.id,oldFocus.dataset.subject];try{range=[oldFocus.selectionStart,oldFocus.selectionEnd];}catch{}}
     const previousTable = $('.bw-table-scroll',root);
     const tableScroll = previousTable && [previousTable.scrollLeft, previousTable.scrollTop];
     const videos=new Map([...root.querySelectorAll('video[data-media]')].map(v=>[v.dataset.media,v]));
@@ -216,7 +295,7 @@
     root.querySelectorAll('video[data-media]').forEach(v=>{const old=videos.get(v.dataset.media);if(old&&old.getAttribute('src')===v.getAttribute('src'))v.replaceWith(old);});
     const table = $('.bw-table-scroll',root);
     if(table && tableScroll){table.scrollLeft=tableScroll[0];table.scrollTop=tableScroll[1];}
-    if(focusId){const el=[...root.querySelectorAll('[data-w-input]')].find(e=>e.dataset.wInput===focusId[0]&&e.dataset.id===focusId[1]);if(el){el.focus({preventScroll:true});if(range&&range[0]!=null)el.setSelectionRange(...range);}}
+    if(focusId){const el=[...root.querySelectorAll('[data-w-input]')].find(e=>e.dataset.wInput===focusId[0]&&e.dataset.id===focusId[1]&&e.dataset.subject===focusId[2]);if(el){el.focus({preventScroll:true});if(range&&range[0]!=null)el.setSelectionRange(...range);}}
   }
   function go(n) {state.step=n;state.maxStep=Math.max(n,state.maxStep);state.notice=null;render();root.scrollIntoView({block:'start',behavior:'instant'});}
   function validateLinks(text) {
@@ -276,10 +355,10 @@
     return `<input class="bw-search" data-modal-input="search" value="${esc(modal.search||'')}" placeholder="搜索素材名称" aria-label="搜索素材名称"><div class="bw-library-grid">${tiles.join('')||`<div class="bw-empty small">${empty}</div>`}</div>`;
   }
   function redoChanged(draft,row) {
-    return draft.source.key !== row.source.key || draft.asset?.id !== row.assets[state.mode]?.id || draft.notes.trim() !== row.notes.trim();
+    return draft.source.key !== row.source.key || draft.asset?.id !== displayAsset(row)?.id || (state.mode==='product'&&JSON.stringify(draft.refs)!==JSON.stringify(row.refs)) || draft.notes.trim() !== row.notes.trim();
   }
   function openTaskEditor(row,type) {
-    openModal({type,rowId:row.id,ids:[row.id],asset:row.assets[state.mode],source:row.source,
+    openModal({type,id:row.id,variantNo:row.variantNo,rowId:row.id,ids:[row.id],...imageSettings(row),asset:displayAsset(row),source:row.source,
       notes:row.notes,linkOpen:false,linkText:'',busy:false});
   }
   function videoSourceFromAsset(item) {
@@ -289,7 +368,7 @@
     return `<section class="bw-edit-field"><h3>参考视频</h3><div class="bw-edit-source">${thumb(draft)}<span class="bw-edit-name"><strong>${esc(draft.source.name)}</strong><small>${sourceLabel(draft)}</small></span>${addVideoMenu(true)}</div>${draft.linkOpen?linkEditor(draft.linkText,true):''}${draft.busy?'<small role="status">正在读取本地视频…</small>':''}</section>`;
   }
   function canApply(draft,row) {
-    if(!draft.asset || draft.busy || (draft.linkOpen && draft.linkText.trim()))return false;
+    if((state.mode==='product'?!draft.refs.length:!draft.asset) || draft.busy || (draft.linkOpen && draft.linkText.trim()))return false;
     return redoChanged(draft,row);
   }
   function drawModal() {
@@ -302,32 +381,39 @@
       title=v.name;
       const versionRow=r ? {...r,source:r.versionSources?.get(v.id) || r.source} : null;
       const sourceSwitch=r?`<div class="bw-picker-tabs">${btn('成片预览','view-output',`class="${m.showSource?'':'on'}"`)}${btn('参考视频','view-source',`class="${m.showSource?'on':''}"`)}</div>`:'';
-      body=sourceSwitch+(m.showSource&&r?`<div class="bw-preview-single">${media(versionRow)}</div><p class="bw-help">${sourceLabel(versionRow)}</p>`:playerBody(v))+(versions.length>1?`<label>查看版本 <select data-modal-version>${versions.map(item=>`<option value="${esc(item.id)}" ${item.id===v.id?'selected':''}>V${item.version}</option>`).join('')}</select></label>`:'');
+      body=sourceSwitch+(m.showSource&&r?`<div class="bw-preview-single">${media(versionRow)}</div><p class="bw-help">${sourceLabel(versionRow)}</p>`:playerBody(v))+(versions.length>1?`<label>查看制作记录 <select data-modal-version>${versions.map(item=>`<option value="${esc(item.id)}" ${item.id===v.id?'selected':''}>第 ${item.version} 次制作</option>`).join('')}</select></label>`:'');
       foot=`${downloadLink(v)}${btn('关闭','modal-close','class="bw-button"')}`;
     } else if(m.type==='video-library') {
       title='从素材库选择视频';
       body=libraryScopes(m)+videoLibraryTiles();foot=`<span>已选 ${m.picked.size} 条</span>${btn('刷新列表','modal-refresh','class="bw-button"')}${btn(m.parent?'使用选中视频':`添加 ${m.picked.size} 条`,'modal-add-videos',`class="bw-button primary" ${!m.picked.size?'disabled':''}`)}`;
     } else if(['edit','redo'].includes(m.type)) {
-      title=m.type==='redo'?`调整后重做 · ${r.source.name}`:'修改素材或要求';
+      title=m.type==='redo'?`调整后重做 · ${taskName(r)}`:`修改替换方案 · ${taskName(r)}`;
       const selection=m.asset ? `<div class="bw-edit-asset">${picture(m.asset.url,m.asset.name)}<strong>${esc(m.asset.name)}</strong>${btn('更换素材','redo-material','class="bw-button outline"')}</div>` : '';
       body=editorReference(m);
-      body+=`<section class="bw-edit-field"><h3>${assetName()}</h3>${selection}</section>`;
-      body+=`<label class="bw-edit-field bw-edit-notes"><h3>其他要求 <small>选填</small></h3><textarea maxlength="1000" data-modal-input="notes" rows="2" placeholder="例如：保持标签清晰，保留原视频的手部动作">${esc(m.notes)}</textarea></label>`;
-      const submit=m.type==='redo'?`重做这一条 · V${r.versions.length+1}`:'保存并重新分析';
+      body+=state.mode==='product'?`<section class="bw-edit-field"><h3>替换产品</h3>${productField(m)}</section>`:`<section class="bw-edit-field"><h3>${assetName()}</h3>${selection}</section>`;
+      body+=`<label class="bw-edit-field bw-edit-notes"><h3>特殊要求 <small>选填</small></h3><textarea maxlength="1000" data-modal-input="notes" rows="2" placeholder="例如：保持标签清晰，保留原视频的手部动作">${esc(m.notes)}</textarea></label>`;
+      const submit=m.type==='redo'?`重做此任务 · 第 ${r.versions.length+1} 次`:'保存并重新分析';
       foot=`<span>仅应用到当前任务</span>${btn('取消','modal-close','class="bw-button"')}${btn(submit,'modal-apply',`class="bw-button primary" ${canApply(m,r)?'':'disabled'}`)}`;
-    } else if(m.type==='category') {
-      title='批量设置视频命名分类';
-      body=`<label>视频命名分类 <select class="bw-category" data-modal-category><option value="">选择分类</option>${categoryOptions(m.category)}</select></label>`;
-      foot=`<span>仅应用到已选 ${m.ids.length} 条视频</span>${btn('取消','modal-close','class="bw-button"')}${btn('应用到所选视频','apply-category','class="bw-button primary" disabled')}`;
+    } else if (m.type === 'bulk-product') {
+      title = '批量设置替换产品';
+      body = `<p class="bw-help">所选 ${m.ids.length} 条视频将使用同一组产品图，覆盖各行原有产品图。可在每行的特殊要求里指定替换位置。</p>
+        ${productField(m)}`;
+      foot = btn('取消','modal-close','class="bw-button"') +
+        btn(`应用到 ${m.ids.length} 条视频`,'apply-products',`class="bw-button primary" ${!m.refs.length || m.loading ? 'disabled' : ''}`);
     } else if(m.type==='notes') {
-      title='批量填写特殊要求';body=`<p class="bw-help">将替换已选 ${m.ids.length} 条视频的特殊要求，其他视频不受影响。</p><textarea maxlength="1000" data-modal-input="notes" rows="5" placeholder="填写统一要求，留空可清除所选行要求">${esc(m.notes)}</textarea>`;foot=`${btn('取消','modal-close','class="bw-button"')}${btn('应用到所选视频','modal-apply-notes','class="bw-button primary"')}`;
+      title='批量填写特殊要求';
+      body=`<textarea autofocus aria-label="特殊要求" maxlength="1000" data-modal-input="notes" rows="4" placeholder="填写共同要求，留空可清除">${esc(m.notes)}</textarea>`;
+      foot=btn('取消','modal-close','class="bw-button"') +
+        btn(`应用到 ${m.ids.length} 条视频`,'modal-apply-notes','class="bw-button primary"');
     } else if(m.type==='preview') {
       title=r.source.name;body=`<div class="bw-preview-single">${media(r)}</div><p class="bw-help">${sourceLabel(r)}</p>`;foot=btn('关闭','modal-close','class="bw-button"');
     }
-    const focus=document.activeElement?.dataset.modalInput,sel=focus?[document.activeElement.selectionStart,document.activeElement.selectionEnd]:null;
-    dialog.innerHTML=`<header><h2>${esc(title)}</h2>${btn('×','modal-close','class="bw-x" aria-label="关闭窗口"')}</header><div class="bw-dialog-body">${body}${m.error?`<p class="bw-error" role="alert">${esc(m.error)}</p>`:''}</div><footer>${foot}</footer>`;
+    const focus=document.activeElement?.dataset.modalInput,focusSubject=document.activeElement?.dataset.subject,sel=focus?[document.activeElement.selectionStart,document.activeElement.selectionEnd]:null;
+    dialog.classList.toggle('bw-notes-dialog',m.type==='notes');
+    dialog.setAttribute('aria-labelledby','bw-dialog-title');
+    dialog.innerHTML=`<header><h2 id="bw-dialog-title">${esc(title)}</h2>${btn('×','modal-close','class="bw-x" aria-label="关闭窗口"')}</header><div class="bw-dialog-body">${body}${m.error?`<p class="bw-error" role="alert">${esc(m.error)}</p>`:''}</div><footer>${foot}</footer>`;
     dialog.querySelectorAll('[data-w-action]').forEach(b=>{b.dataset.modalAction=b.dataset.wAction;delete b.dataset.wAction;});
-    if(focus){const el=dialog.querySelector(`[data-modal-input="${focus}"]`);if(el){el.focus({preventScroll:true});if(sel)el.setSelectionRange(...sel);}}
+    if(focus){const el=[...dialog.querySelectorAll(`[data-modal-input="${focus}"]`)].find(input=>input.dataset.subject===focusSubject);if(el){el.focus({preventScroll:true});if(sel)el.setSelectionRange(...sel);}}
   }
   async function localVideo(file) {
     if(!/\.(mp4|mov|webm)$/i.test(file.name)||file.size>500*1024*1024)throw Error('支持 MP4、MOV、WebM，单个文件不超过 500 MB');
@@ -370,11 +456,39 @@
     const current = () => state===batch && state.step===3 && state.mode===mode && !state.started;
     const apply = image => {
       if(!current())return;
-      for(const id of ids){const row=getRow(id);if(row)row.assets[mode]={...image};}
+      for (const id of ids) {
+        const row = getRow(id);
+        if (row) row.assets.background = {...image};
+      }
       render();
     };
     materialMenuAnchor = anchor;
     openMaterialMenu(anchor, {current, apply, error(message){notify(message,'error');render();}});
+  }
+
+  function imageAction(action, button, row, inDialog=false) {
+    const number = Number(button.dataset.number);
+    const mode = state.mode;
+    const refresh = () => {
+      if (inDialog) {row.asset=row.refs[0];drawModal();}
+      else render();
+    };
+    if (action==='remove-image') row.refs=row.refs.filter(ref => ref.number!==number);
+    else if (action==='choose-image') {
+      const current = () => active() && state.mode===mode && (inDialog ? modal===row : state.step===3 && !state.started && getRow(row.id)===row);
+      materialMenuAnchor=button;
+      openMaterialMenu(button, {current, multiple:!number,
+        setLoading(delta) {
+          if (row.type==='bulk-product' && current()) {row.loading+=delta;drawModal();}
+        },
+        apply(image){if(current()){putImage(row,image,number);refresh();}},
+        error(message){if(inDialog)row.error=message;else notify(message,'error');refresh();},
+        beforeLibrary(){if(inDialog){suspendedEditor=row;dialog.close();}},
+        afterLibrary(){if(inDialog){suspendedEditor=null;if(current()&&!dialog.open)dialog.showModal();}}
+      });
+      return;
+    }
+    refresh();
   }
 
   function pickEditorMaterial(anchor, draft) {
@@ -408,26 +522,34 @@
       apply(image) { if(request.current()) request.apply(image); },
       upload() {
         directUpload = request;
+        imageInput.multiple=Boolean(request.multiple);
         imageInput.value = '';
         imageInput.click();
       }
     });
   }
 
-  async function uploadImage(file) {
+  async function uploadImage(files) {
     const request = directUpload;
     directUpload = null;
-    if (!file || !request?.current()) return;
+    if (!files.length || !request?.current()) return;
+    request.setLoading?.(1);
     try {
-      const asset = await readProductImage(file);
-      if (request.current()) request.apply(asset);
-      else { URL.revokeObjectURL(asset.url); owned.delete(asset.url); }
-    } catch(error) {
-      if (request.current()) request.error(error.message);
+      for(const file of files) {
+        try {
+          const asset = await readProductImage(file);
+          if (request.current()) request.apply(asset);
+          else { URL.revokeObjectURL(asset.url); owned.delete(asset.url); }
+        } catch(error) {
+          if (request.current()) request.error(error.message);
+        }
+      }
+    } finally {
+      request.setLoading?.(-1);
     }
   }
   function exportList() {
-    const payload={mode:modeName(),simulated:true,tasks:state.rows.map(r=>({name:r.source.name,source:r.source.link||sourceLabel(r),category:r.category,replacement:r.assets[state.mode]?.name,notes:r.notes,status:r.status,risk:r.analysis?.risk}))};
+    const payload={mode:modeName(),simulated:true,tasks:state.rows.map(r=>({name:r.source.name,source:r.source.link||sourceLabel(r),category:r.category,variantNo:r.variantNo,groupId:r.groupId,replacement:summary(r),...imageMetadata(r),notes:r.notes,status:r.status,risk:r.analysis?.risk}))};
     const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='批量视频-模拟任务清单.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('已导出任务清单；演示环境没有真实成片可下载。');
   }
   root.addEventListener('click',e=>{
@@ -444,17 +566,30 @@
       case 'close-links':state.linksOpen=false;break;
       case 'upload-video':b.closest('details').open=false;chooseLocalVideo();return;
       case 'samples':{let n=0;samples.forEach((s,i)=>{if(addSource({...s,kind:'sample',key:`sample:${i}`}))n++;});notify(n?`已添加 ${n} 条示例视频。第一条会演示高风险确认，其余会自动执行。`:'示例视频已经添加过了。');break;}
+      case 'mapping-example':if(!state.started)addMappingExample();return;
       case 'add-links':addLinks();return;
-      case 'remove':if(!state.started){state.rows=state.rows.filter(x=>x.id!==id);state.selected.delete(id);if(!state.rows.length)state.maxStep=2;}break;
+      case 'remove':if(!state.started&&r){siblings(r).forEach(v=>state.selected.delete(v.id));state.rows=state.rows.filter(x=>x.groupId!==r.groupId);if(!state.rows.length)state.maxStep=2;}break;
+      case 'copy-row':if(r&&!state.started)copyRow(r);return;
+      case 'remove-copy':
+        if(r && r.variantNo>1 && !state.started){state.rows=state.rows.filter(row=>row!==r);state.selected.delete(id);}
+        break;
+      case 'remove-image':
+      case 'choose-image':
+        if(r && !state.started){e.stopPropagation();imageAction(action,b,r);}
+        return;
       case 'video-library':b.closest('details').open=false;openModal({type:'video-library',scope:'personal',picked:new Set(),search:''});return;
       case 'preview':if(r)openModal({type:'preview',rowId:id});return;
+      case 'bulk-product':
+        if (state.selected.size && !state.started) {
+          openModal({type:'bulk-product',id:uid(),ids:[...state.selected],refs:[],nextImage:1,loading:0});
+        }
+        return;
       case 'choose-asset':
       case 'bulk-asset': {
         const ids=action==='bulk-asset'?[...state.selected]:r?[r.id]:[];
         if(ids.length){e.stopPropagation();pickMaterial(b,ids);}
         return;
       }
-      case 'bulk-category':if(state.selected.size)openModal({type:'category',ids:[...state.selected],category:''});return;
       case 'bulk-notes':if(state.selected.size)openModal({type:'notes',ids:[...state.selected],notes:''});return;
       case 'start':start();return;
       case 'filter':state.filter=b.dataset.filter;state.followResults=false;break;
@@ -463,6 +598,7 @@
         if(r && ['blocked','failed'].includes(r.status)) {
           if(r.completedSettings) {
             r.assets[state.mode]=r.completedSettings.asset;
+            Object.assign(r,imageSettings(r.completedSettings));
             r.notes=r.completedSettings.notes;
             r.source=r.completedSettings.source;
           }
@@ -510,7 +646,36 @@
     }
   });
   root.addEventListener('input',e=>{const k=e.target.dataset.wInput;if(k==='links')state.linkText=e.target.value;if(k==='notes'){const r=getRow(e.target.dataset.id);if(r)r.notes=e.target.value.slice(0,1000);}});
-  root.addEventListener('change',e=>{const k=e.target.dataset.wChange;if(k==='category'){const row=getRow(e.target.dataset.id);if(row && namingCategories().includes(e.target.value))row.category=e.target.value;return;}else if(k==='folder'){if(results.folders().some(folder=>folder.id===e.target.value))state.folderId=e.target.value;}else if(k==='select'){e.target.checked?state.selected.add(e.target.dataset.id):state.selected.delete(e.target.dataset.id);}else if(k==='select-all')state.selected=e.target.checked?new Set(state.rows.map(r=>r.id)):new Set();else return;render();});
+  root.addEventListener('change',event=>{
+    const input=event.target;
+    switch(input.dataset.wChange) {
+      case 'bulk-category':
+        if(!state.selected.size || !namingCategories().includes(input.value))return;
+        for(const row of state.rows) {
+          if(state.selected.has(row.id))row.category=input.value;
+        }
+        render();
+        root.querySelector('[data-w-change="bulk-category"]')?.focus({preventScroll:true});
+        return;
+      case 'category': {
+        const row=getRow(input.dataset.id);
+        if(row && namingCategories().includes(input.value))row.category=input.value;
+        return;
+      }
+      case 'folder':
+        if(results.folders().some(folder=>folder.id===input.value))state.folderId=input.value;
+        break;
+      case 'select':
+        if(input.checked)state.selected.add(input.dataset.id);
+        else state.selected.delete(input.dataset.id);
+        break;
+      case 'select-all':
+        state.selected=input.checked?new Set(state.rows.map(row=>row.id)):new Set();
+        break;
+      default:return;
+    }
+    render();
+  });
   root.addEventListener('compositionstart',()=>{composing=true;});root.addEventListener('compositionend',()=>{composing=false;if(pending){pending=false;render();}});
   root.addEventListener('dragover',e=>{const z=e.target.closest('[data-video-drop]');if(z){e.preventDefault();z.classList.add('over');}});
   root.addEventListener('dragleave',e=>{const z=e.target.closest('[data-video-drop]');if(z&&!z.contains(e.relatedTarget))z.classList.remove('over');});
@@ -535,7 +700,7 @@
     } catch(error){draft.error=error.message;}
     finally {draft.busy=false;if(modal===draft)drawModal();}
   });
-  imageInput.addEventListener('change',()=>uploadImage(imageInput.files[0]));
+  imageInput.addEventListener('change',()=>uploadImage([...imageInput.files]));
   dialog.addEventListener('keydown', event => {
     if(event.key==='Escape' && dialog.querySelector('#imageSourceMenu')) {
       event.preventDefault();
@@ -556,6 +721,11 @@
   });
   dialog.addEventListener('click',e=>{
     const b=e.target.closest('[data-modal-action]');if(!b||b.disabled||!modal)return;const action=b.dataset.modalAction,id=b.dataset.id,m=modal;
+    if(['edit','redo','bulk-product'].includes(m.type) && ['remove-image','choose-image'].includes(action)) {
+      e.stopPropagation();
+      imageAction(action,b,m,true);
+      return;
+    }
     if(action==='modal-close'){if(m.parent)openModal(m.parent);else closeModal();return;}
     if(action==='upload-video'){b.closest('details').open=false;chooseLocalVideo(m);return;}
     if(action==='video-library'){openModal({type:'video-library',parent:m,scope:'personal',picked:new Set(),search:''});return;}
@@ -585,14 +755,21 @@
       let n=0;for(const item of items)if(addSource(videoSourceFromAsset(item)))n++;
       closeModal();notify(n?`已从素材库添加 ${n} 条视频。`:'所选视频已经添加过了。','success');render();return;
     }
-    if(action==='modal-apply'&&m.asset){
-      m.ids.forEach(id=>{const r=getRow(id);if(!r)return;r.assets[state.mode]={...m.asset};if(m.type==='edit'||m.type==='redo'){r.source=m.source;r.notes=m.notes;r.status='queued';r.analysis=null;r.progress=0;r.run++;}});
+    if(action==='modal-apply'&&canApply(m,getRow(m.rowId))){
+      m.ids.forEach(id=>{const r=getRow(id);if(!r)return;r.assets[state.mode]={...m.asset};if(state.mode==='product'){Object.assign(r,imageSettings(m));}if(m.type==='edit'||m.type==='redo'){r.source=m.source;r.notes=m.notes;r.status='queued';r.analysis=null;r.progress=0;r.run++;}});
       closeModal();if(state.started){state.followResults=true;state.filter='running';pump();}render();return;
     }
-    if(action==='apply-category' && namingCategories().includes(m.category)){m.ids.forEach(id=>{const row=getRow(id);if(row)row.category=m.category;});closeModal();render();return;}
+    if (action === 'apply-products' && m.type === 'bulk-product' && m.refs.length && !m.loading && state.step === 3 && !state.started) {
+      const rows = m.ids.map(getRow).filter(Boolean);
+      rows.forEach(row => Object.assign(row, imageSettings(m)));
+      closeModal();
+      notify(`已为 ${rows.length} 条视频设置同一组产品图。`, 'success');
+      render();
+      return;
+    }
     if(action==='modal-apply-notes'){m.ids.forEach(id=>{const r=getRow(id);if(r)r.notes=m.notes;});closeModal();render();}
   });
-  dialog.addEventListener('change', event=>{if(event.target.hasAttribute('data-modal-category') && modal?.type==='category'){modal.category=event.target.value;dialog.querySelector('[data-modal-action="apply-category"]').disabled=!namingCategories().includes(modal.category);}
+  dialog.addEventListener('change', event=>{
     if(event.target.hasAttribute('data-modal-version') && modal?.type==='player'){modal.versionId=event.target.value;drawModal();}});
   const original=renderAiAppEditor;
   renderAiAppEditor=function(){original();$('.ai-app-workspace').classList.toggle('bw-workspace',active());root.hidden=!active();if(active())render();else{root.querySelectorAll('video').forEach(v=>v.pause());if(dialog.open)closeModal();}};

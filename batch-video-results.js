@@ -122,25 +122,30 @@
     throw Error('浏览器未提供可播放的视频帧');
   }
   async function demoClip(record, asset, region) {
-    const img=new Image();
-    const thumbnail=window.BatchExportThumbnails?.[asset.url];
-    const src=thumbnail || (region ? `./batch-video-media/${region[0]}.png` : asset.url);
-    if(/^https?:/i.test(new URL(src,document.baseURI).protocol))img.crossOrigin='anonymous';
-    img.src=src;
-    try { await img.decode(); }
-    catch { throw Error('无法读取替换图片。请从本地上传图片，或选择可用于导出的素材。'); }
-    const crop=region && !thumbnail ? region.slice(1) : [0,0,img.naturalWidth,img.naturalHeight];
+    const items=asset.previewItems?.length?asset.previewItems:[{asset,region,target:'替换素材'}];
+    const pictures=await Promise.all(items.map(async item=>{
+      const img=new Image(),thumbnail=window.BatchExportThumbnails?.[item.asset.url];
+      const src=thumbnail || (item.region ? `./batch-video-media/${item.region[0]}.png` : item.asset.url);
+      if(/^https?:/i.test(new URL(src,document.baseURI).protocol))img.crossOrigin='anonymous';
+      img.src=src;
+      try { await img.decode(); } catch { throw Error('无法读取替换图片。请从本地上传图片，或选择可用于导出的素材。'); }
+      return {...item,img,crop:item.region&&!thumbnail?item.region.slice(1):[0,0,img.naturalWidth,img.naturalHeight]};
+    }));
     const canvas=document.createElement('canvas');canvas.width=384;canvas.height=448;
     const ctx=canvas.getContext('2d',{alpha:false});
     const frames=[];
     for(let i=0;i<36;i++) {
       ctx.fillStyle='#f6f3ee';ctx.fillRect(0,0,384,448);
-      const scale=Math.min(384/crop[2],350/crop[3])*(1+i/600);
-      const w=crop[2]*scale,h=crop[3]*scale;
-      ctx.drawImage(img,...crop,(384-w)/2,(350-h)/2,w,h);
+      const cols=pictures.length>1?2:1,rows=Math.ceil(pictures.length/cols),cellW=384/cols,cellH=350/rows;
+      pictures.forEach((item,index)=>{
+        const {img,crop}=item,scale=Math.min((cellW-16)/crop[2],(cellH-40)/crop[3])*(1+i/900);
+        const w=crop[2]*scale,h=crop[3]*scale,x=(index%cols)*cellW,y=Math.floor(index/cols)*cellH;
+        ctx.drawImage(img,...crop,x+(cellW-w)/2,y+(cellH-28-h)/2,w,h);
+        ctx.fillStyle='#61566f';ctx.font='11px sans-serif';ctx.fillText(item.target,x+8,y+cellH-12,cellW-16);
+      });
       ctx.fillStyle='#252438';ctx.fillRect(0,350,384,98);
-      ctx.fillStyle='#ded7ff';ctx.font='14px sans-serif';ctx.fillText(`本地演示预览 · ${record.mode} · V${record.version}`,15,377);
-      ctx.fillStyle='white';ctx.font='bold 19px sans-serif';ctx.fillText(asset.name,15,405,350);
+      ctx.fillStyle='#ded7ff';ctx.font='14px sans-serif';ctx.fillText(`素材示意 · ${record.mode}`,15,377);
+      ctx.fillStyle='white';ctx.font='bold 19px sans-serif';ctx.fillText(pictures.length>1?`${pictures.length} 张参考图`:asset.name,15,405,350);
       ctx.font='13px sans-serif';ctx.fillText(record.notes || record.sourceName,15,431,350);
       frames.push(vp8Frame(canvas));
       if(i%6===5) await new Promise(resolve=>setTimeout(resolve,0));

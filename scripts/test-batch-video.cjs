@@ -35,7 +35,7 @@ function harness() {
   const flush=()=>{let n=0;while(timers.length){assert.ok(++n<1000,'timers converge');timers.shift()();}};
   const text=()=>q('#batchVideoApp').textContent.replace(/\s+/g,' ');
   const setup=()=>{click('next');click('samples');click('next');};
-  const assignAll=()=>{change('[data-w-change="select-all"]',true);click('bulk-asset');pickImage({id:'my-photo',name:photo.name,url:photo.previewUrl});};
+  const assignAll=()=>{change('[data-w-change="select-all"]',true);click('bulk-product');modal('choose-image');pickImage({id:'my-photo',name:photo.name,url:photo.previewUrl});modal('apply-products');};
   return {w,q,qa,click,modal,change,input,flush,text,setup,assignAll,pickImage};
 }
 
@@ -50,11 +50,11 @@ test('four steps show only current stage and gate navigation',()=>{
 test('mode changes the replacement column, preserves mode-specific materials, and disables missing setups',()=>{
   const h=harness();h.setup();h.assignAll();assert.equal(h.q('[data-w-action="start"]').disabled,false);
   h.click('back');h.click('back');h.q('[data-mode="background"]').click();h.click('next');h.click('next');
-  assert.match(h.text(),/为每条视频选择新背景/);assert.equal(h.q('[data-w-action="start"]').disabled,true);
+  assert.match(h.text(),/新背景/);assert.equal(h.q('[data-w-action="start"]').disabled,true);
   h.change('[data-w-change="select-all"]',true);h.click('bulk-asset');h.pickImage();
   assert.equal(h.q('[data-w-action="start"]').disabled,false);
   h.click('back');h.click('back');h.q('[data-mode="product"]').click();h.click('next');h.click('next');
-  assert.equal(h.qa('.bw-asset-button.filled').length,4);assert.match(h.text(),/商品正面图/);
+  assert.equal(h.qa('#batchVideoApp .bw-image-tile').length,4);assert.equal(h.q('#batchVideoApp .bw-image-tile img').alt,'商品正面图');
 });
 
 test('link import accepts Douyin only, deduplicates, escapes names, and preserves invalid lines',()=>{
@@ -73,11 +73,11 @@ test('asset library supports multi-selection import and avoids duplicates',()=>{
 test('bulk material and notes affect selected rows only; single-row configuration is independent',()=>{
   const h=harness();h.setup();const ids=h.qa('[data-w-change="select"]').map(e=>e.dataset.id);
   h.change(h.q(`[data-w-change="select"][data-id="${ids[0]}"]`),true);h.change(h.q(`[data-w-change="select"][data-id="${ids[1]}"]`),true);
-  h.click('bulk-asset');h.pickImage();assert.equal(h.qa('.bw-asset-button.filled').length,2);
+  h.click('bulk-product');h.modal('choose-image');h.pickImage();h.modal('apply-products');assert.equal(h.qa('#batchVideoApp .bw-image-tile').length,2);
   h.click('bulk-notes');h.input('[data-modal-input="notes"]','保留手部动作');h.modal('modal-apply-notes');
   assert.deepEqual(h.qa('[data-w-input="notes"]').map(e=>e.value),['保留手部动作','保留手部动作','','']);
-  h.click('choose-asset',ids[2]);h.pickImage();
-  assert.match(h.text(),/真实库图片/);assert.equal(h.qa('.bw-asset-button.filled').length,3);
+  h.click('choose-image',ids[2]);h.pickImage();
+  assert.equal(h.qa('#batchVideoApp .bw-image-tile img')[2].alt,'真实库图片');assert.equal(h.qa('#batchVideoApp .bw-image-tile').length,3);
 });
 
 test('starting analyses automatically, high risk stays blocked, all other rows finish',()=>{
@@ -85,12 +85,12 @@ test('starting analyses automatically, high risk stays blocked, all other rows f
   assert.equal(h.q('[data-step="3"]').disabled,true);assert.match(h.text(),/已完成 3 \/ 4 条/);
   h.q('[data-filter="confirm"]').click();assert.equal(h.qa('.bw-review-table tbody tr').length,1);assert.match(h.text(),/手部遮挡产品/);
   const id=h.q('[data-w-action="approve"]').dataset.id;h.click('approve',id);h.flush();assert.match(h.text(),/已完成 4 \/ 4 条/);
-  h.q('[data-filter="done"]').click();assert.equal(h.qa('.bw-review-table tbody tr').length,4);assert.match(h.text(),/已完成 · V1/);assert.equal(h.qa('.bw-review-table a[download]').length,4);
+  h.q('[data-filter="done"]').click();assert.equal(h.qa('.bw-review-table tbody tr').length,4);assert.match(h.text(),/已完成 · 第 1 次制作/);assert.equal(h.qa('.bw-review-table a[download]').length,4);
 });
 
 test('editing high risk reanalyses instead of bypassing confirmation; skip does not block completed work',()=>{
   const h=harness();h.setup();h.assignAll();h.click('start');h.flush();h.q('[data-filter="confirm"]').click();
-  const id=h.q('[data-w-action="edit-risk"]').dataset.id;h.click('edit-risk',id);h.modal('redo-material');h.pickImage();h.input('[data-modal-input="notes"]','保留手指');h.modal('modal-apply');h.flush();
+  const id=h.q('[data-w-action="edit-risk"]').dataset.id;h.click('edit-risk',id);h.modal('choose-image');h.pickImage();h.input('[data-modal-input="notes"]','保留手指');h.modal('modal-apply');h.flush();
   assert.equal(h.qa('.bw-review-table tbody tr').length,1);assert.match(h.text(),/保留手指/);h.click('cancel-task',id);
   assert.match(h.text(),/已完成 3 \/ 4 条/);assert.match(h.text(),/已取消 1 条/);assert.equal(h.q('[data-w-action="new"]').disabled,false);
   h.q('[data-filter="done"]').click();h.click('export');assert.match(h.text(),/已导出任务清单/);
@@ -143,7 +143,9 @@ test('editing a flagged row uses a cancellable reference draft and preserves not
 test('naming category applies to selected rows, individual overrides reach saved output names',()=>{
   const h=harness();h.setup();const rows=h.qa('[data-w-change="select"]');
   [0,1].forEach(i=>h.change(h.qa('[data-w-change="select"]')[i],true));
-  h.click('bulk-category');const bulk=h.q('[data-modal-category]');bulk.value='TME';bulk.dispatchEvent(new h.w.Event('change',{bubbles:true}));h.modal('apply-category');
+  const bulk=h.q('[data-w-change="bulk-category"]');
+  bulk.value='TME';bulk.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+  assert.equal(h.q('dialog').open,false);
   const categories=h.qa('[data-w-change="category"]');assert.deepEqual(categories.map(e=>e.value),['TME','TME','盲盒','盲盒']);
   categories[1].value='生活百货';categories[1].dispatchEvent(new h.w.Event('change',{bubbles:true}));h.assignAll();h.click('start');h.flush();
   assert.deepEqual(h.qa('[data-filter]').slice(0,4).map(e=>e.dataset.filter),['running','confirm','cancelled','done']);
@@ -152,4 +154,54 @@ test('naming category applies to selected rows, individual overrides reach saved
   h.q('[data-filter="done"]').click();const file=h.w.BatchVideoResults.list().find(v=>v.rowId===rows[1].dataset.id);
   assert.equal(file.category,'生活百货');assert.ok(file.name.includes('生活百货'));
   assert.equal(h.q('.bw-review-actions [data-w-action="play-result"]'),null);h.click('play-result',rows[1].dataset.id);assert.equal(h.q('dialog video').getAttribute('src'),file.url);
+});
+
+test('copy creates one independent output, adding or removing images keeps the row count',()=>{
+  const h=harness();
+  h.click('next');h.click('mapping-example');
+  const rows=()=>h.qa('[data-task-id]');
+  const first=rows()[0].dataset.taskId;
+  assert.equal(rows().length,4);
+  assert.equal(rows()[0].querySelectorAll('.bw-image-tile').length,2);
+  h.click('copy-row',first);
+  const copy=rows()[1].dataset.taskId;
+  assert.equal(rows().length,5);
+  h.input(rows()[1].querySelector('textarea'),'保留图2，另加图3');
+  h.click('remove-image',copy);
+  const add=rows()[1].querySelector('.bw-add-image');add.click();
+  h.pickImage({id:'bag',name:'新产品',url:'blob:test'});
+  assert.deepEqual([...rows()[1].querySelectorAll('.bw-image-tile small')].map(el=>el.textContent),['图2','图3']);
+  assert.deepEqual([...rows()[0].querySelectorAll('.bw-image-tile small')].map(el=>el.textContent),['图1','图2']);
+  assert.equal(h.q('[data-w-action="subject-mode"]'),null);
+  assert.equal(rows().length,5);
+  assert.equal(rows()[1].querySelectorAll('.bw-image-tile').length,2);
+  h.click('start');h.flush();
+  const outputs=h.w.BatchVideoResults.list();
+  assert.equal(outputs.length,5);
+  assert.equal(outputs.find(item=>item.rowId===first).images.length,2);
+  const copied=outputs.find(item=>item.rowId===copy);
+  assert.equal(copied.notes,'保留图2，另加图3');
+  assert.deepEqual(Array.from(copied.images,ref=>ref.number),[2,3]);
+  h.click('redo',copy);h.modal('remove-image');h.modal('modal-close');
+  h.click('redo',copy);assert.equal(h.qa('dialog .bw-image-tile').length,2);
+});
+
+test('a shared product set replaces all photos of checked tasks, preserving notes, count and independent editing',()=>{
+  const h=harness();
+  h.click('next');h.click('mapping-example');
+  const rows=()=>h.qa('[data-task-id]');
+  const images=i=>Array.from(rows()[i].querySelectorAll('.bw-image-tile button[title]'),button=>button.title);
+  const otherImages=images(2);
+  const notes=rows()[0].querySelector('textarea').value;
+  for(const i of [0,1])h.change(rows()[i].querySelector('input[type="checkbox"]'),true);
+  const choose=name=>{h.q('dialog .bw-add-image').click();h.pickImage({id:name,name,url:'blob:'+name});};
+  h.click('bulk-product');choose('新杯子');h.modal('modal-close');
+  assert.equal(images(0).length,2);
+  h.click('bulk-product');choose('新杯子');choose('杯子侧面');h.modal('apply-products');
+  assert.deepEqual(images(0),['更换图1 · 新杯子','更换图2 · 杯子侧面']);
+  assert.deepEqual(images(1),images(0));assert.deepEqual(images(2),otherImages);
+  assert.equal(rows()[0].querySelector('textarea').value,notes);
+  assert.equal(rows().length,4);
+  rows()[0].querySelector('[data-w-action="remove-image"]').click();
+  assert.equal(images(1).length,2);
 });

@@ -8909,7 +8909,8 @@
   <link rel="stylesheet" href="./workbench.css?v=0363dd9edbc7" />
   <link rel="stylesheet" href="./qianchuan-review.css?v=d5526bd3d90d" />
   <link rel="stylesheet" href="./material-performance.css?v=d5b0b0aa3253" />
-  <link rel="stylesheet" href="./batch-video.css?v=552288778233" />
+  <link rel="stylesheet" href="./video-spend.css" />
+  <link rel="stylesheet" href="./batch-video.css?v=20261107-bulk-controls" />
 </head>
 <body>
   <div class="app-shell">
@@ -8984,6 +8985,14 @@
       <header class="topbar">
         <div aria-hidden="true"></div>
         <div class="top-actions">
+          <div class="video-spend">
+            <button type="button" id="videoSpendTrigger" aria-expanded="false" aria-controls="videoSpendPopup" title="查看今日视频生成花费">视频花费：<strong id="videoSpendAmount">—</strong><span aria-hidden="true">⌄</span></button>
+            <section id="videoSpendPopup" aria-label="我的视频花费" hidden>
+              <div class="vs-summary"><span>今日视频花费</span><strong id="videoSpendToday"></strong></div>
+              <div class="vs-recent-head"><b>最近消费</b><button type="button" id="videoSpendMore">查看费用明细 ›</button></div>
+              <ul id="videoSpendRecent"></ul>
+            </section>
+          </div>
           <div class="user-menu-wrap">
             <button class="user user-trigger" id="userMenuTrigger" type="button" aria-haspopup="menu" aria-expanded="false">
               <div class="avatar" id="topUserAvatar">M</div>
@@ -9959,6 +9968,33 @@
         </section>
 
         <!-- 系统设置：用户管理 -->
+        <section id="page-video-spend" class="page" aria-labelledby="videoSpendTitle">
+          <button type="button" class="vs-back">← 返回</button>
+          <div class="vs-detail-head">
+            <div><h2 id="videoSpendTitle">视频费用明细</h2><p id="videoSpendAccount"></p></div>
+            <button type="button" id="videoSpendExport">下载明细</button>
+          </div>
+          <div class="vs-ledger">
+            <form id="videoSpendFilters">
+              <label>开始日期<input type="date" name="start"></label>
+              <label>结束日期<input type="date" name="end"></label>
+              <label>模型<select name="model"></select></label>
+              <div class="vs-actions"><button type="submit">查询</button><button type="reset">重置</button></div>
+            </form>
+            <div class="vs-toolbar"><h3>消费记录</h3><p aria-live="polite">合计金额 <strong id="videoSpendTotal"></strong></p></div>
+            <div class="vs-table-wrap">
+              <table aria-label="视频消费记录"><thead><tr><th scope="col">消费时间</th><th scope="col">视频名称</th><th scope="col">模型</th><th scope="col">花费金额</th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="vs-footer">
+              <span id="videoSpendRange" aria-live="polite"></span>
+              <div class="vs-page-controls">
+                <nav id="videoSpendPages" aria-label="费用明细分页"></nav>
+                <select id="videoSpendPageSize" aria-label="每页记录数"><option value="5">5 条/页</option><option value="10">10 条/页</option><option value="20">20 条/页</option></select>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="page-settings" class="page user-management-page">
           <div class="user-list-view" id="userListView">
             <div class="user-page-header">
@@ -11268,7 +11304,7 @@
     let activeRoleEditorMode = "create";
     let activeRoleDetailMode = "view";
     const NAVIGATION_STATE_KEY = "superai-navigation-state";
-    const RESTORABLE_PAGES = new Set(["home", "workflows", "ai-apps", "workbench", "config", "session", "video-config", "review", "assets", "settings"]);
+    const RESTORABLE_PAGES = new Set(["home", "workflows", "ai-apps", "workbench", "config", "session", "video-config", "review", "assets", "settings", "video-spend"]);
     const RESTORABLE_SETTINGS_VIEWS = new Set(["users", "roles", "quota", "models", "logs"]);
     const REVIEW_DEMO_STATE_KEY = "chaoren-review-demo-state-v7";
     const REVIEW_IDENTITIES = {
@@ -19206,6 +19242,7 @@
       $("#defaultReviewerSelect").innerHTML = reviewReviewerOptions(reviewDemoState.defaultReviewerId, identity.id);
       $("#defaultReviewerSelect").disabled = !defaultReviewers.length;
       renderReviewNavigationCount();
+      document.dispatchEvent(new Event("video-spend-identity-change"));
       window.PublicAssets?.identityChanged();
     }
 
@@ -19726,6 +19763,7 @@
     restoreVideoSettings();
     restoreVideoConversationState();
   </script>
+  <script src="./video-spend.js"></script>
   <script src="./asset-tags.js?v=7db27a323c59"></script>
   <script src="./public-assets.js?v=f7d3d5d92f93"></script>
   <script src="./asset-file-tools.js?v=fc4b61f06ee5"></script>
@@ -19746,8 +19784,8 @@
   <script src="./workbench.js?v=3989a18900c0"></script>
   <script src="./qianchuan-review.js?v=f1838c893f9a"></script>
   <script src="./batch-video-media/export-thumbnails.js?v=9c93c18a91fe"></script>
-  <script src="./batch-video-results.js?v=34fa0f174560"></script>
-  <script src="./batch-video.js?v=b5a84f6db148"></script>
+  <script src="./batch-video-results.js?v=20261107-product-images"></script>
+  <script src="./batch-video.js?v=20261107-bulk-controls"></script>
   <script>
     if (location.hash === "#ai-apps/cross-border-profit") {
       document.querySelector('[data-platform="creation"][aria-pressed="false"]')?.click();
