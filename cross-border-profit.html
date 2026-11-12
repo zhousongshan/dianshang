@@ -181,7 +181,7 @@ h3{font-size:15px}
 .basics-grid{column-gap:18px;row-gap:14px}
 #basic-editor{max-height:90vh;overflow-y:auto}
 @media(max-width:380px){.fields.basics-grid{grid-template-columns:minmax(0,1fr)}}
-</style></head><body><main id="app"></main><div id="toast" role="status"></div><script>(function(root){
+</style><link rel="stylesheet" href="./profit-comparison.css?v=261d70282a01"><link rel="stylesheet" href="./profit-bi.css?v=4751386f9a4d"></head><body><main id="app"></main><div id="toast" role="status"></div><script>(function(root){
   const cache = new Map();
   function local(timestamp, zone) {
     if (!cache.has(zone)) cache.set(zone, new Intl.DateTimeFormat('en-CA', {timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}));
@@ -279,7 +279,7 @@ h3{font-size:15px}
   }
   const api={FEES,DEFAULTS,recommend,calculate};root.DailyCore=api;if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
-</script><script>
+</script><script src="./profit-bi-core.js?v=367b34d70728"></script><script src="./profit-bi.js?v=15c330dc3de5"></script><script>
 const ico={box:'<path d="m3 7 9-5 9 5v10l-9 5-9-5zm0 0 9 5 9-5m-9 5v10M7 4.8l9 5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',chev:'<path d="m8 10 4 4 4-4"/>',go:'<path d="m9 6 6 6-6 6"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',plus:'<path d="M12 5v14M5 12h14"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',file:'<path d="M5 3h10l4 4v14H5zM14 3v6h5M9 13h6M9 17h6"/>',calc:'<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 7h8M8 12h2m4 0h2m-8 5h2m4 0h2"/>',chart:'<path d="M3 4v16h18M6 14l5-4 4 2 6-7"/>',ship:'<rect x="2" y="6" width="12" height="10" rx="2"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>',down:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',sl:'<path d="M4 7h7m4 0h5M4 17h2m4 0h10"/><circle cx="13" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'};
 const I=(k)=>'<svg class="i" viewBox="0 0 24 24">'+ico[k]+'</svg>';
 
@@ -309,11 +309,13 @@ function table(headers,rows,cl=''){return '<div class="tablewrap"><table class="
 const defaults=DailyCore.DEFAULTS, fees=DailyCore.FEES;
 const identityKeys=['name','spec','specCode','productCode'];
 const shipKeys=['store','attribute','packType','length','width','height','weight'];
-const labels={name:'商品名称',spec:'商品规格',specCode:'规格编码',productCode:'商品编码',store:'发货店铺',attribute:'商品属性',packType:'尺寸类型',length:'长',width:'宽',height:'高',weight:'实重',chinaPrice:'中国组合价',costRate:'成本比例',salePrice:'美区商品售价',buyerShipping:'买家支付运费',receipt:'最终含税实收',logistics:'实际物流成本',currency:'物流币种',fx:'结算汇率',referenceChina:'参考国内组合价',multiplier:'参考售价倍率',divisor:'去税除数',tax:'所得税率',...Object.fromEntries(fees.map(f=>[f.key,f.name]))};
+const labels={name:'商品名称',spec:'商品规格',specCode:'规格编码',productCode:'商品编码',store:'发货店铺',attribute:'商品属性',packType:'尺寸类型',length:'长',width:'宽',height:'高',weight:'实重',chinaPrice:'中国组合价',costRate:'产品成本比例',salePrice:'美区商品售价',buyerShipping:'向买家收取的运费',receipt:'最终含税实收',logistics:'实际物流成本',currency:'物流币种',fx:'结算汇率',referenceChina:'国内组合价',multiplier:'参考售价倍率',divisor:'去税除数',tax:'所得税率',...Object.fromEntries(fees.map(f=>[f.key,f.name]))};
 const units={length:'cm',width:'cm',height:'cm',weight:'kg',chinaPrice:'RMB',referenceChina:'RMB',salePrice:'USD',receipt:'USD',buyerShipping:'USD',costRate:'%',fx:'RMB/USD',multiplier:'倍',tax:'%',...Object.fromEntries(fees.map(f=>[f.key,'%']))};
 const options={store:['广州店铺','香港店铺'],attribute:Object.keys(FreightCore.RULES),packType:['包裹尺寸','裸货尺寸'],currency:['RMB','USD']};
-const payKeys=['chinaPrice','costRate','salePrice','buyerShipping','receipt','logistics','currency','fx'];
+const payKeys=['chinaPrice','salePrice','buyerShipping','receipt','logistics','currency'];
+const shippingDisplayKeys=['length','width','height','weight','attribute','packType','store'];
 const rateKeys=['divisor','tax',...fees.map(f=>f.key)];
+const parameterKeys=['multiplier','costRate',...rateKeys];
 const ratePreference='chaoren-profit.settlement-fx.v1';
 function preferredRate(){
  try{return num({fx:localStorage.getItem(ratePreference)},'fx');}
@@ -476,8 +478,9 @@ function listRows(){
  });
  $('listrows').innerHTML=(rows.length?table(['商品图片','商品名称','商品编码','规格编码','商品属性','最新净利润','净利率','较首次','测算次数','最近测算','操作'],rows,'catalog-table'):'<div class="empty">没有匹配的商品。请更换关键词，或新增商品。</div>')+pageControls(matches.length,pages);
 }
+function workspaceNav(active){return '<nav class="profit-workspace-nav" aria-label="跨境利润功能"><a href="#list"'+(active==='list'?' aria-current="page"':'')+'>'+I('calc')+'商品利润测算</a><a href="#bi"'+(active==='bi'?' aria-current="page"':'')+'>'+I('chart')+'寄样与履约看板</a></nav>';}
 function listPage(){
- $('app').innerHTML=heading('跨境利润','按商品和规格查找历次利润测算。',action('新增商品','new','',true,'plus'))+panel(sect('全部商品','grid','<form class="catalog-search" id="catalog-search"><label class="search">'+I('search')+'<input id="search" type="search" aria-label="搜索商品" placeholder="搜索商品名称、规格或编码" value="'+esc(query)+'"></label><button type="submit" class="btn p">搜索</button></form>')+'<div id="listrows"></div>');listRows();
+ $('app').innerHTML=workspaceNav('list')+heading('跨境利润','按商品和规格查找历次利润测算。',action('新增商品','new','',true,'plus'))+panel(sect('全部商品','grid','<form class="catalog-search" id="catalog-search"><label class="search">'+I('search')+'<input id="search" type="search" aria-label="搜索商品" placeholder="搜索商品名称、规格或编码" value="'+esc(query)+'"></label><button type="submit" class="btn p">搜索</button></form>')+'<div id="listrows"></div>');listRows();
  $('catalog-search').onsubmit=event=>{event.preventDefault();query=$('search').value;catalogPage=1;listRows();};
 }
 let chartObserver;
@@ -515,58 +518,129 @@ function mountTrend(p){
 }
 function profile(p){const a=p.records,l=last(a).result,prev=a.at(-2)?.result,f=a[0].result;
  const cards=[['最新单笔净利润',yuan(l.netRmb),usd(l.netUsd)+' USD'],['最新净利率',pct(l.margin),'按去税后收入计算'],['较上次净利润',prev?delta(l.netRmb,prev.netRmb):'—',prev?'较第 '+(a.length-1)+' 次':'首次测算'],['较首次净利润',a.length>1?delta(l.netRmb,f.netRmb):'基准','较第 1 次']];
- const history=a.map((s,i)=>{const r=s.result,b=a[i-1],diff=b?changes(b.fields,s.fields):[];return ['第 '+(i+1)+' 次',date(s.saved),'<div class="history-change">'+(i?esc(diff.slice(0,2).join('；')||(b.adopted?.signature!==s.adopted?.signature?'物流来源调整':'输入值相同'))+(diff.length>2?' 等 '+diff.length+' 项':''):'首次建档')+'</div>',yuan(r.netRmb),pct(r.margin),b?delta(r.netRmb,b.result.netRmb):'—',i?delta(r.netRmb,f.netRmb):'基准',link('查看明细','detail',p.id+'/'+(i+1))];}).reverse();
- $('app').innerHTML='<div class="pagehead"><div class="heading-left">'+action('返回列表','home')+'<div class="identity">'+cover(p)+'<div><h1>'+esc(p.name)+(p.demo?'<span class="chip">示例</span>':'')+'</h1><div class="profile-meta"><span class="titlemeta">'+esc(metaText(p))+'</span></div></div></div></div>'+action('基于上次数据测算','again',p.id,true,'plus')+'</div><div class="cards">'+cards.map(x=>'<div class="metric"><small>'+x[0]+'</small><b>'+x[1]+'</b><span>'+x[2]+'</span></div>').join('')+'</div>'+panel(sect('单笔净利润趋势','chart','<small class="muted">人民币 / 单</small>')+'<div class="trend-layout"><div id="trend-plot" class="trend-plot"></div><div id="trend-selection" class="trend-selection" aria-live="polite"></div></div>')+panel(sect('测算历史','clock',tag(a.length+' 条记录'))+table(['记录','保存时间','本次变化','净利润','净利率','较上次','较首次',''],history));}
+ const history=a.map((s,i)=>{const r=s.result,b=a[i-1],diff=b?changes(b.fields,s.fields):[];return ['第 '+(i+1)+' 次',date(s.saved),'<div class="history-change">'+(i?esc(diff.slice(0,2).join('；')||(b.adopted?.signature!==s.adopted?.signature?'物流来源调整':'输入值相同'))+(diff.length>2?' 等 '+diff.length+' 项':''):'首次建档')+'</div>',yuan(r.netRmb),pct(r.margin),b?delta(r.netRmb,b.result.netRmb):'—',i?delta(r.netRmb,f.netRmb):'基准','<div class="history-actions">'+link('查看明细','detail',p.id+'/'+(i+1))+link('编辑','again',p.id+'/'+(i+1))+'</div>'];}).reverse();
+ $('app').innerHTML='<div class="pagehead"><div class="heading-left">'+action('返回列表','home')+'<div class="identity">'+cover(p)+'<div><h1>'+esc(p.name)+(p.demo?'<span class="chip">示例</span>':'')+'</h1><div class="profile-meta"><span class="titlemeta">'+esc(metaText(p))+'</span></div></div></div></div>'+action('基于上次数据测算','again',p.id,true,'plus')+'</div><div class="cards">'+cards.map(x=>'<div class="metric"><small>'+x[0]+'</small><b>'+x[1]+'</b><span>'+x[2]+'</span></div>').join('')+'</div>'+panel(sect('单笔净利润趋势','chart','<small class="muted">人民币 / 单</small>')+'<div class="trend-layout"><div id="trend-plot" class="trend-plot"></div><div id="trend-selection" class="trend-selection" aria-live="polite"></div></div>')+panel(sect('测算历史','clock',tag(a.length+' 条记录'))+table(['记录','保存时间','本次变化','净利润','净利率','较上次','较首次','操作'],history,'history-table'));}
 function field(k){
  const f=draft.fields,v=f[k],isText=identityKeys.includes(k),opts=options[k];const id='f-'+k;const [min,max]=range(k);
  const ctrl=opts?'<select id="'+id+'" data-field="'+k+'">'+opts.map(o=>'<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>':'<input id="'+id+'" data-field="'+k+'" '+(isText?'type="text" maxlength="200"':'type="number" min="'+min+'" max="'+max+'" step="any"')+' value="'+esc(v)+'" autocomplete="off" placeholder="'+(isText?'填写'+labels[k]:'请输入')+'">';
+ if(draft.baseline&&!isText){const unit=k==='logistics'?f.currency:units[k];return '<div class="comparison-field" data-compare-field="'+k+'"><label for="'+id+'">'+esc(labels[k])+'</label><span class="comparison-previous" data-compare-previous="'+k+'">'+previousFieldValue(k)+'</span><div class="input">'+ctrl+(unit?'<em'+(k==='logistics'?' data-comparison-logistics-unit':'')+'>'+esc(unit)+'</em>':'')+'</div><output class="comparison-change" data-compare-change="'+k+'"></output></div>';}
  return '<div class="field"><label for="'+id+'">'+esc(labels[k])+'</label><div class="input">'+ctrl+(units[k]?'<em>'+esc(units[k])+'</em>':'')+'</div></div>';
 }
 const fields=(keys,cls='')=>'<div class="fields '+cls+'">'+keys.map(field).join('')+'</div>';
-function shippingBlock(){return panel(sect('跨境小包物流','ship',tag('内置价表 · '+FreightCore.updatedAt))+fields(draft.productId?shipKeys:shipKeys.filter(k=>k!=='attribute'))+'<div class="ribbon"><span id="quoteText"></span><div class="actions">'+link('计算运费','quote')+link('采用报价','adoptQuote')+'</div></div><div class="footline" id="source"></div>');}
-function paymentBlock(){
- return panel(sect('成交与成本','calc',draft.productId?tag('已带入第 '+draft.base+' 次数据'):'')+'<div class="fields">'+field('chinaPrice')+field('costRate')+'<div class="field"><label>折算产品成本</label><div class="input readonly"><output id="productCost"></output><em>RMB</em></div></div>'+['salePrice','buyerShipping','receipt','logistics','currency','fx'].map(field).join('')+'</div>'+(draft.productId?'<div class="home-rate-use" id="rate-choice">'+link('采用首页汇率 '+preferredRate()+' RMB/USD','useHomeRate')+'</div>':'')+'<div id="changed" class="changed cardfoot"></div>');}
-function refBlock(){return panel(sect('参考定价与费用参数','sl')+fields(['referenceChina','multiplier'],'two')+'<div class="ribbon"><span>参考商品售价　<b id="reference"></b></span>'+link('采用售价与组合价','adoptPrice')+'</div><details class="details"><summary>扣点与基础参数　<span id="rateSummary" class="hint"></span></summary>'+fields(rateKeys)+'<p class="refdesc">版权费按产品成本，其余五项按去税后营业收入。所得税只计正的税前利润。</p>'+action('恢复默认参数','resetRates')+'</details>');}
+let comparisonObserver=null;
+function syncComparisonSticky(){
+ const right=document.querySelector('.comparison-editor .right');if(!right)return;
+ const height=right.getBoundingClientRect().height,viewport=document.documentElement.clientHeight;
+ right.style.setProperty('--comparison-sticky-top',Math.min(14,viewport-height-14)+'px');
+}
+window.addEventListener('resize',syncComparisonSticky);
+function comparisonBasisLabel(){return draft.sourceNumber<draft.base?'基准':'上次';}
+function comparisonSourceLabel(){return draft.sourceNumber<draft.base?'第 '+draft.sourceNumber+' 次':'上次';}
+function comparisonColumns(){return '<div class="comparison-columns" aria-hidden="true"><span>参数</span><span>'+comparisonBasisLabel()+'</span><span>本次</span><span>变化</span></div>';}
+function comparisonNumber(value){return Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:4});}
+function previousFieldValue(k){
+ const f=draft.baseline.fields,v=f[k];if(v==null||v==='')return '未填写';
+ if(options[k])return esc(v);
+ return comparisonNumber(v)+(units[k]==='%'?'%':'')+(k==='logistics'?'<small>'+esc(f.currency)+'</small>':'');
+}
+function fieldChanged(k,f,base){
+ if(k==='logistics'&&f.currency!==base.currency)return true;
+ const a=base[k],b=f[k];if(a==null||a===''||b==null||b==='')return String(a??'')!==String(b??'');
+ if(options[k])return String(a)!==String(b);
+ return Math.abs(Number(b)-Number(a))>1e-9;
+}
+function fieldDifference(k,f,base){
+ const a=base[k],b=f[k];if(b==null||b==='')return '待填写';
+ if(!fieldChanged(k,f,base))return '—';
+ if(options[k])return k==='currency'?'已切换':'已变更';
+ if(a==null||a==='')return '本次新增';
+ if(k==='logistics'&&f.currency!==base.currency)return '币种已变';
+ const n=Number(b)-Number(a);return (n>0?'+':'−')+comparisonNumber(Math.abs(n))+(units[k]==='%'?' 个百分点':'');
+}
+function updateFieldComparisons(){
+ if(!draft.baseline)return;
+ const f=draft.fields,base=draft.baseline.fields;
+ document.querySelectorAll('[data-compare-field]').forEach(el=>{
+  const k=el.dataset.compareField,control=$('f-'+k);let invalid=false;
+  if(!options[k]){const [min,max]=range(k),v=Number(f[k]),empty=f[k]===''||f[k]==null,required=[...Object.keys(defaults),'chinaPrice','salePrice','receipt','buyerShipping','logistics'].includes(k);invalid=empty?required:!Number.isFinite(v)||v<min||v>max;}
+  el.classList.toggle('is-changed',fieldChanged(k,f,base));el.classList.toggle('is-invalid',invalid);
+  control?.setAttribute('aria-invalid',String(invalid));
+  el.querySelector('[data-compare-change]').textContent=invalid?'填写无效':fieldDifference(k,f,base);
+ });
+ const count=Object.keys(labels).filter(k=>!identityKeys.includes(k)&&fieldChanged(k,f,base)).length;
+ document.querySelector('[data-comparison-logistics-unit]').textContent=f.currency;
+ $('changed').textContent=count?'已调整 '+count+' 项参数 · 当前修改尚未保存':'与'+comparisonSourceLabel()+'一致 · 尚未调整参数';
+ document.querySelector('[data-action="restorePrevious"]').disabled=busy||count===0;
+}
+function settlementBlock(){return '<section class="panel settlement-settings" aria-label="结算汇率设置">'+(draft.baseline?comparisonColumns():'')+fields(['fx'])+(draft.productId?'<div class="home-rate-use" id="rate-choice">'+link('采用首页汇率 '+preferredRate()+' RMB/USD','useHomeRate')+'</div>':'')+'</section>';}
+function shippingBlock(){return panel(sect('跨境小包物流测算','ship',tag('内置价表 · '+FreightCore.updatedAt))+(draft.baseline?comparisonColumns():'')+fields(shippingDisplayKeys)+'<div class="ribbon"><span id="quoteText"></span><div class="actions">'+link('计算运费','quote')+link('填入物流成本','adoptQuote')+'</div></div><div class="footline" id="source"></div>');}
+function paymentBlock(){return panel(sect('产品利润测算','calc',draft.baseline?link('恢复'+comparisonSourceLabel()+'数据','restorePrevious'):'')+(draft.baseline?comparisonColumns():'')+fields(payKeys)+'<p class="refdesc">实际物流成本单独扣除，与向买家收取的运费独立。</p><div id="changed" class="changed cardfoot"></div>');}
+function refBlock(){return panel(sect('美国价格测算','sl')+(draft.baseline?comparisonColumns():'')+fields(['referenceChina'])+'<p class="refdesc" id="referenceFormula"></p><div class="ribbon"><span>参考商品售价　<b id="reference"></b></span>'+link('填入美区售价与组合价','adoptPrice')+'</div><p class="refdesc">参考售价不包含向买家收取的运费。售价倍率在底部基础参数中调整。</p>');}
+function parametersBlock(){return '<section class="panel parameters-panel"><details class="parameter-details"><summary><span class="parameter-heading">'+I('sl')+'<b>扣点与基础参数</b></span><span id="rateSummary" class="hint"></span><span class="parameter-toggle"></span></summary><div class="parameter-content"><p class="refdesc">版权费按产品成本计算，其余五项扣点与净利率均基于去税后的营业收入。</p>'+(draft.baseline?comparisonColumns():'')+fields(parameterKeys)+'<div class="derived-cost">折算产品成本 <output id="productCost"></output> RMB<span>中国组合价 × 产品成本比例</span></div><p class="refdesc">所得税只计正的税前利润。调整这里的参数，会实时更新右侧利润。</p>'+action('恢复默认参数','resetRates')+'</div></details></section>';}
 function amounts(r,fx){return [['含税实收',r.grossUsd,r.grossRmb],['去税后营业收入',r.revenueUsd,r.revenueRmb],['产品成本',r.costUsd,r.costRmb],...r.fees.map(f=>[f.name+' '+f.rate+'%'+(f.key==='royalty'?'（按成本）':''),f.usd,f.rmb]),['实际物流成本',r.logisticsUsd,r.logisticsRmb],['税前利润',r.pretaxUsd,r.pretaxUsd*fx],['所得税',r.taxUsd,r.taxUsd*fx],['净利润',r.netUsd,r.netRmb]];}
 function breakdown(r,fx){return table(['项目','人民币','美元'],amounts(r,fx).map(([s,u,c])=>[esc(s),yuan(c),usd(u)]),'mini');}
 function hero(r,title){return '<div class="hero pricehero"><small>'+title+'</small><div class="num">'+(r?yuan(r.netRmb):'—')+'</div><div class="between"><b>'+(r?usd(r.netUsd)+' USD':'待输入')+'</b>'+tag('净利率 '+(r?pct(r.margin):'—'))+'</div></div>';}
-function comparison(base,prev,r){
- const rows=[['净利润 / RMB',x=>yuan(x.netRmb)],['净利润 / USD',x=>usd(x.netUsd)],['净利率',x=>pct(x.margin)],['产品成本',x=>yuan(x.costRmb)],['实际物流',x=>yuan(x.logisticsRmb)]];
- return sect('三次结果对比','chart')+table(['指标','首次','上次','本次'],rows.map(([s,fn])=>[s,fn(base),fn(prev),r?'<b>'+fn(r)+'</b>':'—']),'mini compare')+(r?'<div class="hr"></div>'+[['上次',prev],['首次',base]].map(([s,b])=>row('净利润较'+s,delta(r.netRmb,b.netRmb)+' / '+delta(r.netUsd,b.netUsd,'$'))+row('净利率较'+s,pp(r.margin,b.margin))).join(''):'');
+function resultDifference(current,previous,unit='',percentage=false,direction=1){
+ if(current==null||previous==null)return '<span class="neutral">—</span>';
+ const value=(current-previous)*(percentage?100:1),n=Math.abs(value)<.005?0:value;
+ return '<span class="'+(n===0?'neutral':color(n*direction))+'">'+signed(n,unit)+(percentage?'<small class="percentage-unit">个百分点</small>':'')+'</span>';
 }
-function editor(p){
+function comparisonResultRow(label,previous,current,unit='',percentage=false,emphasis=false,direction=1){
+ const format=v=>v==null?'—':percentage?pct(v):unit?money(v,unit):Number(v).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+ return '<tr'+(emphasis?' class="comparison-net"':'')+'><td>'+esc(label)+'</td><td>'+format(previous)+'</td><td>'+format(current)+'</td><td>'+resultDifference(current,previous,unit,percentage,direction)+'</td></tr>';
+}
+function comparison(base,prev,r,previousFx,currentFx){
+ const head='<thead><tr><th scope="col">指标</th><th scope="col">'+comparisonBasisLabel()+'</th><th scope="col">本次</th><th scope="col">变化</th></tr></thead>';
+ const keys=comparisonResultRow('净利润 USD',prev.netUsd,r?.netUsd,'$')+comparisonResultRow('净利率',prev.margin,r?.margin,'',true);
+ const feeTotal=x=>x?.fees.reduce((sum,f)=>sum+f.rmb,0);
+ const body=comparisonResultRow('去税后收入',prev.revenueRmb,r?.revenueRmb)+comparisonResultRow('产品成本',prev.costRmb,r?.costRmb,'',false,false,-1)+comparisonResultRow('实际物流',prev.logisticsRmb,r?.logisticsRmb,'',false,false,-1)+comparisonResultRow('各项费用',feeTotal(prev),feeTotal(r),'',false,false,-1)+comparisonResultRow('税前利润',prev.pretaxUsd*previousFx,r?r.pretaxUsd*currentFx:null)+comparisonResultRow('所得税',prev.taxUsd*previousFx,r?r.taxUsd*currentFx:null,'',false,false,-1)+comparisonResultRow('净利润',prev.netRmb,r?.netRmb,'',false,true);
+ const feeRows=fees.map(f=>comparisonResultRow(f.name,prev.fees.find(x=>x.key===f.key)?.rmb,r?.fees.find(x=>x.key===f.key)?.rmb,'',false,false,-1)).join('');
+ return '<div class="comparison-results-title"><h2>'+I('chart')+'利润实时对比</h2><span class="comparison-live">实时计算</span></div><table class="comparison-results">'+head+'<tbody>'+keys+'</tbody></table><div class="comparison-breakdown-heading">利润构成<small>RMB / 单</small></div><table class="comparison-results"><tbody>'+body+'</tbody></table><details class="comparison-detail" data-comparison-detail="fees"><summary>各项费用明细</summary><table class="comparison-results">'+head+'<tbody>'+feeRows+'</tbody></table></details><details class="comparison-detail" data-comparison-detail="first"><summary>与首次测算对比</summary>'+row('首次净利润',yuan(base.netRmb))+row('本次较首次',r?resultDifference(r.netRmb,base.netRmb,'¥'):'—')+row('净利率变化',r?pp(r.margin,base.margin):'—')+'</details>';
+}
+function comparisonHero(r,previous){
+ const change=r?r.netRmb-previous.result.netRmb:null,flat=change!==null&&Math.abs(change)<.005;
+ const source=comparisonSourceLabel(),message=change===null?'参数填写完整后更新结果':flat?'与'+source+'持平 · 每单利润未变化':'较'+source+(change>0?'多赚 ':'少赚 ')+yuan(Math.abs(change))+' / 单';
+ return '<div class="comparison-profit-hero" aria-live="polite" aria-atomic="true"><div class="hero-heading">本次预计单笔净利润<small>RMB</small></div><output class="num" id="currentNetProfit">'+(r?yuan(r.netRmb):'—')+'</output><div class="hero-secondary"><span>'+source+' <b id="previousNetProfit">'+yuan(previous.result.netRmb)+'</b></span><span>'+(r?usd(r.netUsd)+' USD':'待输入')+'</span></div><div class="profit-impact '+(change===null||flat?'neutral':color(change))+'"><output id="netProfitChange">'+message+'</output></div></div>';
+}
+function editor(p,sourceNumber){
+ comparisonObserver?.disconnect();
  if(!draft){
-  const previous=p?last(p.records):null;
-  const fields=previous?{...clone(previous.fields),...identity(p),attribute:productAttribute(p)}:{...fresh(),fx:preferredRate()};
+  const selectedNumber=p?(sourceNumber??p.records.length):0,previous=p?p.records[selectedNumber-1]:null;
+  const fields=previous?{...clone(previous.fields),...identity(p),...(sourceNumber===undefined?{attribute:productAttribute(p)}:{})}:{...fresh(),fx:preferredRate()};
   const attributeChanged=previous&&fields.attribute!==previous.fields.attribute;
-  draft={productId:p?.id||null,base:p?.records.length||0,fields,
+  draft={productId:p?.id||null,base:p?.records.length||0,sourceNumber:selectedNumber,fromHistory:sourceNumber!==undefined,baseline:previous?clone(previous):null,fields,
    quote:previous?.quote&&!attributeChanged?clone(previous.quote):null,
    adopted:previous?.adopted?clone(previous.adopted):null,dirty:false,error:'',
    quoteError:attributeChanged?'商品属性已更新为'+fields.attribute+'，请重新计算参考运费。':''};
  }
- const f=draft.fields;const idPanel=panel(sect('商品信息','box')+fields(basicFields,'two basics-grid')+'<div class="product-upload"><span id="draft-photo">'+cover({name:f.name,photo:draft.photo})+'</span><div><h3>商品图片</h3>'+photoPicker()+'</div></div>');
+ const f=draft.fields;const idPanel=panel(sect('商品信息','box')+fields(basicFields.filter(k=>k!=='attribute'),'two basics-grid')+'<div class="product-upload"><span id="draft-photo">'+cover({name:f.name,photo:draft.photo})+'</span><div><h3>商品图片</h3>'+photoPicker()+'</div></div>');
  const saveLabel=p?'保存为第 '+(draft.base+1)+' 次测算':'保存商品与首次测算';
- $('app').innerHTML=heading(p?'新增第 '+(draft.base+1)+' 次测算':'新增商品与首次测算',p?p.name+'　/　'+metaText(p):'填写商品身份和本次测算数据，保存后建立首次利润基准。','',action('返回'+(p?'档案':'列表'),p?'profile':'home',p?.id||''))+'<div class="split"><div>'+(p?paymentBlock()+shippingBlock():idPanel+shippingBlock()+paymentBlock())+refBlock()+'</div><div class="right"><div id="profitHero"></div>'+panel('<div id="calculated"></div><p class="footline error" role="alert" id="formError"></p><button id="save" class="btn p wide" type="button" data-action="save">'+saveLabel+'</button><p class="footline">'+(p?'保存后追加新记录，保留每次测算的完整数据。':'首次测算将作为本商品的利润基准。')+'</p>')+'</div></div>';
+ const baseline=p?'<div class="comparison-baseline"><div>'+I('clock')+'<span>对比基准</span><strong>第 '+draft.sourceNumber+' 次测算</strong><span>'+esc(date(draft.baseline.saved))+'</span></div><span>已保存记录</span></div>':'';
+ $('app').innerHTML=(p?'<div class="comparison-editor">':'')+heading(p?'新增第 '+(draft.base+1)+' 次测算':'新增商品与首次测算',p?p.name+'　/　'+metaText(p):'填写商品身份和本次测算数据，保存后建立首次利润基准。','',action('返回'+(p?'档案':'列表'),p?'profile':'home',p?.id||''))+baseline+'<div class="split"><div>'+(p?'':idPanel)+settlementBlock()+shippingBlock()+refBlock()+paymentBlock()+parametersBlock()+'</div><div class="right"><div id="profitHero"></div>'+panel('<div id="calculated"></div><p class="footline error" role="alert" id="formError"></p><button id="save" class="btn p wide" type="button" data-action="save">'+saveLabel+'</button><p class="footline comparison-save-note">'+(p?'保存后追加新记录，保留每次测算的完整数据。':'首次测算将作为本商品的利润基准。')+'</p>')+'</div></div>'+(p?'</div>':'');
  updateCalc();
+ if(p){document.querySelector('.comparison-editor').classList.toggle('historical-basis',draft.sourceNumber<draft.base);comparisonObserver=new ResizeObserver(syncComparisonSticky);comparisonObserver.observe(document.querySelector('.comparison-editor .right'));syncComparisonSticky();}
 }
 function stale(d){return d.adopted&&d.adopted.signature!==sig(d.fields);}
 function updateCalc(){
  const d=draft,f=d.fields,p=product(d.productId);let r=null,msg='';
  try{r=calc(f)}catch(e){msg=e.message;}
  let rec=null;try{rec=ref(f)}catch{}$('reference').textContent=rec===null?'—':usd(rec);
+ $('referenceFormula').textContent='国内组合价 × '+(f.multiplier||'—')+' ÷ '+(f.fx||'—')+'（结算汇率）';
  document.querySelector('[data-action="adoptPrice"]').disabled=rec===null;
  if($('rate-choice'))$('rate-choice').hidden=Number(f.fx)===preferredRate();
  $('productCost').textContent=f.chinaPrice!==''&&f.costRate!==''?(Number(f.chinaPrice)*Number(f.costRate)/100).toFixed(2):'—';
- $('rateSummary').textContent='收入扣点 '+Number(fees.filter(v=>v.key!=='royalty').reduce((a,v)=>a+Number(f[v.key]||0),0).toFixed(4))+'%';
+ $('rateSummary').textContent='产品成本 '+(f.costRate||'—')+'% · 收入扣点 '+Number(fees.filter(v=>v.key!=='royalty').reduce((a,v)=>a+Number(f[v.key]||0),0).toFixed(4))+'%';
  const q=d.quote;
  $('quoteText').textContent=q?q.code+' · '+q.chargeWeight+' kg × '+q.rate+' ＋ '+(q.fee+q.extra)+' RMB/票 ＝ '+yuan(q.cny)+(Number(f.fx)>0?' / '+usd(q.cny/Number(f.fx)):''):(d.quoteError||'填写小包参数，或直接手填实际物流成本。');
  document.querySelector('[data-action="adoptQuote"]').disabled=!q||q.signature!==sig(f);
  $('source').textContent=d.adopted?'实际成本来源：'+d.adopted.code+' 报价 '+yuan(d.adopted.cny)+(stale(d)?'。产品参数已变更，当前保留原运费，请重新核对。':'。'):'实际物流成本由运营确认，与向买家收取的运费独立。';
- $('changed').textContent=p?changes(last(p.records).fields,f).filter(t=>!t.includes(' → 未填写')).slice(0,4).join('　·　'):'';
- $('profitHero').innerHTML=hero(r,p?'本次预计单笔净利润':'首次测算 · 单笔净利润');
+ if(p)updateFieldComparisons();else $('changed').textContent='';
+ $('profitHero').innerHTML=p?comparisonHero(r,d.baseline):hero(r,'首次测算 · 单笔净利润');
  const warnings=r?[r.rateTotal>=100?'收入扣点合计达到或超过 100%。':'',r.pretaxUsd<0?'当前亏损，所得税为 0。':'',r.margin===null?'零营业收入，净利率不适用。':''].filter(Boolean):[];
- $('calculated').innerHTML=(p?comparison(p.records[0].result,last(p.records).result,r):sect('利润明细','file'))+(r?(p?'<details class="details"><summary>展开本次利润明细</summary>'+breakdown(r,f.fx)+'</details>':breakdown(r,f.fx)):'<p class="hint">'+esc(msg)+'</p>')+warnings.map(w=>'<div class="notice">'+w+'</div>').join('');
- $('formError').textContent=d.error||'';$('save').disabled=busy||!!d.photoLoading;
+ const expanded=[...document.querySelectorAll('[data-comparison-detail][open]')].map(el=>el.dataset.comparisonDetail);
+ $('calculated').innerHTML=(p?comparison(p.records[0].result,d.baseline.result,r,Number(d.baseline.fields.fx),Number(f.fx)):sect('利润明细','file'))+(r?(p?'':breakdown(r,f.fx)):'<p class="hint">'+esc(msg)+'</p>')+warnings.map(w=>'<div class="notice">'+w+'</div>').join('');
+ document.querySelectorAll('[data-comparison-detail]').forEach(el=>{el.open=expanded.includes(el.dataset.comparisonDetail);});
+ $('formError').textContent=d.error||'';$('save').disabled=busy||!!d.photoLoading||!r;
 }
 function updateField(k,input){
  const d=draft,f=d.fields;d.dirty=true;d.error='';
@@ -598,7 +672,7 @@ function detailPage(p,n){
  const s=p.records[n-1],f=s.fields,r=s.result,prev=p.records[n-2],first=p.records[0],diff=prev?changes(prev.fields,f):[];
  const group=(title,content)=>'<div><h3>'+title+'</h3>'+content+'</div>';
  const source=s.adopted?(s.adopted.code+' '+yuan(s.adopted.cny)+(s.adopted.signature!==sig(f)?'（采用较早报价）':'')):'手动填写';
- $('app').innerHTML=heading('第 '+n+' 次测算明细',f.name+'　/　'+metaText(f),action('导出本次 CSV','csv',p.id+'/'+n,false,'down'),action('返回档案','profile',p.id))+'<div class="ribbon" style="margin:0 0 15px">'+esc(date(s.saved))+' 保存　·　历史快照 '+tag(n===1?'首次基准':'第 '+n+' 次')+'</div><div class="split"><div>'+panel(sect('保存时的完整输入','file')+'<div class="twocol">'+group('成交与成本',infoRows(payKeys,f)+row('折算产品成本',yuan(r.costRmb))+infoRows(['referenceChina','multiplier'],f)+row('参考商品售价',s.reference==null?'未填写':usd(s.reference)))+group('跨境小包物流',infoRows(shipKeys,f)+quoteRows(s.quote)+row('实际物流来源',esc(source))+row('报价版本',esc(s.rateTable)))+'</div>')+panel(sect('扣点与基础参数','sl')+'<div class="twocol">'+group('收入扣点',infoRows(fees.filter(x=>x.key!=='royalty').map(x=>x.key),f))+group('成本及税费',infoRows(['royalty','divisor','tax'],f))+'</div>')+(prev?panel(sect('较上次的输入变化','clock')+(diff.length?diff.map(v=>'<div class="flat">'+esc(v)+'</div>').join(''):'<p class="hint">本次输入参数与上次一致。</p>')):'')+'</div><div class="right">'+hero(r,'保存时的单笔净利润')+panel(sect('本次利润拆解','calc')+breakdown(r,f.fx)+(prev?'<div class="hr"></div>'+row('较上次净利润',delta(r.netRmb,prev.result.netRmb)+' / '+delta(r.netUsd,prev.result.netUsd,'$'))+row('较首次净利润',delta(r.netRmb,first.result.netRmb)+' / '+delta(r.netUsd,first.result.netUsd,'$'))+row('净利率较上次 / 较首次',pp(r.margin,prev.result.margin)+' / '+pp(r.margin,first.result.margin)):''))+'</div></div>';
+ $('app').innerHTML=heading('第 '+n+' 次测算明细',f.name+'　/　'+metaText(f),action('导出本次 CSV','csv',p.id+'/'+n,false,'down'),action('返回档案','profile',p.id))+'<div class="ribbon" style="margin:0 0 15px">'+esc(date(s.saved))+' 保存　·　历史快照 '+tag(n===1?'首次基准':'第 '+n+' 次')+'</div><div class="split"><div>'+panel(sect('保存时的完整输入','file')+'<div class="twocol">'+group('跨境小包物流测算',infoRows(shippingDisplayKeys,f)+quoteRows(s.quote)+row('实际物流来源',esc(source))+row('报价版本',esc(s.rateTable)))+group('美国价格测算',infoRows(['referenceChina'],f)+row('参考商品售价',s.reference==null?'未填写':usd(s.reference)))+group('产品利润测算',infoRows(payKeys,f))+group('结算汇率',infoRows(['fx'],f))+'</div>')+panel(sect('扣点与基础参数','sl')+'<div class="twocol">'+group('定价、成本及税费',infoRows(parameterKeys.slice(0,4),f)+row('折算产品成本',yuan(r.costRmb)))+group('各项费用',infoRows(parameterKeys.slice(4),f))+'</div>')+(prev?panel(sect('较上次的输入变化','clock')+(diff.length?diff.map(v=>'<div class="flat">'+esc(v)+'</div>').join(''):'<p class="hint">本次输入参数与上次一致。</p>')):'')+'</div><div class="right">'+hero(r,'保存时的单笔净利润')+panel(sect('本次利润拆解','calc')+breakdown(r,f.fx)+(prev?'<div class="hr"></div>'+row('较上次净利润',delta(r.netRmb,prev.result.netRmb)+' / '+delta(r.netUsd,prev.result.netUsd,'$'))+row('较首次净利润',delta(r.netRmb,first.result.netRmb)+' / '+delta(r.netUsd,first.result.netUsd,'$'))+row('净利率较上次 / 较首次',pp(r.margin,prev.result.margin)+' / '+pp(r.margin,first.result.margin)):''))+'</div></div>';
 }
 function exportCSV(p,n){const s=p.records[n-1],f=s.fields,r=s.result;
  const q=s.quote;const rows=[['商品测算快照','第 '+n+' 次',date(s.saved)],['输入参数','数值','单位'],...Object.keys(labels).map(k=>[labels[k],f[k]??'',k==='logistics'?f.currency:units[k]||'']),['报价版本',s.rateTable],['参考售价 USD',s.reference??''],['物流来源',s.adopted?s.adopted.code+' '+yuan(s.adopted.cny)+(s.adopted.signature!==sig(f)?'（原报价）':''):'手动'],...(q?[['参考报价 RMB',q.cny],['渠道',q.code],['计费重 kg',q.chargeWeight],['材积重 kg',q.volumeWeight],['单价 RMB/kg',q.rate],['票费 RMB',q.fee],['附加费 RMB',q.extra]]:[]),['利润项目','USD','RMB'],...amounts(r,f.fx).map(([s,u,c])=>[s,u.toFixed(2),c.toFixed(2)]),['净利率',pct(r.margin)]];
@@ -666,11 +740,14 @@ function convertClock(side){
 }
 setInterval(()=>{if(clockState.live&&$('city-cn'))paintClocks();},1000);
 function render(){
+ comparisonObserver?.disconnect();
  chartObserver?.disconnect();
  const [page,id,n]=route.split('/'),p=product(id);
+ document.body.classList.toggle('profit-bi-active',page==='bi');
+ if(page==='bi'){$('app').innerHTML=workspaceNav('bi')+'<div id="profit-bi-root"></div>';window.ProfitBI.mount($('profit-bi-root'));return;}
  if(page==='new'){editor(null);return;}
  if(page==='product'&&p){profile(p);mountTrend(p);return;}
- if(page==='edit'&&p){editor(p);return;}
+ if(page==='edit'&&p&&(n===undefined||(Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=p.records.length))){editor(p,n===undefined?undefined:Number(n));return;}
  if(page==='detail'&&p&&Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=p.records.length){detailPage(p,Number(n));return;}
  if(page!=='list'){route='list';history.replaceState(null,'','#list');}
  listPage();mountClocks();
@@ -687,12 +764,13 @@ document.addEventListener('click',event=>{
  if(cmd==='home'){go('list');return;}if(cmd==='profile'){go('product/'+arg);return;}if(cmd==='new'){go('new');return;}if(cmd==='again'){go('edit/'+arg);return;}if(cmd==='detail'){go('detail/'+arg);return;}
  if(cmd==='csv'){const [id,n]=arg.split('/');exportCSV(product(id),Number(n));return;}
  if(!draft)return;const d=draft,f=d.fields;d.error='';
+ if(cmd==='restorePrevious'&&d.productId){const p=product(d.productId),sourceNumber=d.fromHistory?d.sourceNumber:undefined,label=comparisonSourceLabel();draft=null;editor(p,sourceNumber);toast('已恢复'+label+'测算数据');return;}
  if(cmd==='save'){saveRecord();return;}
  if(cmd==='quote'){try{d.quote=quote(f);d.quoteError='';d.dirty=true;}catch(e){d.quote=null;d.quoteError=e.message;}updateCalc();return;}
  if(cmd==='adoptQuote'&&d.quote?.signature===sig(f)){d.adopted=clone(d.quote);f.logistics=d.quote.cny;f.currency='RMB';$('f-logistics').value=f.logistics;$('f-currency').value=f.currency;d.dirty=true;}
  if(cmd==='adoptPrice'){try{f.salePrice=ref(f);f.chinaPrice=num(f,'referenceChina');f.receipt=f.buyerShipping===''?'':Number((f.salePrice+num(f,'buyerShipping')).toFixed(10));for(const k of ['chinaPrice','salePrice','receipt'])$('f-'+k).value=f[k];d.dirty=true;}catch(e){d.error=e.message;}}
  if(cmd==='useHomeRate'){f.fx=preferredRate();$('f-fx').value=f.fx;d.dirty=true;}
- if(cmd==='resetRates'){for(const [k,v] of Object.entries(defaults)){f[k]=v;$('f-'+k).value=v;}d.dirty=true;}
+ if(cmd==='resetRates'){for(const k of parameterKeys){f[k]=defaults[k];$('f-'+k).value=defaults[k];}d.dirty=true;}
  updateCalc();
 });
 async function start(){try{db=await openDB();await refresh();route=location.hash.slice(1)||'list';render();}catch(e){$('app').innerHTML=heading('本地存档暂不可用','请允许浏览器在此文件保存本地数据，然后刷新页面重试。');}}
