@@ -181,7 +181,7 @@ h3{font-size:15px}
 .basics-grid{column-gap:18px;row-gap:14px}
 #basic-editor{max-height:90vh;overflow-y:auto}
 @media(max-width:380px){.fields.basics-grid{grid-template-columns:minmax(0,1fr)}}
-</style><link rel="stylesheet" href="./profit-comparison.css?v=261d70282a01"><link rel="stylesheet" href="./profit-bi.css?v=4751386f9a4d"></head><body><main id="app"></main><div id="toast" role="status"></div><script>(function(root){
+</style><link rel="stylesheet" href="./profit-comparison.css?v=261d70282a01"><link rel="stylesheet" href="./profit-bi.css?v=cf323610b5bc"></head><body><main id="app"></main><div id="toast" role="status"></div><script>(function(root){
   const cache = new Map();
   function local(timestamp, zone) {
     if (!cache.has(zone)) cache.set(zone, new Intl.DateTimeFormat('en-CA', {timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}));
@@ -279,7 +279,7 @@ h3{font-size:15px}
   }
   const api={FEES,DEFAULTS,recommend,calculate};root.DailyCore=api;if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
-</script><script src="./profit-bi-core.js?v=367b34d70728"></script><script src="./profit-bi.js?v=15c330dc3de5"></script><script>
+</script><script src="./profit-bi-core.js?v=fe8e5bce0f29"></script><script src="./profit-bi.js?v=20ff28d4067b"></script><script>
 const ico={box:'<path d="m3 7 9-5 9 5v10l-9 5-9-5zm0 0 9 5 9-5m-9 5v10M7 4.8l9 5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',chev:'<path d="m8 10 4 4 4-4"/>',go:'<path d="m9 6 6 6-6 6"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',plus:'<path d="M12 5v14M5 12h14"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',globe:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',file:'<path d="M5 3h10l4 4v14H5zM14 3v6h5M9 13h6M9 17h6"/>',calc:'<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 7h8M8 12h2m4 0h2m-8 5h2m4 0h2"/>',chart:'<path d="M3 4v16h18M6 14l5-4 4 2 6-7"/>',ship:'<rect x="2" y="6" width="12" height="10" rx="2"/><path d="M14 9h4l4 4v3h-8"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>',down:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',sl:'<path d="M4 7h7m4 0h5M4 17h2m4 0h10"/><circle cx="13" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'};
 const I=(k)=>'<svg class="i" viewBox="0 0 24 24">'+ico[k]+'</svg>';
 
@@ -308,6 +308,7 @@ const heading=(t,sub,buttons='',back='')=>'<div class="pagehead"><div class="hea
 function table(headers,rows,cl=''){return '<div class="tablewrap"><table class="table '+cl+'"><thead><tr>'+headers.map(t=>'<th scope="col">'+esc(t)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>'<td'+(cl==='catalog-table'?' data-label="'+esc(headers[i])+'"':'')+'>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
 const defaults=DailyCore.DEFAULTS, fees=DailyCore.FEES;
 const identityKeys=['name','spec','specCode','productCode'];
+const requiredIdentityKeys=identityKeys.filter(k=>k!=='spec');
 const shipKeys=['store','attribute','packType','length','width','height','weight'];
 const labels={name:'商品名称',spec:'商品规格',specCode:'规格编码',productCode:'商品编码',store:'发货店铺',attribute:'商品属性',packType:'尺寸类型',length:'长',width:'宽',height:'高',weight:'实重',chinaPrice:'中国组合价',costRate:'产品成本比例',salePrice:'美区商品售价',buyerShipping:'向买家收取的运费',receipt:'最终含税实收',logistics:'实际物流成本',currency:'物流币种',fx:'结算汇率',referenceChina:'国内组合价',multiplier:'参考售价倍率',divisor:'去税除数',tax:'所得税率',...Object.fromEntries(fees.map(f=>[f.key,f.name]))};
 const units={length:'cm',width:'cm',height:'cm',weight:'kg',chinaPrice:'RMB',referenceChina:'RMB',salePrice:'USD',receipt:'USD',buyerShipping:'USD',costRate:'%',fx:'RMB/USD',multiplier:'倍',tax:'%',...Object.fromEntries(fees.map(f=>[f.key,'%']))};
@@ -340,14 +341,14 @@ function calc(f){
 function ref(f){return Number(DailyCore.recommend(num(f,'referenceChina'),num(f,'multiplier'),num(f,'fx')).toFixed(2));}
 const sig=f=>JSON.stringify(shipKeys.map(k=>String(f[k])));
 function quote(f){return {...FreightCore.quote({...Object.fromEntries(['length','width','height','weight'].map(k=>[k,num(f,k)])),attribute:f.attribute,store:f.store,naked:f.packType==='裸货尺寸'}),signature:sig(f)};}
-const basicFields=['name','spec','attribute','productCode','specCode'];
+const basicFields=['name','attribute','productCode','specCode'];
 function productAttribute(p){
  const value=p.attribute??last(p.records)?.fields?.attribute;
  return options.attribute.includes(value)?value:'未分类';
 }
 function identity(f){return Object.fromEntries(identityKeys.map(k=>[k,String(f[k]).trim()]));}
 function key(f){return JSON.stringify(['name','specCode','productCode'].map(k=>String(f[k]).trim()));}
-const metaText=p=>p.spec+'　/　商品属性 '+(p.records?productAttribute(p):(p.attribute||'未分类'))+'　/　规格编码 '+p.specCode+'　/　商品编码 '+p.productCode;
+const metaText=p=>(p.spec?p.spec+'　/　':'')+'商品属性 '+(p.records?productAttribute(p):(p.attribute||'未分类'))+'　/　规格编码 '+p.specCode+'　/　商品编码 '+p.productCode;
 function formatValue(k,f){const v=f[k];if(v==null||v==='')return '未填写';const unit=k==='logistics'?f.currency:units[k];return String(v)+(unit?(unit==='%'?'':' ')+unit:'');}
 function changes(a,b){return Object.keys(labels).filter(k=>!identityKeys.includes(k)&&String(a[k]??'')!==String(b[k]??'')).map(k=>labels[k]+' '+formatValue(k,a)+' → '+formatValue(k,b));}
 function snap(f,q,adopt,t=Date.now()){let recommendation=null;try{recommendation=ref(f)}catch{}return {saved:t,fields:clone(f),quote:q?clone(q):null,adopted:adopt?clone(adopt):null,reference:recommendation,result:calc(f),rateTable:FreightCore.updatedAt};}
@@ -443,8 +444,8 @@ function openBasics(id){
  };
  form.onsubmit=async event=>{
   event.preventDefault();if(saving||save.disabled)return;
-  const values={...identity(Object.fromEntries(new FormData(form))),attribute:form.elements.attribute.value};
-  const missing=identityKeys.find(k=>!values[k]);
+  const values={...identity({...original,...Object.fromEntries(new FormData(form))}),attribute:form.elements.attribute.value};
+  const missing=requiredIdentityKeys.find(k=>!values[k]);
   if(missing){error.textContent='请填写'+labels[missing]+'。';form.elements[missing].focus();return;}
   saving=true;for(const field of form.elements)field.disabled=true;error.textContent='';
   try{
@@ -480,7 +481,7 @@ function listRows(){
 }
 function workspaceNav(active){return '<nav class="profit-workspace-nav" aria-label="跨境利润功能"><a href="#list"'+(active==='list'?' aria-current="page"':'')+'>'+I('calc')+'商品利润测算</a><a href="#bi"'+(active==='bi'?' aria-current="page"':'')+'>'+I('chart')+'寄样与履约看板</a></nav>';}
 function listPage(){
- $('app').innerHTML=workspaceNav('list')+heading('跨境利润','按商品和规格查找历次利润测算。',action('新增商品','new','',true,'plus'))+panel(sect('全部商品','grid','<form class="catalog-search" id="catalog-search"><label class="search">'+I('search')+'<input id="search" type="search" aria-label="搜索商品" placeholder="搜索商品名称、规格或编码" value="'+esc(query)+'"></label><button type="submit" class="btn p">搜索</button></form>')+'<div id="listrows"></div>');listRows();
+ $('app').innerHTML=workspaceNav('list')+'<div class="pagehead"><div></div><div class="actions">'+action('新增商品','new','',true,'plus')+'</div></div>'+panel(sect('全部商品','grid','<form class="catalog-search" id="catalog-search"><label class="search">'+I('search')+'<input id="search" type="search" aria-label="搜索商品" placeholder="搜索商品名称、规格或编码" value="'+esc(query)+'"></label><button type="submit" class="btn p">搜索</button></form>')+'<div id="listrows"></div>');listRows();
  $('catalog-search').onsubmit=event=>{event.preventDefault();query=$('search').value;catalogPage=1;listRows();};
 }
 let chartObserver;
@@ -616,7 +617,7 @@ function editor(p,sourceNumber){
  const f=draft.fields;const idPanel=panel(sect('商品信息','box')+fields(basicFields.filter(k=>k!=='attribute'),'two basics-grid')+'<div class="product-upload"><span id="draft-photo">'+cover({name:f.name,photo:draft.photo})+'</span><div><h3>商品图片</h3>'+photoPicker()+'</div></div>');
  const saveLabel=p?'保存为第 '+(draft.base+1)+' 次测算':'保存商品与首次测算';
  const baseline=p?'<div class="comparison-baseline"><div>'+I('clock')+'<span>对比基准</span><strong>第 '+draft.sourceNumber+' 次测算</strong><span>'+esc(date(draft.baseline.saved))+'</span></div><span>已保存记录</span></div>':'';
- $('app').innerHTML=(p?'<div class="comparison-editor">':'')+heading(p?'新增第 '+(draft.base+1)+' 次测算':'新增商品与首次测算',p?p.name+'　/　'+metaText(p):'填写商品身份和本次测算数据，保存后建立首次利润基准。','',action('返回'+(p?'档案':'列表'),p?'profile':'home',p?.id||''))+baseline+'<div class="split"><div>'+(p?'':idPanel)+settlementBlock()+shippingBlock()+refBlock()+paymentBlock()+parametersBlock()+'</div><div class="right"><div id="profitHero"></div>'+panel('<div id="calculated"></div><p class="footline error" role="alert" id="formError"></p><button id="save" class="btn p wide" type="button" data-action="save">'+saveLabel+'</button><p class="footline comparison-save-note">'+(p?'保存后追加新记录，保留每次测算的完整数据。':'首次测算将作为本商品的利润基准。')+'</p>')+'</div></div>'+(p?'</div>':'');
+ $('app').innerHTML=(p?'<div class="comparison-editor">':'')+heading(p?'新增第 '+(draft.base+1)+' 次测算':'新增商品与首次测算',p?p.name+'　/　'+metaText(p):'填写商品身份和本次测算数据，保存后建立首次利润基准。','',action('返回'+(p?'档案':'列表'),p?'profile':'home',p?.id||''))+baseline+'<div class="split"><div>'+(p?'':idPanel)+settlementBlock()+paymentBlock()+shippingBlock()+refBlock()+parametersBlock()+'</div><div class="right"><div id="profitHero"></div>'+panel('<div id="calculated"></div><p class="footline error" role="alert" id="formError"></p><button id="save" class="btn p wide" type="button" data-action="save">'+saveLabel+'</button><p class="footline comparison-save-note">'+(p?'保存后追加新记录，保留每次测算的完整数据。':'首次测算将作为本商品的利润基准。')+'</p>')+'</div></div>'+(p?'</div>':'');
  updateCalc();
  if(p){document.querySelector('.comparison-editor').classList.toggle('historical-basis',draft.sourceNumber<draft.base);comparisonObserver=new ResizeObserver(syncComparisonSticky);comparisonObserver.observe(document.querySelector('.comparison-editor .right'));syncComparisonSticky();}
 }
@@ -658,7 +659,7 @@ function updateField(k,input){
 function saveRecord(){
  if(busy||!draft||draft.photoLoading)return;const d=draft,f=d.fields;let record;
  try{
-  for(const k of identityKeys)if(!String(f[k]??'').trim()||String(f[k]).trim().length>200){$('f-'+k)?.focus();throw Error('请填写'+labels[k]+'，每项最多 200 字。');}
+  for(const k of requiredIdentityKeys)if(!String(f[k]??'').trim()||String(f[k]).trim().length>200){$('f-'+k)?.focus();throw Error('请填写'+labels[k]+'，每项最多 200 字。');}
   for(const k of ['length','width','height','weight','referenceChina'])if(f[k]!=='')num(f,k);
   if(!d.productId&&products.some(p=>p.identity===key(f)))throw Error('该商品已经建档，请在商品列表打开原档案追加测算。');
   record=snap({...f,...identity(f)},d.quote,d.adopted);

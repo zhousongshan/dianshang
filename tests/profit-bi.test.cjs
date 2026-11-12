@@ -58,3 +58,26 @@ test('prototype fixtures reconcile across products, statuses and trend without p
  assert.equal(core.trend(r,filter).reduce((n,p)=>n+p.quantity,0),r.totals.quantity);
  assert.ok(d.shipments.every(s=>s.costSnapshot===null&&s.shippingCost===null));
 });
+test('weekly trend always has four consecutive Monday buckets, including missing weeks',()=>{
+ const filter={from:'2026-11-01',to:'2026-11-12'},r=core.aggregate(dataset([shipment('1','alice',{quantity:3})]),filter);
+ const weeks=core.trend(r,filter,'week');
+ assert.deepEqual(weeks.map(w=>w.date),['2026-10-19','2026-10-26','2026-11-02','2026-11-09']);
+ assert.deepEqual(weeks.map(w=>w.quantity),[0,3,0,0]);assert.equal(weeks[0].covered,false);
+ assert.equal(core.trend(core.aggregate(dataset([])),filter,'week').length,4);
+});
+test('four-week window follows selected end date and excludes older shipment quantities',()=>{
+ const d=dataset([shipment('old','alice',{date:'2026-09-01',quantity:100}),shipment('new','bob',{quantity:2})]);
+ const filter={from:'2026-09-01',to:'2026-11-12'},weeks=core.trend(core.aggregate(d,filter),filter,'week');
+ assert.equal(weeks.length,4);assert.equal(weeks.reduce((n,w)=>n+w.quantity,0),2);
+ const earlier=core.trend(core.aggregate(d,{to:'2026-10-25'}),{to:'2026-10-25'},'week');
+ assert.equal(earlier.at(-1).date,'2026-10-19');
+ assert.deepEqual(core.trend(core.aggregate(d),{from:'2026-11-12',to:'2026-11-01'},'week'),[]);
+});
+test('pagination retains every product once and clamps pages after filtering',()=>{
+ const rows=Array.from({length:23},(_,id)=>({id})),all=[];
+ for(let i=1;i<=5;i++)all.push(...core.paginate(rows,i,5).items);
+ assert.deepEqual(all,rows);assert.equal(core.paginate(rows,5,5).items.length,3);
+ const filtered=core.paginate(rows.slice(0,2),5,5);assert.equal(filtered.page,1);assert.equal(filtered.total,2);
+ const empty=core.paginate([],99,5);assert.equal(empty.page,1);assert.equal(empty.start,0);assert.equal(empty.end,0);
+ assert.equal(core.paginate(rows,1,10).items.length,10);assert.equal(core.paginate(rows,1,20).items.length,20);
+});

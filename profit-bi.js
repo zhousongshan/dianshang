@@ -9,7 +9,7 @@
  const rateText=item=>item.rate===null?'—':(item.unmatched?'≥':'')+(item.rate*100).toFixed(1)+'%';
  const statuses={fulfilled:'已履约',unfulfilled:'未履约',unmatched:'待匹配'};
  const initial=()=>({from:'2026-11-01',to:data.asOf,store:'',owner:'',category:'',query:''});
- let view={filter:initial(),sort:'creators',direction:-1,granularity:'day'},root,result,detail=null;
+ let view={filter:initial(),sort:'creators',direction:-1,granularity:'day',tablePage:1,tableSize:5,comparisonPage:1,comparisonSize:5},root,result,detail=null;
  const $=selector=>root.querySelector(selector);
  const button=(text,action,cl='')=>'<button type="button" class="bi-button '+cl+'" data-bi-action="'+action+'">'+text+'</button>';
  function select(name,label,values){return '<label class="bi-filter"><span>'+label+'</span><select class="bi-select" data-bi-filter="'+name+'" aria-label="'+label+'"><option value="">全部'+label+'</option>'+values.map(v=>'<option value="'+esc(v)+'"'+(view.filter[name]===v?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>';}
@@ -18,10 +18,8 @@
    '<section class="bi-panel bi-filters" aria-label="看板筛选"><div class="bi-filter-grid"><div class="bi-filter bi-date-range"><span>寄样日期</span><div><input class="bi-control" type="date" data-bi-filter="from" aria-label="寄样开始日期" value="'+view.filter.from+'" max="'+data.asOf+'"><span>至</span><input class="bi-control" type="date" data-bi-filter="to" aria-label="寄样结束日期" value="'+view.filter.to+'" max="'+data.asOf+'"></div></div>'+select('store','店铺',['miniso三店','miniso四店'])+select('category','品类',['盲盒','常规','毛绒'])+select('owner','负责人',['何霜','李雨轩','陈晓'])+'<label class="bi-filter bi-search"><span>商品</span><div class="bi-control">'+icon('search')+'<input type="search" data-bi-filter="query" aria-label="搜索看板商品" placeholder="搜索商品名称或编码" value="'+esc(view.filter.query)+'"></div></label><div class="bi-filter bi-filter-reset"><span aria-hidden="true">&nbsp;</span>'+button('重置','reset')+'</div></div><p class="bi-filter-error" id="bi-filter-error" role="alert" hidden></p></section>'+
    '<section class="bi-summary" id="bi-summary" aria-label="寄样履约汇总" aria-live="polite"></section>'+
    '<div class="bi-quality" id="bi-quality"></div>'+
-   '<section class="bi-panel bi-products" aria-labelledby="bi-products-title"><div class="bi-panel-heading"><div><h2 id="bi-products-title">商品寄样与履约</h2><p>人数按「商品 + 达人」去重；件数累计实际寄出数量。</p></div>'+button(icon('download')+'导出当前统计','export')+'</div><div class="bi-table-scroll"><table class="bi-table"><colgroup><col class="bi-col-product"><col><col><col><col><col><col class="bi-col-rate"><col><col><col class="bi-col-action"></colgroup><thead><tr><th scope="col">商品 / 编码</th>'+[['creators','寄样达人'],['quantity','寄出件数'],['fulfilled','已履约'],['unfulfilled','未履约'],['unmatched','待匹配'],['rate','履约率'],['video','视频履约'],['live','直播履约']].map(([key,label])=>'<th scope="col" data-sort-heading="'+key+'"><button type="button" data-bi-sort="'+key+'">'+label+icon('sort')+'</button></th>').join('')+'<th scope="col">操作</th></tr></thead><tbody id="bi-product-rows"></tbody></table></div><footer class="bi-table-footer"><span id="bi-table-count"></span><span>视频与直播可重叠，同一达人履约只计一次</span></footer></section>'+
-   '<div class="bi-chart-grid"><section class="bi-panel" aria-labelledby="bi-trend-title"><div class="bi-panel-heading"><div><h2 id="bi-trend-title">寄样趋势</h2><p>本期实际寄出的样品件数</p></div><div class="bi-segment" aria-label="趋势粒度"><button type="button" data-bi-granularity="day">按天</button><button type="button" data-bi-granularity="week">按周</button></div></div><div id="bi-trend" class="bi-trend"></div></section><section class="bi-panel" aria-labelledby="bi-compare-title"><div class="bi-panel-heading"><div><h2 id="bi-compare-title">商品履约对比</h2><p>点击商品，查看对应达人</p></div><div class="bi-legend"><span><i></i>已履约</span><span><i></i>未履约</span><span><i></i>待匹配</span></div></div><div id="bi-comparison" class="bi-comparison"></div></section></div>'+
-   '<section class="bi-panel bi-profit-reserved"><div class="bi-reserved-icon">'+icon('lock')+'</div><div><h2>利润分析 <span>待接销售数据</span></h2><p>后续结合销售明细、达人寄样成本及其他费用，查看每个商品的预计利润。</p></div><div class="bi-profit-flow"><span>销售数据</span>'+icon('arrow')+'<span>寄样成本</span>'+icon('arrow')+'<span>预计利润</span></div></section>'+
-   '<footer class="bi-pagefoot">示例商品与达人仅用于展示交互，不代表飞书中的真实统计；当前不计算利润。</footer>'+
+   '<section class="bi-panel bi-products" aria-labelledby="bi-products-title"><div class="bi-panel-heading"><div><h2 id="bi-products-title">商品寄样与履约</h2></div>'+button(icon('download')+'导出当前统计','export')+'</div><div class="bi-table-scroll"><table class="bi-table"><colgroup><col class="bi-col-product"><col><col><col><col><col><col class="bi-col-rate"><col><col><col class="bi-col-action"></colgroup><thead><tr><th scope="col">商品 / 编码</th>'+[['creators','寄样达人'],['quantity','寄出件数'],['fulfilled','已履约'],['unfulfilled','未履约'],['unmatched','待匹配'],['rate','履约率'],['video','视频履约'],['live','直播履约']].map(([key,label])=>'<th scope="col" data-sort-heading="'+key+'"><button type="button" data-bi-sort="'+key+'">'+label+icon('sort')+'</button></th>').join('')+'<th scope="col">操作</th></tr></thead><tbody id="bi-product-rows"></tbody></table></div><footer class="bi-table-footer"><span id="bi-table-count"></span><div id="bi-table-pagination"></div></footer></section>'+
+   '<div class="bi-chart-grid"><section class="bi-panel" aria-labelledby="bi-trend-title"><div class="bi-panel-heading"><div><h2 id="bi-trend-title">寄样趋势</h2><p>本期实际寄出的样品件数</p></div><div class="bi-segment" aria-label="趋势粒度"><button type="button" data-bi-granularity="day">按天</button><button type="button" data-bi-granularity="week">按周</button></div></div><div id="bi-trend" class="bi-trend"></div></section><section class="bi-panel" aria-labelledby="bi-compare-title"><div class="bi-panel-heading"><div><h2 id="bi-compare-title">商品履约对比</h2></div><div class="bi-legend"><span><i></i>已履约</span><span><i></i>未履约</span><span><i></i>待匹配</span></div></div><div id="bi-comparison" class="bi-comparison"></div><footer class="bi-comparison-footer"><span id="bi-comparison-count"></span><div id="bi-comparison-pagination"></div></footer></section></div>'+
    '<dialog class="bi-drawer" id="bi-detail-dialog" aria-labelledby="bi-detail-title"></dialog><dialog class="bi-source-dialog" id="bi-source-dialog" aria-labelledby="bi-source-title"></dialog><div class="bi-toast" id="bi-toast" role="status"></div></div>';
  }
  function summary(){
@@ -36,22 +34,34 @@
   $('#bi-quality').innerHTML=t.cooperations?'<span class="bi-quality-main">'+icon('check')+'已确认履约 <b>'+t.fulfilled+'</b><span>未履约 <b>'+t.unfulfilled+'</b></span><span class="bi-amber">待匹配 <b>'+t.unmatched+'</b></span></span><span>'+(t.unmatched?'含待匹配记录的履约率以「≥」标记；无跟进数据的商品显示「—」。':'所有寄样达人均已匹配跟进记录。')+'</span>':'<span>当前筛选范围内没有已寄样记录。</span>';
  }
  function sortedRows(){return [...result.rows].sort((a,b)=>{const av=a[view.sort],bv=b[view.sort];if(av===null||bv===null)return av===bv?0:av===null?1:-1;return (av-bv)*view.direction||a.name.localeCompare(b.name,'zh-CN');});}
+ function resetPages(){view.tablePage=1;view.comparisonPage=1;}
+ function pager(scope,p){
+  const label=scope==='table'?'商品统计':'商品履约对比';
+  const b=(page,text,disabled=false)=>'<button type="button" data-bi-page="'+scope+':'+page+'" '+(disabled?'disabled ':'')+(text===String(p.page)?'aria-current="page" ':'')+'aria-label="'+label+(text==='‹'?'上一页':text==='›'?'下一页':'第 '+page+' 页')+'">'+text+'</button>';
+  const indices=[...new Set([1,p.pages,p.page-1,p.page,p.page+1])].filter(n=>n>=1&&n<=p.pages).sort((a,b)=>a-b);
+  return '<nav class="bi-pagination" aria-label="'+label+'分页"><select class="bi-select" data-bi-page-size="'+scope+'" aria-label="'+label+'每页条数">'+[5,10,20].map(n=>'<option value="'+n+'"'+(p.size===n?' selected':'')+'>'+n+' 条 / 页</option>').join('')+'</select>'+b(p.page-1,'‹',p.page===1)+indices.map((n,i)=>(i&&n-indices[i-1]>1?'<span>…</span>':'')+b(n,String(n))).join('')+b(p.page+1,'›',p.page===p.pages)+'</nav>';
+ }
  function productRows(){
-  $('#bi-product-rows').innerHTML=sortedRows().map(p=>'<tr><th scope="row"><button type="button" class="bi-product-button" data-bi-product="'+p.id+'"><span class="bi-product-art bi-tone-'+p.tone+'" aria-hidden="true">'+esc(p.short)+'</span><span><strong>'+esc(p.name)+'</strong><small>'+p.code+'<span class="bi-category">'+p.category+'</span></small></span></button></th><td>'+p.creators+'</td><td>'+p.quantity+'</td><td class="bi-done-number">'+p.fulfilled+'</td><td>'+p.unfulfilled+'</td><td class="'+(p.unmatched?'bi-amber':'bi-muted')+'">'+p.unmatched+'</td><td class="bi-rate-cell"><div><b>'+rateText(p)+'</b><small>'+(p.rate===null?'履约数据待补齐':p.unmatched?'已确认 / 寄样达人':'')+'</small></div><div class="bi-progress" aria-hidden="true"><i style="width:'+(p.rate===null?0:p.rate*100)+'%"></i></div></td><td>'+p.video+'</td><td>'+p.live+'</td><td><button type="button" class="bi-text-button" data-bi-product="'+p.id+'" aria-label="查看'+esc(p.name)+'的达人">查看达人 '+icon('arrow')+'</button></td></tr>').join('')||'<tr><td colspan="10"><div class="bi-empty">'+icon('search')+'<h3>没有符合条件的寄样记录</h3><p>试试其他日期、店铺或商品关键词。</p>'+button('重置筛选','reset')+'</div></td></tr>';
+  const page=core.paginate(sortedRows(),view.tablePage,view.tableSize);view.tablePage=page.page;
+  $('#bi-product-rows').innerHTML=page.items.map(p=>'<tr><th scope="row"><button type="button" class="bi-product-button" data-bi-product="'+p.id+'"><span class="bi-product-art bi-tone-'+p.tone+'" aria-hidden="true">'+esc(p.short)+'</span><span><strong>'+esc(p.name)+'</strong><small>'+p.code+'<span class="bi-category">'+p.category+'</span></small></span></button></th><td>'+p.creators+'</td><td>'+p.quantity+'</td><td class="bi-done-number">'+p.fulfilled+'</td><td>'+p.unfulfilled+'</td><td class="'+(p.unmatched?'bi-amber':'bi-muted')+'">'+p.unmatched+'</td><td class="bi-rate-cell"><div><b>'+rateText(p)+'</b><small>'+(p.rate===null?'履约数据待补齐':p.unmatched?'已确认 / 寄样达人':'')+'</small></div><div class="bi-progress" aria-hidden="true"><i style="width:'+(p.rate===null?0:p.rate*100)+'%"></i></div></td><td>'+p.video+'</td><td>'+p.live+'</td><td><button type="button" class="bi-text-button" data-bi-product="'+p.id+'" aria-label="查看'+esc(p.name)+'的达人">查看达人 '+icon('arrow')+'</button></td></tr>').join('')||'<tr><td colspan="10"><div class="bi-empty">'+icon('search')+'<h3>没有符合条件的寄样记录</h3><p>试试其他日期、店铺或商品关键词。</p>'+button('重置筛选','reset')+'</div></td></tr>';
   root.querySelectorAll('[data-sort-heading]').forEach(th=>{const active=th.dataset.sortHeading===view.sort;th.setAttribute('aria-sort',active?(view.direction===-1?'descending':'ascending'):'none');th.querySelector('button').classList.toggle('is-active',active);});
-  $('#bi-table-count').textContent='共 '+result.rows.length+' 个商品 · '+result.totals.cooperations+' 个商品与达人关系';
+  $('#bi-table-count').textContent='显示 '+page.start+'–'+page.end+' 条，共 '+page.total+' 个商品 · '+result.totals.cooperations+' 个商品与达人关系';
+  $('#bi-table-pagination').innerHTML=pager('table',page);
  }
  function trendChart(){
-  const points=core.trend(result,view.filter,view.granularity);
+  const points=core.trend(result,view.filter,view.granularity),chartTotal=points.reduce((n,p)=>n+p.quantity,0);
   root.querySelectorAll('[data-bi-granularity]').forEach(b=>{b.classList.toggle('is-active',b.dataset.biGranularity===view.granularity);b.setAttribute('aria-pressed',String(b.dataset.biGranularity===view.granularity));});
   if(!points.length){$('#bi-trend').innerHTML='<div class="bi-chart-empty">当前范围暂无寄样数据</div>';return;}
   const w=700,h=218,left=38,right=16,top=19,bottom=183,max=Math.max(4,Math.ceil(Math.max(...points.map(p=>p.quantity))/4)*4),stride=Math.max(1,Math.ceil((points.length-1)/6));
   const x=i=>points.length===1?(left+w-right)/2:left+(w-left-right)*i/(points.length-1),y=v=>bottom-(bottom-top)*v/max;
   const path=points.map((p,i)=>x(i)+','+y(p.quantity)).join(' '),grid=Array.from({length:5},(_,i)=>{const value=max*i/4,py=y(value);return '<path class="bi-chart-gridline" d="M'+left+' '+py+'H'+(w-right)+'"/><text class="bi-axis" x="'+(left-10)+'" y="'+(py+4)+'" text-anchor="end">'+value+'</text>';}).join('');
-  $('#bi-trend').innerHTML='<div class="bi-trend-unit">单位：件</div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="按'+(view.granularity==='day'?'天':'周')+'展示寄出样品件数，总计'+result.totals.quantity+'件"><defs><linearGradient id="bi-trend-fill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#9c7bdd" stop-opacity=".23"/><stop offset="1" stop-color="#9c7bdd" stop-opacity="0"/></linearGradient></defs>'+grid+'<polygon fill="url(#bi-trend-fill)" points="'+x(0)+','+bottom+' '+path+' '+x(points.length-1)+','+bottom+'"/><polyline class="bi-trend-line" points="'+path+'"/>'+points.map((p,i)=>'<g><title>'+p.date+(view.granularity==='week'?' 当周':'')+'：寄出 '+p.quantity+' 件，'+p.creators+' 位达人</title><circle class="bi-trend-dot" cx="'+x(i)+'" cy="'+y(p.quantity)+'" r="3.5"/>'+(i%stride===0||i===points.length-1?'<text class="bi-axis" text-anchor="middle" x="'+x(i)+'" y="208">'+p.date.slice(5).replace('-','/')+'</text>':'')+'</g>').join('')+'</svg>';
+  $('#bi-trend').innerHTML='<div class="bi-trend-unit">单位：件'+(view.granularity==='week'?' · 最近4周':'')+'</div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="按'+(view.granularity==='day'?'天':'周')+'展示寄出样品件数，总计'+chartTotal+'件"><defs><linearGradient id="bi-trend-fill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#9c7bdd" stop-opacity=".23"/><stop offset="1" stop-color="#9c7bdd" stop-opacity="0"/></linearGradient></defs>'+grid+'<polygon fill="url(#bi-trend-fill)" points="'+x(0)+','+bottom+' '+path+' '+x(points.length-1)+','+bottom+'"/><polyline class="bi-trend-line" points="'+path+'"/>'+points.map((p,i)=>'<g><title>'+p.date+(view.granularity==='week'?(p.covered?' 当周（按所选日期统计）':' 当周（不在所选日期内）'):'')+'：寄出 '+p.quantity+' 件，'+p.creators+' 位达人</title><circle class="bi-trend-dot" cx="'+x(i)+'" cy="'+y(p.quantity)+'" r="3.5"/>'+(i%stride===0||i===points.length-1?'<text class="bi-axis" text-anchor="middle" x="'+x(i)+'" y="208">'+p.date.slice(5).replace('-','/')+'</text>':'')+'</g>').join('')+'</svg>';
  }
  function comparisonChart(){
-  $('#bi-comparison').innerHTML=sortedRows().map(p=>'<button type="button" class="bi-compare-row" data-bi-product="'+p.id+'" aria-label="'+esc(p.name)+'，履约率'+(p.rate===null?'数据待补齐':rateText(p))+'，查看达人"><span class="bi-compare-name" title="'+esc(p.name)+'">'+esc(p.name)+'</span><span class="bi-stack" aria-hidden="true"><i style="width:'+p.fulfilled/p.creators*100+'%"></i><i style="width:'+p.unfulfilled/p.creators*100+'%"></i><i style="width:'+p.unmatched/p.creators*100+'%"></i></span><b>'+rateText(p)+'</b></button>').join('')||'<div class="bi-chart-empty">当前范围暂无履约数据</div>';
+  const page=core.paginate(sortedRows(),view.comparisonPage,view.comparisonSize);view.comparisonPage=page.page;
+  $('#bi-comparison').innerHTML=page.items.map(p=>'<div class="bi-compare-row" role="img" aria-label="'+esc(p.name)+'，履约率'+(p.rate===null?'数据待补齐':rateText(p))+'"><span class="bi-compare-name" title="'+esc(p.name)+'">'+esc(p.name)+'</span><span class="bi-stack" aria-hidden="true"><i style="width:'+p.fulfilled/p.creators*100+'%"></i><i style="width:'+p.unfulfilled/p.creators*100+'%"></i><i style="width:'+p.unmatched/p.creators*100+'%"></i></span><b>'+rateText(p)+'</b></div>').join('')||'<div class="bi-chart-empty">当前范围暂无履约数据</div>';
+  $('#bi-comparison-count').textContent=page.start+'–'+page.end+' / '+page.total+' 个商品';
+  $('#bi-comparison-pagination').innerHTML=pager('comparison',page);
  }
  function paint(){
   const invalid=view.filter.from&&view.filter.to&&view.filter.from>view.filter.to;
@@ -90,12 +100,13 @@
   root=target;root.innerHTML=shell();detail=null;
   root.onclick=event=>{
    const b=event.target.closest('button');if(!b)return;
+   if(b.dataset.biPage){const [scope,page]=b.dataset.biPage.split(':');if(b.disabled)return;view[scope+'Page']=Number(page);if(scope==='table')productRows();else comparisonChart();return;}
    if(b.dataset.biProduct){openDetails(b.dataset.biProduct);return;}
-   if(b.dataset.biSort){const key=b.dataset.biSort;view.direction=view.sort===key?-view.direction:-1;view.sort=key;productRows();comparisonChart();return;}
+   if(b.dataset.biSort){const key=b.dataset.biSort;view.direction=view.sort===key?-view.direction:-1;view.sort=key;resetPages();productRows();comparisonChart();return;}
    if(b.dataset.biStatus){detail.status=b.dataset.biStatus;paintDetails();return;}
    if(b.dataset.biGranularity){view.granularity=b.dataset.biGranularity;trendChart();return;}
    switch(b.dataset.biAction){
-    case 'reset':view.filter=initial();syncFilters();paint();break;
+    case 'reset':view.filter=initial();resetPages();syncFilters();paint();break;
     case 'sources':openSources();break;
     case 'backlog':openDetails(null,'unfulfilled');break;
     case 'close-detail':$('#bi-detail-dialog').close();detail=null;break;
@@ -105,7 +116,8 @@
   };
   const change=event=>{
    const el=event.target,key=el.dataset.biFilter;
-   if(key){if((el.type==='date'&&!el.validity.valid))return;view.filter[key]=el.value;paint();}
+   if(key){if((el.type==='date'&&!el.validity.valid))return;view.filter[key]=el.value;resetPages();paint();}
+   if(el.dataset.biPageSize){const scope=el.dataset.biPageSize;view[scope+'Size']=Number(el.value);view[scope+'Page']=1;if(scope==='table')productRows();else comparisonChart();}
    if(el.id==='bi-detail-search'){detail.query=el.value;paintDetails();}
    if(el.id==='bi-detail-age'){detail.age=Number(el.value);paintDetails();}
   };

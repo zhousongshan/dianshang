@@ -78,6 +78,20 @@
   return {rows,totals,details,shipments,asOf};
  }
  function trend(result,filter={},granularity='day'){
+  const weekStart=date=>{
+   const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);
+  };
+  if(granularity==='week'){
+   const to=filter.to&&filter.to<result.asOf?filter.to:result.asOf;
+   if(filter.from&&filter.from>to)return [];
+   const end=dayNumber(weekStart(to)),buckets=new Map();
+   for(let i=3;i>=0;i--){
+    const start=end-i*7,date=new Date(start*86400000).toISOString().slice(0,10);
+    buckets.set(date,{date,quantity:0,creators:new Set(),covered:!filter.from||start+6>=dayNumber(filter.from)});
+   }
+   result.shipments.forEach(s=>{const b=buckets.get(weekStart(s.date));if(b){b.quantity+=Number(s.quantity);b.creators.add(normalizeHandle(s.creator));}});
+   return [...buckets.values()].map(b=>({...b,creators:b.creators.size}));
+  }
   if(!result.shipments.length)return [];
   const dates=result.shipments.map(s=>s.date).sort(),from=filter.from||dates[0],to=filter.to&&filter.to<result.asOf?filter.to:result.asOf;
   const buckets=new Map(),keyFor=date=>{
@@ -91,6 +105,13 @@
   result.shipments.forEach(s=>{const bucket=buckets.get(keyFor(s.date));if(bucket){bucket.quantity+=Number(s.quantity);bucket.creators.add(normalizeHandle(s.creator));}});
   return [...buckets.values()].map(b=>({...b,creators:b.creators.size}));
  }
- const api={AS_OF,normalizeHandle,remarkTypes,demoData,aggregate,trend};
+ function paginate(rows,page=1,size=5){
+  size=[5,10,20].includes(Number(size))?Number(size):5;
+  const total=rows.length,pages=Math.max(1,Math.ceil(total/size));
+  page=Math.min(pages,Math.max(1,Math.trunc(Number(page))||1));
+  const offset=(page-1)*size;
+  return {items:rows.slice(offset,offset+size),page,size,pages,total,start:total?offset+1:0,end:Math.min(offset+size,total)};
+ }
+ const api={AS_OF,normalizeHandle,remarkTypes,demoData,aggregate,trend,paginate};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ProfitBICore=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -111,6 +111,13 @@ body.profit-bi-active{background:#f6f7fb}
 .profit-bi .bi-text-button:hover{color:#7444b2}
 .profit-bi .bi-text-button .bi-icon{width:12px;height:12px}
 .profit-bi .bi-table-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0;font-size:10px;line-height:1.7;color:#aa9ab5;border-top:1px solid #f0ebf5;flex-wrap:wrap}
+.profit-bi .bi-pagination{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;font-size:10px}
+.profit-bi .bi-pagination button{display:flex;align-items:center;justify-content:center;min-width:27px;height:28px;border:1px solid #e8e0f1;border-radius:5px;padding:0 7px;background:#fff;color:#a08bb2;line-height:1}
+.profit-bi .bi-pagination button:hover:not(:disabled){border-color:#c4addc;background:#faf6ff;color:#8155b5}
+.profit-bi .bi-pagination button[aria-current=page]{background:#f0e8fa;border-color:#d9c9ee;color:#8055b5;font-weight:550}
+.profit-bi .bi-pagination button:disabled{opacity:.4;cursor:default}
+.profit-bi .bi-pagination .bi-select{width:99px;height:28px;font-size:10px;padding-left:8px;padding-right:8px}
+.profit-bi .bi-comparison-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #f0ebf5;padding-top:15px;margin-top:18px;font-size:10px;color:#aa9ab5}
 .profit-bi .bi-chart-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:20px}
 .profit-bi .bi-chart-grid .bi-panel{display:flex;flex-direction:column}
 .profit-bi .bi-chart-grid .bi-panel-heading{margin-bottom:13px}
@@ -132,7 +139,7 @@ body.profit-bi-active{background:#f6f7fb}
 .profit-bi .bi-comparison{display:flex;flex-direction:column;gap:9px;margin-top:9px;flex:1;justify-content:center}
 .profit-bi .bi-compare-row{display:grid;grid-template-columns:minmax(100px,1.1fr) minmax(70px,1fr) 60px;align-items:center;gap:16px;padding:7px 0;border:0;background:transparent;line-height:1.5;color:#9883a9;text-align:left}
 .profit-bi .bi-compare-name{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.profit-bi .bi-compare-row:hover .bi-compare-name{color:#7e54b3}
+.profit-bi .bi-compare-row{cursor:default}
 .profit-bi .bi-compare-row b{font-size:11px;font-weight:500;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .profit-bi .bi-stack{display:flex;height:7px;gap:2px;background:#fff;border-radius:4px;overflow:hidden}
 .profit-bi .bi-stack i{display:block;min-width:0;background:#ac91d5}
